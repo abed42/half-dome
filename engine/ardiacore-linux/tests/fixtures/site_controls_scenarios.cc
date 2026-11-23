@@ -454,6 +454,15 @@ void CustomFilterLists() {
   assert(!ChangedBlocker(BlockerOp::kRemoveAllowed, nullptr));
   assert(ChangedBlocker(BlockerOp::kSetAllowed, &removed_no));
   assert(!ChangedBlocker(BlockerOp::kIsAllowed, &removed_yes));
+  assert(WaitsForFollowers(BlockerOp::kRemoveAllowed) && !WaitsForFollowers(BlockerOp::kSetAllowed));
+  {
+    auto all_followed = AfterFollowers(base::Value(base::DictValue().Set("removed", base::Value(true))), 0);
+    assert(std::holds_alternative<base::Value>(all_followed));
+    auto partial = AfterFollowers(base::Value(base::DictValue().Set("removed", base::Value(true))), 1);
+    assert(std::get<Failure>(partial).code == "ERR_PARTIAL");
+    auto earlier_failure = AfterFollowers(Failure{"ERR_X", "x"}, 2);
+    assert(std::get<Failure>(earlier_failure).code == "ERR_X");
+  }
   assert(BridgeOpName(BlockerOp::kRemoveAllowed) == "removeAllowed");
   assert(PrivateBlockerRefusal("contentBlocker.removeAllowed", base::DictValue().Set("host", "example.com"), true)->code == "ERR_PROFILE_PRIVATE");
   auto registrable = PrepareServiceCall("sites.registrableDomains", base::DictValue().Set("hosts", base::Value(base::ListValue().Append(base::Value("a.example.com")).Append(base::Value("ardia-probe.a.example.com")))));

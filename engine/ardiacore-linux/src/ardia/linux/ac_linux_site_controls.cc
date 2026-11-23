@@ -601,6 +601,13 @@ bool ChangedBlocker(BlockerOp op, const base::Value* value) {
   return true;
 }
 
+bool WaitsForFollowers(BlockerOp op) { return op == BlockerOp::kRemoveAllowed; }
+
+std::variant<base::Value, Failure> AfterFollowers(std::variant<base::Value, Failure> reply, int failed) {
+  if (failed <= 0 || std::holds_alternative<Failure>(reply)) return reply;
+  return Failure{"ERR_PARTIAL", "The default profile changed, but another loaded profile didn't follow yet"};
+}
+
 bool AnswersWithoutBlocker(const BlockerRequest& request) {
   return (request.op == BlockerOp::kHideElements || request.op == BlockerOp::kRestoreElements) &&
          request.filters.empty();
