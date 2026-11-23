@@ -1,5 +1,12 @@
+> **Half Dome** (`abed42/half-dome`) is a tracking fork of [ardia-browser/ardia](https://github.com/ardia-browser/ardia).
+> Branding and experiments live under [`halfdome/`](halfdome/) and [HALFDOME.md](HALFDOME.md). Ardia release tags are rebased in with [`halfdome/scripts/sync-ardia.sh`](halfdome/scripts/sync-ardia.sh).
+
 <p align="center">
-  <img src="apps/site/src/assets/app-icon.png" width="128" height="128" alt="Ardia's app icon">
+  <img src="halfdome/branding/icon-1024.png" width="128" height="128" alt="Half Dome app icon">
+</p>
+
+<p align="center">
+  <img src="apps/site/src/assets/app-icon.png" width="64" height="64" alt="Ardia's app icon">
 </p>
 
 <h1 align="center">Touch grass.</h1>

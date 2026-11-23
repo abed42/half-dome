@@ -1,0 +1,133 @@
+name: Sync Ardia
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Ardia release tag to sync (empty = latest non-nightly)
+        required: false
+        type: string
+  repository_dispatch:
+    types: [ardia-release]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: sync-ardia
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Ensure upstream remote
+        run: |
+          git remote remove upstream 2>/dev/null || true
+          git remote add upstream https://github.com/ardia-browser/ardia.git
+          git fetch upstream --tags --force
+
+      - name: Resolve Ardia tag
+        id: tag
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
+          DISPATCH_TAG: ${{ github.event.client_payload.tag }}
+        run: |
+          set -euo pipefail
+          if [[ -n "${INPUT_TAG:-}" ]]; then
+            TAG="$INPUT_TAG"
+          elif [[ -n "${DISPATCH_TAG:-}" ]]; then
+            TAG="$DISPATCH_TAG"
+          else
+            TAG="$(git tag -l 'v*' --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)"
+          fi
+          if [[ -z "$TAG" ]]; then
+            echo "No Ardia release tag found" >&2
+            exit 1
+          fi
+          if ! git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            echo "Unknown tag: $TAG" >&2
+            exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Using $TAG"
+
+      - name: Open sync branch and rebase
+        id: rebase
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          set -euo pipefail
+          git config user.name "half-dome-sync"
+          git config user.email "half-dome-sync@users.noreply.github.com"
+          BRANCH="sync/ardia-$TAG"
+          git checkout halfdome
+          git checkout -B "$BRANCH"
+          if git merge-base --is-ancestor "$TAG" HEAD; then
+            echo "already=true" >> "$GITHUB_OUTPUT"
+            echo "halfdome already contains $TAG"
+            exit 0
+          fi
+          echo "already=false" >> "$GITHUB_OUTPUT"
+          if git rebase "$TAG"; then
+            echo "conflicts=false" >> "$GITHUB_OUTPUT"
+          else
+            git rebase --abort
+            echo "conflicts=true" >> "$GITHUB_OUTPUT"
+            git checkout halfdome
+            git checkout -B "$BRANCH"
+            git reset --hard halfdome
+            {
+              echo "## Sync blocked by conflicts"
+              echo
+              echo "Rebase of \`halfdome\` onto \`$TAG\` hit conflicts."
+              echo "Run locally:"
+              echo
+              echo '```bash'
+              echo "halfdome/scripts/sync-ardia.sh $TAG"
+              echo '```'
+            } > /tmp/sync-body.md
+            echo "body_file=/tmp/sync-body.md" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git push --force-with-lease origin "$BRANCH"
+          {
+            echo "## Sync Ardia \`$TAG\`"
+            echo
+            echo "Rebased \`halfdome\` onto Ardia release \`$TAG\`."
+            echo "Review, then merge into \`halfdome\`."
+          } > /tmp/sync-body.md
+          echo "body_file=/tmp/sync-body.md" >> "$GITHUB_OUTPUT"
+
+      - name: Open or update pull request
+        if: steps.rebase.outputs.already != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.tag.outputs.tag }}
+          CONFLICTS: ${{ steps.rebase.outputs.conflicts }}
+          BODY_FILE: ${{ steps.rebase.outputs.body_file }}
+        run: |
+          set -euo pipefail
+          BRANCH="sync/ardia-$TAG"
+          TITLE="Sync Ardia $TAG"
+          if [[ "$CONFLICTS" == "true" ]]; then
+            TITLE="Sync Ardia $TAG (conflicts — needs manual rebase)"
+            git checkout -B "$BRANCH"
+            git commit --allow-empty -m "chore: flag Ardia $TAG sync conflicts"
+            git push --force-with-lease origin "$BRANCH"
+          fi
+          EXISTING="$(gh pr list --base halfdome --head "$BRANCH" --json number --jq '.[0].number')"
+          if [[ -n "$EXISTING" ]]; then
+            gh pr edit "$EXISTING" --title "$TITLE" --body-file "$BODY_FILE"
+          else
+            gh pr create --base halfdome --head "$BRANCH" --title "$TITLE" --body-file "$BODY_FILE"
+          fi
