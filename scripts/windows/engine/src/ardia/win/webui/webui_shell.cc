@@ -1656,10 +1656,15 @@ const wchar_t* SizeCursor(WPARAM hit) {
 bool ShellWindow::PreTranslate(const MSG& msg) {
   HWND root = Hwnd();
   const bool ours = root && msg.hwnd && ::GetAncestor(msg.hwnd, GA_ROOT) == root;
-  const bool button = msg.message == WM_LBUTTONDOWN ||
-                      msg.message == WM_LBUTTONUP ||
-                      msg.message == WM_NCLBUTTONDOWN ||
-                      msg.message == WM_NCLBUTTONUP;
+  const bool button =
+      msg.message == WM_LBUTTONDOWN || msg.message == WM_LBUTTONUP ||
+      msg.message == WM_RBUTTONDOWN || msg.message == WM_RBUTTONUP ||
+      msg.message == WM_MBUTTONDOWN || msg.message == WM_MBUTTONUP ||
+      msg.message == WM_XBUTTONDOWN || msg.message == WM_XBUTTONUP ||
+      msg.message == WM_NCLBUTTONDOWN || msg.message == WM_NCLBUTTONUP ||
+      msg.message == WM_NCRBUTTONDOWN || msg.message == WM_NCRBUTTONUP ||
+      msg.message == WM_NCMBUTTONDOWN || msg.message == WM_NCMBUTTONUP ||
+      msg.message == WM_NCXBUTTONDOWN || msg.message == WM_NCXBUTTONUP;
   if (button && !(ours && msg.wParam == HTMAXBUTTON &&
                   (msg.message == WM_NCLBUTTONDOWN ||
                    msg.message == WM_NCLBUTTONUP))) {
