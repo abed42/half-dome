@@ -255,13 +255,14 @@ The layers:
   that isn't there. The patches Windows applies and the layer sources it compiles are recorded in
   `accepted-patches.txt` and `accepted-layer-sources.txt`; a change to either is taken on purpose with
   `check_inputs.py --accept`. `chrome.dll` depends on it; `//ardia/win:probe` builds `ArdiaProbe.dll`, a stand-in for the app.
-- `series_win.py layer` copies all of `engine/ardiacore-linux/src/ardia/linux` to `//ardia/linux` (not its
-  `BUILD.gn`). The WebUI shell (`--ardia-shell=webui`, `docs/windows.md`, WebUI pilot) compiles the files
-  `//ardia/win/BUILD.gn` names from it as they are; `check_inputs.py` keeps that list in
-  `accepted-linux-sources.txt`. The rest only builds as a compile probe: `//ardia/linux/BUILD.gn` is made from
-  `linux-probe.gn` and is loaded only with the GN arg `ardia_linux_compile_probe = true`, so a normal build never
-  reads it. To rerun the probe, append that arg to `args.gn`, `gn gen`, build `ardia/win:linux_compile_probe` with
-  `-k 0`, then restore `args.gn` and `gn gen` again (no rebuild follows: no compile line changes).
+- `series_win.py layer` copies to `//ardia/linux` the `engine/ardiacore-linux` files `//ardia/win/BUILD.gn` names:
+  the WebUI shell (`--ardia-shell=webui`, `docs/windows.md`, WebUI pilot) compiles them as they are. `check_inputs.py`
+  keeps that list in `accepted-linux-sources.txt`, and `key-inputs.json` lists them, so a change to one of them moves
+  the Windows key as well as the Linux one; the rest of the Linux layer doesn't. For the compile probe, run
+  `04-series.sh` with `ARDIA_LINUX_COMPILE_PROBE=1`: the whole Linux layer is copied, with a `BUILD.gn` made from
+  `linux-probe.gn`, loaded only with the GN arg `ardia_linux_compile_probe = true`. Append that arg to `args.gn`,
+  `gn gen`, build `ardia/win:linux_compile_probe` with `-k 0`, then restore `args.gn`, `gn gen` again (no rebuild
+  follows: no compile line changes) and run `04-series.sh` without the variable.
 - `engine/ardiacore/apply.sh` doesn't run: it is Mac code. Only `ardia/core/ac_hooks.h` and `ac_content_hooks.h` are
   copied, because the hook patches include them (`// nogncheck`) and they are OS-neutral. With nothing setting the
   hooks, Chrome behaves as stock.

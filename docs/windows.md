@@ -1609,8 +1609,9 @@ Found on the way, and the fixes the desktop host needs too:
 
 ### What compiled from the Linux host
 
-`series_win.py` now copies all of `engine/ardiacore-linux/src/ardia/linux` (281 files) into the Windows tree at
-`//ardia/linux`. `//ardia/win` compiles these as they are (the list CI checks is `accepted-linux-sources.txt`):
+`series_win.py` now copies these `engine/ardiacore-linux` files into the Windows tree at `//ardia/linux`, and
+`//ardia/win` compiles them as they are. The list CI checks is `accepted-linux-sources.txt`; they are in the Windows
+key's `key-inputs.json`, so a change to one moves the Windows key too:
 
 | Linux file | Used as | What for |
 | --- | --- | --- |
@@ -1631,7 +1632,8 @@ Rewritten for the pilot (each marks code the desktop host should own once, share
 | `linux_window::StartCaptionMove` | `WM_SYSCOMMAND SC_MOVE \| HTCAPTION`, only while the left button is down | Win32 move loop, Aero Snap included |
 | `chromium-linux-borderless-frame`, `-window-state` (GTK and Wayland frames) | `ShellTreeHost::GetClientAreaInsets`/`GetDwmFrameInsetsInPixels` + `ShellFrame::NonClientHitTest` + `WebUIShellPreTranslate` | Chrome's own Windows frame model: invisible native resize borders, top edge in the client, DWM shadow and rounded corners; `HTMAXBUTTON` presses are taken in the message pump and toggle maximize |
 
-**Compile probe** of the rest (`ardia_linux_compile_probe`, objects only, nothing linked): of the 122 `.cc` files,
+**Compile probe** of the rest (`ARDIA_LINUX_COMPILE_PROBE=1` and `ardia_linux_compile_probe`, objects only, nothing
+linked; `docs/engine-build-windows.md`): of the 122 `.cc` files,
 **75 compile on Windows as they are** and 47 don't:
 
 | Why | Files |

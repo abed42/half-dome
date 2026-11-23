@@ -10,9 +10,9 @@ portable files of its Mac block named in WINDOWS_FROM_MAC_BLOCK), the fixes in
 ardia-layer-win.patch that make its sources build on Windows, and the files under src/chrome/browser/ardia in place of
 the ones that are POSIX only), engine/ardiacore
 gives the hook headers the patches include and ac_launch_switches (its Mac signature check answers no),
-engine/ardiacore-linux is copied to //ardia/linux (the WebUI shell of --ardia-shell=webui compiles the files
-//ardia/win's BUILD.gn names from it as they are; a BUILD.gn made from linux-probe.gn lists the rest for a compile probe,
-loaded only with the GN arg ardia_linux_compile_probe=true), and
+the files //ardia/win's BUILD.gn names from engine/ardiacore-linux are copied to //ardia/linux (the WebUI shell of
+--ardia-shell=webui compiles them as they are; with ARDIA_LINUX_COMPILE_PROBE=1 the whole Linux layer is copied with a
+BUILD.gn made from linux-probe.gn for a compile probe, loaded only with the GN arg ardia_linux_compile_probe=true), and
 scripts/windows/engine/src/ardia/win (the app in the browser process, with the app's EngineApi.h and a generated table
 of the engine's ac_* calls in the sources Windows compiles) is copied to //ardia/win, only the files that changed. Writes a table: patch, result, which files it touches (Mac only, Mac and shared, OS-neutral).
 
@@ -39,6 +39,7 @@ LAYER_OVERLAY = os.path.join(HERE, 'src', 'chrome', 'browser', 'ardia')
 LINUX_LAYER = os.path.join(REPO, 'engine', 'ardiacore-linux', 'src', 'ardia', 'linux')
 LINUX_PROBE_BUILD = os.path.join(HERE, 'linux-probe.gn')
 LINUX_PROBE_SKIPPED = ('BUILD.gn',)
+LINUX_PROBE_SWITCH = 'ARDIA_LINUX_COMPILE_PROBE'
 LINUX_PROBE_OUTSIDE = ('renderer/', 'mojom/')
 WIN_BUILD = os.path.join(HERE, 'src', 'ardia', 'win', 'BUILD.gn')
 MAC_LAYER_LINE = re.compile(r'(\.mm"|"pip/|"ac_external_apps\.h")')
@@ -162,7 +163,7 @@ def layers(tree):
 
 
 def linux_reused():
-    text = open(WIN_BUILD, encoding='utf-8').read()
+    text = read_file(WIN_BUILD, encoding='utf-8')
     return sorted(set(re.findall(r'"//ardia/linux/([^"]+)"', text)))
 
 
@@ -172,7 +173,7 @@ def linux_probe_sources(files):
 
 
 def linux_probe_build(files):
-    template = open(LINUX_PROBE_BUILD, encoding='utf-8').read()
+    template = read_file(LINUX_PROBE_BUILD, encoding='utf-8')
     if template.count('LINUX_PROBE_SOURCES') != 1:
         raise InputError(f'{os.path.relpath(LINUX_PROBE_BUILD, REPO)}: expected one LINUX_PROBE_SOURCES')
     listed = '[\n' + ''.join(f'    "{rel}",\n' for rel in linux_probe_sources(files)) + '  ]'
@@ -180,21 +181,28 @@ def linux_probe_build(files):
 
 
 def linux_layer(tree):
-    wanted = {rel: path for rel, path in files_under(LINUX_LAYER).items() if rel not in LINUX_PROBE_SKIPPED}
-    for rel in linux_reused():
-        if rel not in wanted:
+    reused = linux_reused()
+    probe = os.environ.get(LINUX_PROBE_SWITCH) == '1'
+    if probe:
+        wanted = {rel: path for rel, path in files_under(LINUX_LAYER).items() if rel not in LINUX_PROBE_SKIPPED}
+    else:
+        wanted = {rel: os.path.join(LINUX_LAYER, rel) for rel in reused}
+    for rel in reused:
+        if not os.path.isfile(wanted.get(rel, '')):
             raise InputError(f'{os.path.relpath(WIN_BUILD, REPO)}: //ardia/win compiles //ardia/linux/{rel}, which is not '
                              f'in {os.path.relpath(LINUX_LAYER, REPO)}')
     target = os.path.join(tree, 'ardia', 'linux')
     changed = 0
     for rel, path in wanted.items():
         changed += copy_if_changed(path, os.path.join(target, rel))
-    changed += write_if_changed(os.path.join(target, 'BUILD.gn'), linux_probe_build(wanted))
+    if probe:
+        changed += write_if_changed(os.path.join(target, 'BUILD.gn'), linux_probe_build(wanted))
     for rel, path in files_under(target).items():
-        if rel not in wanted and rel != 'BUILD.gn':
+        if rel not in wanted and not (probe and rel == 'BUILD.gn'):
             os.remove(path)
             changed += 1
-    print(f'ardia/linux: {len(wanted)} files of the Linux layer, {len(linux_reused())} compiled into //ardia/win, {changed} changed')
+    print(f'ardia/linux: {len(wanted)} files of the Linux layer{" for the compile probe" if probe else ""}, '
+          f'{len(reused)} compiled into //ardia/win, {changed} changed')
 
 
 def copy_if_changed(source, target):
