@@ -633,9 +633,25 @@ std::wstring WebUIAppData() {
                                LocalAppDataDirectory());
 }
 
+void RefuseReactNativeFolders(const std::wstring& app_data,
+                              const std::wstring& user_data) {
+  const std::wstring clash = ReactNativeFolderClash({app_data, user_data});
+  if (clash.empty()) {
+    return;
+  }
+  LOG(ERROR) << "Ardia engine: " << base::WideToUTF8(clash)
+             << "; the WebUI shell is not starting";
+  base::Process::TerminateCurrentProcessImmediately(1);
+}
+
 void RelaunchIntoWebUIProfile() {
-  const std::wstring user_data = WebUIUserDataDirectory(WebUIAppData());
-  if (user_data.empty() || SamePath(user_data, ChromiumUserDataDir())) {
+  const std::wstring app_data = WebUIAppData();
+  const std::wstring user_data = WebUIUserDataDirectory(app_data);
+  if (user_data.empty()) {
+    base::Process::TerminateCurrentProcessImmediately(1);
+  }
+  RefuseReactNativeFolders(app_data, user_data);
+  if (SamePath(user_data, ChromiumUserDataDir())) {
     return;
   }
   base::CommandLine relaunch = base::CommandLine::FromString(::GetCommandLineW());
@@ -670,8 +686,10 @@ void BeforeWebUIChromeMain(base::CommandLine* command_line) {
                   "own; not starting";
     base::Process::TerminateCurrentProcessImmediately(1);
   }
+  RefuseReactNativeFolders(app_data, user_data);
   SetAppDataDirectory(app_data);
   base::CreateDirectory(base::FilePath(app_data));
+  RefuseReactNativeFolders(app_data, user_data);
   GuardBrowserLaunch(user_data, command_line);
   command_line->RemoveSwitch(switches::kUserDataDir);
   command_line->AppendSwitchNative(switches::kUserDataDir, user_data);

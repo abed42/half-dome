@@ -55,7 +55,7 @@ if ($addr) {
   [Pilot]::Type('file:///C:/pilot/form.html'); Start-Sleep -Milliseconds 300
   [Pilot]::Chord(0x0D); Start-Sleep -Seconds 4
 }
-$targets = @(Invoke-RestMethod http://127.0.0.1:9222/json/list)
+$targets = @(Invoke-RestMethod -TimeoutSec 10 http://127.0.0.1:9222/json/list)
 $page = $targets | Where-Object { $_.url -like 'file:///C:/pilot/form.html*' }
 Check 'shell-typing-navigates' ([bool]$page) ("targets: " + (($targets | ForEach-Object { $_.url }) -join ' | '))
 Shot "$Proof\$Label-02-page.png"
@@ -158,6 +158,8 @@ if ($max) {
   if ($max2) { $c2 = Center $h $max2; [Pilot]::Click($c2[0], $c2[1]); Start-Sleep -Seconds 1 }
   $z2 = [Pilot]::IsZoomed($h)
   Check 'maximize-button-click' (($z1 -ne $z0) -and ($z2 -eq $z0)) "zoomed $z0 -> $z1 -> $z2"
+} else {
+  Check 'maximize-button-click' $false 'no maximize control in the shell'
 }
 
 $close = ShellRect $closeSelector
@@ -175,9 +177,9 @@ Check 'close-exits' $gone ("engine processes gone after {0:n1} s" -f ((Get-Date)
 $p = Start-Shell
 $h = Wait-Shell 60
 Start-Sleep -Seconds 8
-$targets = @(Invoke-RestMethod http://127.0.0.1:9222/json/list)
+$targets = @(Invoke-RestMethod -TimeoutSec 10 http://127.0.0.1:9222/json/list)
 $restoredPage = $targets | Where-Object { $_.url -like 'file:///C:/pilot/form.html*' }
-Check 'relaunch-reopens' ($h -ne [IntPtr]::Zero) ("window back; session tab restored: {0}; targets {1}" -f [bool]$restoredPage, (($targets | ForEach-Object { $_.url }) -join ' | '))
+Check 'relaunch-reopens' (($h -ne [IntPtr]::Zero) -and [bool]$restoredPage) ("window back; session tab restored: {0}; targets {1}" -f [bool]$restoredPage, (($targets | ForEach-Object { $_.url }) -join ' | '))
 Shot "$Proof\$Label-09-relaunched.png"
 $second = Start-Process "$App\chrome.exe" -ArgumentList @('--ardia-shell=webui') -PassThru
 Start-Sleep -Seconds 5

@@ -33,6 +33,10 @@ public static class Pilot {
   [DllImport("user32.dll")] public static extern IntPtr SendMessage(IntPtr hwnd, uint msg, IntPtr w, IntPtr l);
   [DllImport("user32.dll")] public static extern bool GetCursorPos(out POINT p);
   [DllImport("dwmapi.dll")] public static extern int DwmGetWindowAttribute(IntPtr hwnd, int attr, out RECT rect, int size);
+  public static string AppDir = "";
+  public static bool IsPilotProcess(int pid) {
+    try { return Process.GetProcessById(pid).MainModule.FileName.StartsWith(AppDir, StringComparison.OrdinalIgnoreCase); } catch { return false; }
+  }
   public static void Aware() { SetProcessDpiAwarenessContext(new IntPtr(-4)); }
   static INPUT Mouse(uint flags, int x, int y, uint data) {
     INPUT i = new INPUT(); i.type = 0; i.u.mi.dx = x; i.u.mi.dy = y; i.u.mi.mouseData = data; i.u.mi.dwFlags = flags; return i;
@@ -66,7 +70,7 @@ public static class Pilot {
     var c = new StringBuilder(256); GetClassName(h, c, 256);
     if (!c.ToString().StartsWith("Chrome_WidgetWin")) return false;
     uint pid; GetWindowThreadProcessId(h, out pid);
-    try { if (Process.GetProcessById((int)pid).ProcessName != "chrome") return false; } catch { return false; }
+    if (!IsPilotProcess((int)pid)) return false;
     RECT r; GetWindowRect(h, out r);
     return (r.Right - r.Left) > 400 && (r.Bottom - r.Top) > 300;
   }
@@ -114,18 +118,21 @@ function Wait-Shell([int]$seconds = 60) {
 function Rect-Text($r) { "$($r.Left),$($r.Top) $($r.Right - $r.Left)x$($r.Bottom - $r.Top)" }
 
 function Cdp-Eval([string]$expression, [string]$match = 'chrome://ardia/') {
-  $targets = Invoke-RestMethod http://127.0.0.1:9222/json/list
+  $targets = Invoke-RestMethod -TimeoutSec 10 http://127.0.0.1:9222/json/list
   $target = $targets | Where-Object { $_.url -like "$match*" } | Select-Object -First 1
   if (-not $target) { return $null }
   $ws = New-Object System.Net.WebSockets.ClientWebSocket
-  $ws.ConnectAsync([Uri]$target.webSocketDebuggerUrl, [Threading.CancellationToken]::None).Wait()
+  $deadline = New-Object Threading.CancellationTokenSource 15000
+  if (-not $ws.ConnectAsync([Uri]$target.webSocketDebuggerUrl, $deadline.Token).Wait(15000)) { $ws.Dispose(); throw "CDP connect timed out" }
   $body = @{ id = 1; method = 'Runtime.evaluate'; params = @{ expression = $expression; returnByValue = $true; awaitPromise = $true } } | ConvertTo-Json -Depth 6 -Compress
   $bytes = [Text.Encoding]::UTF8.GetBytes($body)
-  $ws.SendAsync([ArraySegment[byte]]$bytes, 'Text', $true, [Threading.CancellationToken]::None).Wait()
+  if (-not $ws.SendAsync([ArraySegment[byte]]$bytes, 'Text', $true, $deadline.Token).Wait(15000)) { $ws.Dispose(); throw "CDP send timed out" }
   $buffer = New-Object byte[] 1048576
   $text = ''
   do {
-    $r = $ws.ReceiveAsync([ArraySegment[byte]]$buffer, [Threading.CancellationToken]::None).Result
+    $receive = $ws.ReceiveAsync([ArraySegment[byte]]$buffer, $deadline.Token)
+    if (-not $receive.Wait(15000)) { $ws.Dispose(); throw "CDP reply timed out" }
+    $r = $receive.Result
     $text += [Text.Encoding]::UTF8.GetString($buffer, 0, $r.Count)
   } while (-not $r.EndOfMessage)
   $ws.Dispose()
@@ -146,10 +153,12 @@ function Start-Shell([switch]$Fresh, [string[]]$Extra = @()) {
   Start-Process "$App\chrome.exe" -ArgumentList $arguments -PassThru
 }
 
-function Engine-Processes { @(Get-Process chrome -ErrorAction SilentlyContinue) }
+[Pilot]::AppDir = $App + '\'
+
+function Engine-Processes { @(Get-Process chrome -ErrorAction SilentlyContinue | Where-Object { [Pilot]::IsPilotProcess($_.Id) }) }
 
 function Stop-Engine {
-  Get-Process chrome -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+  Engine-Processes | Stop-Process -Force -ErrorAction SilentlyContinue
   Start-Sleep -Milliseconds 500
 }
 

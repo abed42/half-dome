@@ -1716,6 +1716,17 @@
     "apps/browser/src/state/tabs/busyTabWatch.ts#stillBusyIn"
    ],
    "detected": false
+  },
+  {
+   "id": "windows-webui-bridge:ardiaRequest",
+   "source": "frame",
+   "guard": "Windows WebUI pilot (--ardia-shell=webui): ardiaRequest is taken only from the shell WebContents' live primary main frame whose committed origin is chrome://ardia/, by the handler bound to that document's generation; a reload, renderer swap, crash or OnJavascriptDisallowed retires the generation, so its pending replies and events are dropped; tab URLs refuse javascript: and chrome://ardia; private profiles are refused",
+   "checks": [
+    "scripts/windows/engine/src/ardia/win/webui/webui_shell.cc#Trusted",
+    "scripts/windows/engine/src/ardia/win/webui/webui_shell.cc#OwnsHandler",
+    "scripts/windows/engine/src/ardia/win/webui/webui_shell.cc#DeliverReply"
+   ],
+   "detected": false
   }
  ]
 }

@@ -3,6 +3,7 @@
 #include <windows.h>
 
 #include <algorithm>
+#include <initializer_list>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -102,13 +103,14 @@ bool Overlaps(std::wstring_view a, std::wstring_view b) {
   return WithinOrSame(a, b) || WithinOrSame(b, a);
 }
 
-std::wstring RealFolderClashOf(const std::vector<std::wstring>& canonical) {
+std::wstring RealFolderClashOf(const std::vector<std::wstring>& canonical,
+                               std::initializer_list<const wchar_t*> names) {
   for (int key : {base::DIR_LOCAL_APP_DATA, base::DIR_ROAMING_APP_DATA}) {
     base::FilePath folder;
     if (!base::PathService::Get(key, &folder) || folder.empty()) {
       return L"the real profile folder can't be resolved";
     }
-    for (const wchar_t* name : {L"Ardia", L"Ardia WebUI"}) {
+    for (const wchar_t* name : names) {
       std::optional<std::wstring> real = CanonicalPath(folder.Append(name));
       if (!real) {
         return L"the real profile folder can't be resolved";
@@ -134,7 +136,7 @@ std::wstring RealFolderClash(const base::FilePath& data_dir) {
     }
     canonical.push_back(*resolved);
   }
-  return RealFolderClashOf(canonical);
+  return RealFolderClashOf(canonical, {L"Ardia", L"Ardia WebUI"});
 }
 
 std::vector<HANDLE>& HeldFolders() {
@@ -250,6 +252,22 @@ std::wstring HoldScratchFolders(const std::wstring& data_dir,
            L"held (a junction, a short name or a mapped drive in the way)";
   }
   return RealFolderClashOf(canonical);
+}
+
+std::wstring ReactNativeFolderClash(const std::vector<std::wstring>& folders) {
+  std::vector<std::wstring> canonical;
+  for (const std::wstring& folder : folders) {
+    std::optional<std::wstring> resolved = CanonicalPath(base::FilePath(folder));
+    if (!resolved) {
+      return L"the WebUI folder " + folder + L" can't be resolved";
+    }
+    canonical.push_back(*resolved);
+  }
+  const std::wstring clash = RealFolderClashOf(canonical, {L"Ardia"});
+  return clash.empty() ? clash
+                       : L"the WebUI folders resolve to the React Native "
+                         L"app's: " +
+                             clash;
 }
 
 }

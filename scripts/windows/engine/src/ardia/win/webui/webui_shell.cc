@@ -18,6 +18,7 @@
 #include "ardia/linux/ac_linux_policy.h"
 #include "ardia/linux/ac_linux_session.h"
 #include "ardia/linux/ac_linux_window_state.h"
+#include "ardia/core/ac_launch_switches.h"
 #include "ardia/linux/host_bootstrap.h"
 #include "ardia/win/ac_calls.h"
 #include "ardia/win/launch_guard.h"
@@ -56,6 +57,8 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/reload_type.h"
+#include "content/public/browser/page.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
@@ -64,6 +67,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "content/public/browser/weak_document_ptr.h"
 #include "content/public/browser/webui_config.h"
 #include "content/public/browser/webui_config_map.h"
 #include "content/public/common/referrer.h"
@@ -680,19 +684,57 @@ class ShellWindow : public views::WidgetDelegate,
   }
 
   bool Trusted(content::WebUI* ui) const {
-    return ui && ui->GetWebContents() == shell_contents() &&
-           url::Origin::Create(ui->GetWebContents()->GetLastCommittedURL()) ==
-               url::Origin::Create(GURL("chrome://ardia/"));
-  }
-
-  void SetHandler(Handler* handler) { handler_ = handler; }
-  void ClearHandler(Handler* handler) {
-    if (handler_ == handler) {
-      handler_ = nullptr;
+    content::WebContents* shell = shell_contents();
+    if (!ui || !shell || ui->GetWebContents() != shell) {
+      return false;
     }
+    content::RenderFrameHost* frame = shell->GetPrimaryMainFrame();
+    return frame && frame->IsRenderFrameLive() &&
+           ui->GetRenderFrameHost() == frame && frame->GetWebUI() == ui &&
+           frame->GetLastCommittedOrigin() ==
+               url::Origin::Create(GURL("chrome://ardia/")) &&
+           shell->GetLastCommittedURL().host() == "ardia";
   }
 
-  std::string BootstrapJson() const;
+  uint64_t SetHandler(Handler* handler, content::WebUI* ui) {
+    if (!Trusted(ui)) {
+      return 0;
+    }
+    content::RenderFrameHost* frame = ui->GetRenderFrameHost();
+    if (handler_ == handler &&
+        renderer_document_.AsRenderFrameHostIfValid() == frame) {
+      return renderer_generation_;
+    }
+    RetireRenderer();
+    handler_ = handler;
+    renderer_document_ = frame->GetWeakDocumentPtr();
+    Note("shell document " + base::NumberToString(renderer_generation_) +
+         " is live");
+    return renderer_generation_;
+  }
+
+  bool OwnsHandler(const Handler* handler, uint64_t generation) const {
+    content::RenderFrameHost* frame =
+        renderer_document_.AsRenderFrameHostIfValid();
+    return handler && handler_ == handler && generation &&
+           renderer_generation_ == generation && frame &&
+           shell_contents() && frame == shell_contents()->GetPrimaryMainFrame();
+  }
+
+  void ClearHandler(Handler* handler) {
+    if (!handler || handler_ != handler) {
+      return;
+    }
+    RetireRenderer();
+  }
+
+  uint64_t renderer_generation() const { return renderer_generation_; }
+
+  void DeliverReply(base::WeakPtr<Handler> handler,
+                    uint64_t generation,
+                    std::string id,
+                    bool success,
+                    base::Value response);
 
   void Emit(std::string_view module, std::string_view event,
             base::Value payload);
@@ -841,6 +883,27 @@ class ShellWindow : public views::WidgetDelegate,
 
   HWND Hwnd() const { return views::HWNDForWidget(widget_.get()); }
 
+  void RetireRenderer() {
+    const bool had_document = handler_ != nullptr;
+    handler_ = nullptr;
+    renderer_document_ = content::WeakDocumentPtr();
+    ++renderer_generation_;
+    if (!had_document) {
+      return;
+    }
+    const size_t pages = pages_.size();
+    DropPages();
+    if (contents_) {
+      contents_->SetPassRegions({});
+    }
+    if (frame_) {
+      frame_->SetMaximizeButton(std::nullopt);
+    }
+    Note("shell document retired; generation is now " +
+         base::NumberToString(renderer_generation_) + ", " +
+         base::NumberToString(pages) + " pages of the old document dropped");
+  }
+
   base::DictValue WindowState() const {
     base::DictValue state;
     state.Set("windowId", kWindowId);
@@ -920,6 +983,9 @@ class ShellWindow : public views::WidgetDelegate,
   raw_ptr<ShellFrame> frame_ = nullptr;
   raw_ptr<views::FocusManager> focus_manager_ = nullptr;
   raw_ptr<Handler> handler_ = nullptr;
+  content::WeakDocumentPtr renderer_document_;
+  uint64_t renderer_generation_ = 1;
+  size_t dropped_replies_ = 0;
   std::unique_ptr<ShellTransparency> transparency_;
   std::map<int, std::unique_ptr<Page>> pages_;
   int next_page_ = 1;
@@ -960,23 +1026,42 @@ void PageEvents::DidStopLoading() {
   }
 }
 
-class Handler : public content::WebUIMessageHandler {
+class Handler : public content::WebUIMessageHandler,
+                public content::WebContentsObserver {
  public:
-  Handler() = default;
+  explicit Handler(content::WebContents* shell)
+      : content::WebContentsObserver(shell) {}
   ~Handler() override {
     if (g_shell) {
       g_shell->ClearHandler(this);
     }
   }
 
+  uint64_t generation() const { return generation_; }
+
+  bool Live() {
+    return g_shell && IsJavascriptAllowed() && g_shell->Trusted(web_ui()) &&
+           g_shell->OwnsHandler(this, generation_);
+  }
+
   void Send(std::string_view module, std::string_view event,
             const base::Value& payload) {
-    if (!IsJavascriptAllowed() || !g_shell || !g_shell->Trusted(web_ui())) {
+    if (!Live()) {
       return;
     }
     CallJavascriptFunction("__ardiaEvent", base::Value(module),
                            base::Value(event), payload);
   }
+
+  void Reply(const std::string& id, bool success, base::Value response) {
+    if (!Live()) {
+      return;
+    }
+    CallJavascriptFunction("__ardiaReply", base::Value(id),
+                           base::Value(success), response);
+  }
+
+  base::WeakPtr<Handler> GetWeakPtr() { return weak_factory_.GetWeakPtr(); }
 
  private:
   void RegisterMessages() override {
@@ -985,12 +1070,31 @@ class Handler : public content::WebUIMessageHandler {
         base::BindRepeating(&Handler::Request, base::Unretained(this)));
   }
 
-  void Reply(std::string id, bool success, base::Value response) {
-    if (!IsJavascriptAllowed() || !g_shell || !g_shell->Trusted(web_ui())) {
+  void Activate() {
+    if (!g_shell || !g_shell->Trusted(web_ui())) {
       return;
     }
-    CallJavascriptFunction("__ardiaReply", base::Value(id),
-                           base::Value(success), response);
+    generation_ = g_shell->SetHandler(this, web_ui());
+  }
+
+  void PrimaryPageChanged(content::Page& page) override {
+    if (&page.GetMainDocument() == web_ui()->GetRenderFrameHost()) {
+      Activate();
+    }
+  }
+
+  void PrimaryMainFrameRenderProcessGone(base::TerminationStatus) override {
+    weak_factory_.InvalidateWeakPtrs();
+    if (g_shell) {
+      g_shell->ClearHandler(this);
+    }
+  }
+
+  void OnJavascriptDisallowed() override {
+    weak_factory_.InvalidateWeakPtrs();
+    if (g_shell && !g_shell->OwnsHandler(this, generation_)) {
+      g_shell->ClearHandler(this);
+    }
   }
 
   void Request(const base::ListValue& arguments) {
@@ -1000,14 +1104,21 @@ class Handler : public content::WebUIMessageHandler {
         !arguments[2].is_dict()) {
       return;
     }
+    if (!g_shell->OwnsHandler(this, generation_)) {
+      Activate();
+    }
+    if (!g_shell->OwnsHandler(this, generation_)) {
+      return;
+    }
     const std::string id = arguments[0].GetString();
     if (id.empty() || id.size() > 256) {
       return;
     }
     AllowJavascript();
-    g_shell->SetHandler(this);
     const base::DictValue& args = arguments[2].GetDict();
-    auto done = base::BindOnce(&Handler::Reply, weak_factory_.GetWeakPtr(), id);
+    auto done = base::BindOnce(&ShellWindow::DeliverReply,
+                               g_shell->weak_factory_.GetWeakPtr(),
+                               weak_factory_.GetWeakPtr(), generation_, id);
     if (arguments[1].GetString() == "engine.call") {
       return g_shell->EngineCall(String(args, "name"), String(args, "profile"),
                                  args.Find("args"), std::move(done));
@@ -1024,12 +1135,28 @@ class Handler : public content::WebUIMessageHandler {
     g_shell->Invoke(String(args, "method"), *payload, std::move(done));
   }
 
+  uint64_t generation_ = 0;
   base::WeakPtrFactory<Handler> weak_factory_{this};
 };
 
+void ShellWindow::DeliverReply(base::WeakPtr<Handler> handler,
+                               uint64_t generation,
+                               std::string id,
+                               bool success,
+                               base::Value response) {
+  if (!handler || !OwnsHandler(handler.get(), generation)) {
+    ++dropped_replies_;
+    Note("reply dropped: shell document " + base::NumberToString(generation) +
+         " is not the live one (" + base::NumberToString(renderer_generation_) +
+         "); " + base::NumberToString(dropped_replies_) + " dropped so far");
+    return;
+  }
+  handler->Reply(id, success, std::move(response));
+}
+
 void ShellWindow::Emit(std::string_view module, std::string_view event,
                        base::Value payload) {
-  if (handler_) {
+  if (handler_ && OwnsHandler(handler_, handler_->generation())) {
     handler_->Send(module, event, payload);
   }
 }
@@ -1211,6 +1338,19 @@ void ShellWindow::Invoke(const std::string& method,
   }
   if (method == "ArdiaShell.restoreShortcutFocus") {
     return std::move(done).Run(true, base::Value());
+  }
+  if (method == "ArdiaShell.testDelayedReply" && ardiacore::TestInstance()) {
+    const int delay =
+        values && !values->empty() && (*values)[0].is_int()
+            ? std::clamp((*values)[0].GetInt(), 0, 10000)
+            : 1000;
+    base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](Done done) { std::move(done).Run(true, base::Value("late")); },
+            std::move(done)),
+        base::Milliseconds(delay));
+    return;
   }
   if (method == "engine.info") {
     return std::move(done).Run(
@@ -1777,7 +1917,7 @@ class ShellController : public content::WebUIController {
     }
     content::URLDataSource::Add(g_shell->profile(),
                                 std::make_unique<ShellDataSource>());
-    ui->AddMessageHandler(std::make_unique<Handler>());
+    ui->AddMessageHandler(std::make_unique<Handler>(ui->GetWebContents()));
   }
 };
 
