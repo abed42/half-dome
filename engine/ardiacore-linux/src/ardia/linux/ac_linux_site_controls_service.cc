@@ -521,7 +521,7 @@ class LinuxContentBlocker : public ProfileObserver, public content::WebContentsO
     waiting_.erase(found);
     const bool failed = !value;
     const std::string* error_text = failed ? &error : nullptr;
-    const bool announce = !failed && controls::Mutates(call.request.op) && leader_;
+    const bool announce = !failed && controls::ChangedBlocker(call.request.op, value) && leader_;
     Reply(std::move(done), controls::CompleteBlockerCall(call.request, value, error_text, version_));
     if (announce) {
       AnnounceChange();

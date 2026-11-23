@@ -595,6 +595,12 @@ bool Mutates(BlockerOp op) {
          op == BlockerOp::kAddList || op == BlockerOp::kRemoveList;
 }
 
+bool ChangedBlocker(BlockerOp op, const base::Value* value) {
+  if (!Mutates(op) || !value) return false;
+  if (op == BlockerOp::kRemoveAllowed) return value->is_bool() && value->GetBool();
+  return true;
+}
+
 bool AnswersWithoutBlocker(const BlockerRequest& request) {
   return (request.op == BlockerOp::kHideElements || request.op == BlockerOp::kRestoreElements) &&
          request.filters.empty();

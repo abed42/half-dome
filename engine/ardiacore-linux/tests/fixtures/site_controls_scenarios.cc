@@ -447,6 +447,13 @@ void CustomFilterLists() {
   }
   assert(AsFailure(PrepareBlockerCall("contentBlocker.removeAllowed", base::DictValue().Set("host", "example.com").Set("allowed", base::Value(false)))));
   assert(Mutates(BlockerOp::kRemoveAllowed));
+  const base::Value removed_yes(true);
+  const base::Value removed_no(false);
+  assert(ChangedBlocker(BlockerOp::kRemoveAllowed, &removed_yes));
+  assert(!ChangedBlocker(BlockerOp::kRemoveAllowed, &removed_no));
+  assert(!ChangedBlocker(BlockerOp::kRemoveAllowed, nullptr));
+  assert(ChangedBlocker(BlockerOp::kSetAllowed, &removed_no));
+  assert(!ChangedBlocker(BlockerOp::kIsAllowed, &removed_yes));
   assert(BridgeOpName(BlockerOp::kRemoveAllowed) == "removeAllowed");
   assert(PrivateBlockerRefusal("contentBlocker.removeAllowed", base::DictValue().Set("host", "example.com"), true)->code == "ERR_PROFILE_PRIVATE");
   auto registrable = PrepareServiceCall("sites.registrableDomains", base::DictValue().Set("hosts", base::Value(base::ListValue().Append("a.example.com").Append("ardia-probe.a.example.com"))));
