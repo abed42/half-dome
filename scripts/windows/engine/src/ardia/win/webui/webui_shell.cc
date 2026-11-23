@@ -736,6 +736,8 @@ class ShellWindow : public views::WidgetDelegate,
                     bool success,
                     base::Value response);
 
+  std::string BootstrapJson() const;
+
   void Emit(std::string_view module, std::string_view event,
             base::Value payload);
 

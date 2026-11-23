@@ -251,7 +251,7 @@ std::wstring HoldScratchFolders(const std::wstring& data_dir,
     return L"Chromium would open its folder by another path than the one "
            L"held (a junction, a short name or a mapped drive in the way)";
   }
-  return RealFolderClashOf(canonical);
+  return RealFolderClashOf(canonical, {L"Ardia", L"Ardia WebUI"});
 }
 
 std::wstring ReactNativeFolderClash(const std::vector<std::wstring>& folders) {
