@@ -11,14 +11,16 @@ $local = [Environment]::GetFolderPath('LocalApplicationData')
 $rn = "$local\Ardia"
 $web = "$local\Ardia WebUI"
 function Unlink([string]$path) { if (Test-Path $path) { cmd /c rmdir "$path" | Out-Null; Remove-Item -Recurse -Force $path -ErrorAction SilentlyContinue } }
-function Snapshot { (Get-ChildItem -Recurse -Force $rn -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName.Substring($rn.Length) + ':' + $_.Length + ':' + $_.LastWriteTimeUtc.Ticks }) -join "`n" }
+function Snapshot { (Get-ChildItem -Recurse -Force $rn -ErrorAction SilentlyContinue | ForEach-Object { $name = $_.FullName.Substring($rn.Length); if ($_.PSIsContainer) { $name } else { $name + ':' + $_.Length + ':' + $_.LastWriteTimeUtc.Ticks } }) -join "`n" }
 function Launch([string]$name) {
   $before = Snapshot
   $p = Start-Process "$App\chrome.exe" -ArgumentList '--ardia-shell=webui' -PassThru
   $exited = $p.WaitForExit(15000)
   $window = [Pilot]::FindShell('Ardia') -ne [IntPtr]::Zero
   $code = if ($exited) { $p.ExitCode } else { 'running' }
-  $unchanged = (Snapshot) -eq $before
+  $now = Snapshot
+  $unchanged = $now -eq $before
+  if (-not $unchanged) { Compare-Object ($before -split "`n") ($now -split "`n") | ForEach-Object { Log "changed $($_.SideIndicator) $($_.InputObject)" } }
   Stop-Engine
   Check $name ($exited -and $code -eq 1 -and -not $window -and $unchanged) "exit $code, window $window, React Native folder unchanged $unchanged"
 }

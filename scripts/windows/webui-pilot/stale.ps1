@@ -15,16 +15,24 @@ Check 'delayed-reply-control' ($late -eq 'late') "a delayed reply to the live do
 Cdp-Eval '__ardiaHost.invoke("tab.create", { key: "stale-probe", claim: "stale-claim", profile: "default", url: "file:///C:/pilot/form.html" }).then(() => "made")' | Out-Null
 Start-Sleep -Seconds 2
 $before = (ShellLog).Count
-Cdp-Eval '(() => { window.__ardiaHost.invoke("ArdiaShell.testDelayedReply", { args: [3000] }); setTimeout(() => location.reload(), 300); return "sent"; })()' | Out-Null
-Start-Sleep -Seconds 8
+$origin = Cdp-Eval 'String(performance.timeOrigin)'
+Cdp-Eval '(() => { window.__ardiaHost.invoke("ArdiaShell.testDelayedReply", { args: [3000] }); return "sent"; })()' | Out-Null
+Start-Sleep -Milliseconds 300
+Cdp-Command 'Page.crash' @{} -NoReply | Out-Null
+Start-Sleep -Seconds 5
+Cdp-Command 'Page.reload' @{ ignoreCache = $true } | Out-Null
+Start-Sleep -Seconds 10
 $after = @(ShellLog | Select-Object -Skip $before)
 $after | ForEach-Object { Log "log $_" }
-$retired = $after | Where-Object { $_ -match 'shell document retired; generation is now (\d+), (\d+) pages of the old document dropped' }
-$dropped = $after | Where-Object { $_ -match 'reply dropped: shell document (\d+) is not the live one \((\d+)\)' }
-Check 'reload-retires-document' ([bool]$retired) "$retired"
-Check 'old-reply-dropped' ([bool]$dropped) "$dropped"
-$live = Cdp-Eval '__ardiaHost.invoke("ArdiaShell.windowIdentity", {})'
-Check 'new-document-answers' ($live -eq 'main') "the reloaded shell's own call answers: '$live'"
+$retired = @($after | Where-Object { $_ -match 'shell document retired; generation is now (\d+), (\d+) pages of the old document dropped' })
+$dropped = @($after | Where-Object { $_ -match 'reply dropped: shell document (\d+) is not the live one \((\d+)\)' })
+$live = @($after | Where-Object { $_ -match 'shell document (\d+) is live' })
+Check 'crash-retires-document' ($retired.Count -ge 1) "$($retired -join ' / ')"
+Check 'old-reply-dropped' ($dropped.Count -ge 1) "$($dropped -join ' / ')"
+Check 'reload-is-a-new-generation' ($live.Count -ge 1) "$($live -join ' / ')"
+$reloaded = Cdp-Eval 'String(performance.timeOrigin)'
+$answer = Cdp-Eval '__ardiaHost.invoke("ArdiaShell.windowIdentity", {})'
+Check 'new-document-answers' (($answer -eq 'main') -and ($reloaded -ne $origin)) "new document (time origin $origin -> $reloaded) answers '$answer'"
 $targets = @(Invoke-RestMethod -TimeoutSec 10 http://127.0.0.1:9222/json/list)
 Log ("targets after reload: " + (($targets | ForEach-Object { $_.url }) -join ' | '))
 Stop-Engine

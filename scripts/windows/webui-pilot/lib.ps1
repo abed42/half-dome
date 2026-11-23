@@ -117,16 +117,17 @@ function Wait-Shell([int]$seconds = 60) {
 
 function Rect-Text($r) { "$($r.Left),$($r.Top) $($r.Right - $r.Left)x$($r.Bottom - $r.Top)" }
 
-function Cdp-Eval([string]$expression, [string]$match = 'chrome://ardia/') {
+function Cdp-Command([string]$method, $params, [string]$match = 'chrome://ardia/', [switch]$NoReply) {
   $targets = Invoke-RestMethod -TimeoutSec 10 http://127.0.0.1:9222/json/list
   $target = $targets | Where-Object { $_.url -like "$match*" } | Select-Object -First 1
   if (-not $target) { return $null }
   $ws = New-Object System.Net.WebSockets.ClientWebSocket
   $deadline = New-Object Threading.CancellationTokenSource 15000
   if (-not $ws.ConnectAsync([Uri]$target.webSocketDebuggerUrl, $deadline.Token).Wait(15000)) { $ws.Dispose(); throw "CDP connect timed out" }
-  $body = @{ id = 1; method = 'Runtime.evaluate'; params = @{ expression = $expression; returnByValue = $true; awaitPromise = $true } } | ConvertTo-Json -Depth 6 -Compress
+  $body = @{ id = 1; method = $method; params = $params } | ConvertTo-Json -Depth 6 -Compress
   $bytes = [Text.Encoding]::UTF8.GetBytes($body)
   if (-not $ws.SendAsync([ArraySegment[byte]]$bytes, 'Text', $true, $deadline.Token).Wait(15000)) { $ws.Dispose(); throw "CDP send timed out" }
+  if ($NoReply) { Start-Sleep -Milliseconds 300; $ws.Dispose(); return $null }
   $buffer = New-Object byte[] 1048576
   $text = ''
   do {
@@ -136,7 +137,12 @@ function Cdp-Eval([string]$expression, [string]$match = 'chrome://ardia/') {
     $text += [Text.Encoding]::UTF8.GetString($buffer, 0, $r.Count)
   } while (-not $r.EndOfMessage)
   $ws.Dispose()
-  ($text | ConvertFrom-Json).result.result.value
+  ($text | ConvertFrom-Json).result
+}
+
+function Cdp-Eval([string]$expression, [string]$match = 'chrome://ardia/') {
+  $result = Cdp-Command 'Runtime.evaluate' @{ expression = $expression; returnByValue = $true; awaitPromise = $true } $match
+  if ($result) { $result.result.value } else { $null }
 }
 
 $App = 'C:\pilot\app'

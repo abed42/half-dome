@@ -1,0 +1,103 @@
+--- a/chrome/install_static/user_data_dir.cc
++++ b/chrome/install_static/user_data_dir.cc
+@@ -108,6 +108,88 @@
+   return GetCommandLineSwitch(command_line, L"headless").has_value();
+ }
+ 
++std::wstring ResolvedFolder(std::wstring path) {
++  std::wstring rest;
++  while (!path.empty() &&
++         ::GetFileAttributesW(path.c_str()) == INVALID_FILE_ATTRIBUTES) {
++    const size_t slash = path.find_last_of(L'\\');
++    if (slash == std::wstring::npos)
++      return std::wstring();
++    rest = path.substr(slash) + rest;
++    path.resize(slash);
++  }
++  if (path.empty())
++    return std::wstring();
++  HANDLE handle = ::CreateFileW(
++      path.c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
++      nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
++  if (handle == INVALID_HANDLE_VALUE)
++    return std::wstring();
++  constexpr DWORD kFlags = VOLUME_NAME_GUID | FILE_NAME_NORMALIZED;
++  std::wstring resolved;
++  const DWORD size = ::GetFinalPathNameByHandleW(handle, nullptr, 0, kFlags);
++  if (size > 0) {
++    resolved.resize(size);
++    const DWORD written =
++        ::GetFinalPathNameByHandleW(handle, &resolved[0], size, kFlags);
++    resolved.resize(written > 0 && written < size ? written : 0);
++  }
++  ::CloseHandle(handle);
++  if (resolved.empty())
++    return resolved;
++  while (!resolved.empty() && resolved.back() == L'\\')
++    resolved.pop_back();
++  return resolved + rest;
++}
++
++bool WithinOrSameFolder(const std::wstring& inner, const std::wstring& outer) {
++  if (inner.size() < outer.size() ||
++      ::CompareStringOrdinal(inner.c_str(), static_cast<int>(outer.size()),
++                             outer.c_str(), static_cast<int>(outer.size()),
++                             TRUE) != CSTR_EQUAL) {
++    return false;
++  }
++  return inner.size() == outer.size() || inner[outer.size()] == L'\\';
++}
++
++std::wstring WebUIUserDataDirectory() {
++  std::wstring local = GetEnvironmentString(L"LOCALAPPDATA");
++  if (local.empty())
++    return std::wstring();
++  if (local.back() != L'\\')
++    local.push_back(L'\\');
++  const std::wstring folder = local + L"Ardia WebUI";
++  const std::wstring profile = folder + L"\\Chromium";
++  std::wstring roaming = GetEnvironmentString(L"APPDATA");
++  if (!roaming.empty() && roaming.back() != L'\\')
++    roaming.push_back(L'\\');
++  const std::wstring mine[] = {ResolvedFolder(folder), ResolvedFolder(profile)};
++  const std::wstring theirs[] = {
++      ResolvedFolder(local + L"Ardia"),
++      roaming.empty() ? std::wstring() : ResolvedFolder(roaming + L"Ardia")};
++  bool clash = false;
++  for (const std::wstring& a : mine) {
++    clash = clash || a.empty();
++    for (const std::wstring& b : theirs) {
++      if (!a.empty() && !b.empty() &&
++          (WithinOrSameFolder(a, b) || WithinOrSameFolder(b, a))) {
++        clash = true;
++      }
++    }
++  }
++  if (!clash)
++    return profile;
++  std::wstring temp(MAX_PATH + 1, L'\0');
++  const DWORD length = ::GetTempPathW(MAX_PATH + 1, &temp[0]);
++  if (length == 0 || length > MAX_PATH)
++    return std::wstring();
++  temp.resize(length);
++  if (temp.back() != L'\\')
++    temp.push_back(L'\\');
++  return temp + L"Ardia WebUI refused";
++}
++
++
+ }  // namespace
+ 
+ bool GetUserDataDirectoryImpl(const std::wstring& command_line,
+@@ -135,6 +217,11 @@
+     }
+   }
+ 
++  if (user_data_dir.empty() &&
++      GetCommandLineSwitchValue(command_line, L"ardia-shell") == L"webui") {
++    user_data_dir = WebUIUserDataDirectory();
++  }
++
+   // Headless Chrome instances are expected to run in parallel with the headful
+   // Chrome and other headless Chrome instances. In order to do so, headless
+   // Chrome needs a dedicated user data directory for each headless instance.

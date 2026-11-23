@@ -1539,16 +1539,21 @@ Linux patch is widened or the host is moved. Proven on 2026-11-22 on Windows 11 
   inside it) and Chromium's profile in `%LOCALAPPDATA%\Ardia WebUI\Chromium`. A test instance's `ARDIA_DATA_DIR` is
   used as is (`<ARDIA_DATA_DIR>\Chromium`), so the test gate, CDP and scratch-folder rules are the RNW ones.
 - Chromium on Windows takes its profile folder from `install_static`, which `chrome_elf` computes from the process's
-  real command line before any Ardia code runs; changing `--user-data-dir` in `BeforeChromeMain` does nothing (the
-  first pilot run opened the wrong folder). So when the folder `install_static` chose isn't the WebUI one, the engine
-  starts itself again with `--user-data-dir=<WebUI folder>` and exits (`RelaunchIntoWebUIProfile`, about 100 ms, once:
-  a second mismatch refuses to start).
-- Before any folder is created and again before Chromium opens the profile, both WebUI folders are resolved through
-  their nearest existing parent's opened handle (`GetFinalPathNameByHandle`, the test gate's `CanonicalPath`), so a
-  junction or symlink counts as where it points. The engine exits with code 1 if either resolves to, contains or sits
-  inside `%LOCALAPPDATA%\Ardia` or `%APPDATA%\Ardia` (`ReactNativeFolderClash`). Checked in the guest
-  (`scripts/windows/webui-pilot/junction.ps1`): `Ardia WebUI` as a junction to `Ardia`, and `Ardia WebUI\Chromium` as a
-  junction to `Ardia\User Data`, both exit 1 with no window and nothing in the React Native folder touched.
+  real command line before any Ardia code runs, and opens Crashpad's database there; changing `--user-data-dir` in
+  `BeforeChromeMain` does nothing (the first pilot run opened the wrong folder). So `chromium-win-webui-user-data-dir.patch`
+  (the one Windows patch the pilot adds, after `chromium-win-install-names.patch`) makes `install_static` itself pick
+  `%LOCALAPPDATA%\Ardia WebUI\Chromium` when the command line has `--ardia-shell=webui` and no `--user-data-dir` or
+  `ARDIA_DATA_DIR` names another. It resolves that folder, its parent and `%LOCALAPPDATA%\Ardia`/`%APPDATA%\Ardia`
+  through their opened handles (`GetFinalPathNameByHandle`), and when a junction or symlink would make them meet it
+  picks a throwaway `%TEMP%\Ardia WebUI refused` instead, so not even Crashpad writes into the React Native folder.
+  If the folder Chromium will use still isn't the WebUI one (an explicit `--user-data-dir`), the engine starts itself
+  again with the WebUI folder and exits (`RelaunchIntoWebUIProfile`, once: a second mismatch refuses to start).
+- Ardia's own code checks again before any folder is created and before Chromium opens the profile: both WebUI folders
+  are resolved through their nearest existing parent's opened handle (the test gate's `CanonicalPath`), and the engine
+  exits with code 1 if either resolves to, contains or sits inside `%LOCALAPPDATA%\Ardia` or `%APPDATA%\Ardia`
+  (`ReactNativeFolderClash`). Checked in the guest (`scripts/windows/webui-pilot/junction.ps1`): `Ardia WebUI` as a
+  junction to `Ardia`, and `Ardia WebUI\Chromium` as a junction to `Ardia\User Data`, both exit 1 with no window, and
+  no file in the React Native folder is added, removed or changed; the same launch without the junction opens.
   Checked without `ARDIA_DATA_DIR`: the browser process runs with `--user-data-dir="%LOCALAPPDATA%\Ardia WebUI\Chromium"`,
   `%LOCALAPPDATA%\Ardia` is not created, remote debugging stays closed.
 - The launch guard runs for the WebUI profile: `SetAppDataDirectory` points its facts, unfinished-start count,
@@ -1664,7 +1669,8 @@ until those patches are widened.
 
 ### Linux patches the pilot needed widened to Windows
 
-None: the pilot runs in a plain `views::Widget` and no patch is in `series-win`. Hosting the shell in a
+None: the pilot runs in a plain `views::Widget`. It adds one Windows patch of its own,
+`chromium-win-webui-user-data-dir.patch` (the profile folder, above). Hosting the shell in a
 `BrowserView` as Linux does will need these, by what they touch:
 
 | Patch | What it changes | For a BrowserView-hosted shell on Windows |
@@ -1691,17 +1697,9 @@ layouts flyout over an HTML button. Open points:
 - **`HTMAXBUTTON` has no hover or press look.** Windows sends non-client messages for that rectangle, so the HTML
   button gets no `mouseenter`/`mousedown`; the host should send `ArdiaShell` hover and press events so the shell can
   draw them (Chrome draws its caption buttons in Views for the same reason).
-- **The relaunch costs one process start.** The first process exits before `ChromeMain` and created nothing under
-  `%LOCALAPPDATA%\Ardia` in the run above, but the cutover should give the WebUI build its own install mode
-  (`chromium-win-install-names.patch`) so `install_static` picks the right folder at once.
-- **`install_static` puts `ARDIA_DATA_DIR` ahead of `--user-data-dir`** (`chromium-win-install-names.patch`), which is
-  why a test instance's WebUI profile is `<ARDIA_DATA_DIR>\Chromium`.
 - **Asset containment is lexical**, as on Linux: a junction planted inside the installed `ardia-ui\` would be
   followed. Only someone who can write to the install folder can do that; the desktop host should still read assets
   through the opened file's final path.
-- **Crashpad starts before `ChromeMain`.** No Crashpad folder appeared under `%LOCALAPPDATA%\Ardia` in the run above,
-  but the first, relaunching process opens Crashpad at `install_static`'s folder if crash reporting is on; a WebUI
-  install mode removes the relaunch and this with it.
 - **Private pages and private `engine.call`s are refused** in the pilot (a private page would trip
   `ScopedProfileKeepAlive`'s check on an off-the-record profile).
 - **Pages are bare `WebContents`.** No tab helpers, `TabStripModel`, dialogs, permission prompts, downloads, popups or
