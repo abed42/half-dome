@@ -57,6 +57,7 @@ enum class BlockerOp {
   kRestoreElements,
   kAddList,
   kRemoveList,
+  kRemoveAllowed,
 };
 
 inline constexpr size_t kMaxFollowedLists = 512;

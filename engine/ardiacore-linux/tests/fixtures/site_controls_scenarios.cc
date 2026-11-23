@@ -439,6 +439,24 @@ void CustomFilterLists() {
   assert(PrivateBlockerRefusal("contentBlocker.removeList", id_args, true)->code == "ERR_PROFILE_PRIVATE");
   assert(!PrivateBlockerRefusal("contentBlocker.addList", url_args, false));
   assert(!PrivateBlockerRefusal("contentBlocker.removeList", id_args, false));
+  const auto removed_allowed = PrepareBlockerCall("contentBlocker.removeAllowed", base::DictValue().Set("host", "Shop.Example.com"));
+  assert(std::get<BlockerRequest>(removed_allowed).op == BlockerOp::kRemoveAllowed);
+  assert(std::get<BlockerRequest>(removed_allowed).host == "shop.example.com");
+  for (const char* host : {"", "*.example.com", "example.com/x", "a b", "example.com\nfoo"}) {
+    assert(AsFailure(PrepareBlockerCall("contentBlocker.removeAllowed", base::DictValue().Set("host", host))));
+  }
+  assert(AsFailure(PrepareBlockerCall("contentBlocker.removeAllowed", base::DictValue().Set("host", "example.com").Set("allowed", base::Value(false)))));
+  assert(Mutates(BlockerOp::kRemoveAllowed));
+  assert(BridgeOpName(BlockerOp::kRemoveAllowed) == "removeAllowed");
+  assert(PrivateBlockerRefusal("contentBlocker.removeAllowed", base::DictValue().Set("host", "example.com"), true)->code == "ERR_PROFILE_PRIVATE");
+  auto registrable = PrepareServiceCall("sites.registrableDomains", base::DictValue().Set("hosts", base::Value(base::ListValue().Append("a.example.com").Append("ardia-probe.a.example.com"))));
+  assert(std::get<ServiceRequest>(registrable).service == "ac_registrable_domains");
+  assert(AsFailure(PrepareServiceCall("sites.registrableDomains", base::DictValue())));
+  assert(AsFailure(PrepareServiceCall("sites.registrableDomains", base::DictValue().Set("hosts", base::Value(base::ListValue())))));
+  assert(AsFailure(PrepareServiceCall("sites.registrableDomains", base::DictValue().Set("hosts", base::Value(base::ListValue().Append(3))))));
+  auto domains = CompleteServiceCall("sites.registrableDomains", base::Value(base::DictValue().Set("domains", base::Value(base::ListValue().Append("example.com").Append("example.com")))));
+  assert(std::get<base::Value>(domains).GetDict().FindList("domains")->size() == 2);
+  assert(Handles("sites.registrableDomains") && Handles("contentBlocker.removeAllowed"));
   assert(BridgeOpName(BlockerOp::kAddList) == "addList");
   assert(BridgeOpName(BlockerOp::kRemoveList) == "removeList");
 
