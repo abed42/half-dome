@@ -4,6 +4,7 @@
 #include <memory>
 #include <optional>
 
+#include "base/process/process.h"
 #include "base/win/windows_types.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -58,6 +59,12 @@ extern bool (*g_ardia_win_open_as_offer)(
     const blink::mojom::WindowFeatures& features);
 
 extern void (*g_ardia_win_offer_inserted)();
+
+extern void (*g_ardia_win_renderer_priority)(const void* key,
+                                             const base::Process& process,
+                                             base::Process::Priority priority);
+
+extern void (*g_ardia_win_renderer_closed)(const void* key);
 
 extern std::unique_ptr<RenderViewContextMenuBase> (*g_ardia_win_context_menu)(
     content::RenderFrameHost& render_frame_host,

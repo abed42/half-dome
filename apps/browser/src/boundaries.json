@@ -1662,6 +1662,16 @@
     "packages/ardiacore/ios/WebKitContextMenu.swift#WebKitCopiedAddresses"
    ],
    "detected": false
+  },
+  {
+   "id": "windows-engine:renderer-efficiency-counts",
+   "source": "native",
+   "guard": "Background renderer efficiency counts kept by the Windows engine layer itself, asked for and kept per consent epoch; only whole positive numbers under the seven known keys are added, anything else counts as 0",
+   "checks": [
+    "packages/expo-windows/src/engine/rendererEfficiency.ts",
+    "scripts/windows/engine/src/ardia/win/renderer_efficiency.cc"
+   ],
+   "detected": false
   }
  ]
 }

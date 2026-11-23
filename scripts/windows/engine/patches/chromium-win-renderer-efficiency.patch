@@ -1,0 +1,42 @@
+--- a/content/browser/child_process_launcher_helper.cc
++++ b/content/browser/child_process_launcher_helper.cc
+@@ -46,6 +46,16 @@
+ #include "base/files/scoped_temp_dir.h"
+ #endif
+ 
++#if BUILDFLAG(IS_WIN)
++// Ardia: //ardia/win puts a background renderer's memory priority and timer
++// resolution in line with the priority the launcher applies, on this thread.
++void (*g_ardia_win_renderer_priority)(const void* key,
++                                      const base::Process& process,
++                                      base::Process::Priority priority) =
++    nullptr;
++void (*g_ardia_win_renderer_closed)(const void* key) = nullptr;
++#endif
++
+ namespace content {
+ namespace internal {
+ 
+@@ -482,11 +492,22 @@ void ChildProcessLauncherHelper::SetProcessPriorityOnLauncherThread(
+     return;
+   }
+   ApplyProcessPriorityOnLauncherThread(child_process_, priority);
++#if BUILDFLAG(IS_WIN)
++  if (g_ardia_win_renderer_priority &&
++      GetProcessType() == switches::kRendererProcess) {
++    g_ardia_win_renderer_priority(this, child_process_, priority);
++  }
++#endif
+ }
+ #endif  // !BUILDFLAG(IS_ANDROID)
+ 
+ void ChildProcessLauncherHelper::CloseProcessOnLauncherThread() {
+   CHECK(CurrentlyOnProcessLauncherTaskRunner(), base::NotFatalUntil::M160);
++#if BUILDFLAG(IS_WIN)
++  if (g_ardia_win_renderer_closed) {
++    g_ardia_win_renderer_closed(this);
++  }
++#endif
+   child_process_.Close();
+ }
+ 
