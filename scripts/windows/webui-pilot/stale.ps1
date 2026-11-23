@@ -46,10 +46,31 @@ Cdp-Command 'Page.reload' @{ ignoreCache = $true } | Out-Null
 Start-Sleep -Seconds 8
 $after = @(ShellLog | Select-Object -Skip $before)
 $after | ForEach-Object { Log "log $_" }
-$orphanDropped = @($after | Where-Object { $_ -match 'page creation dropped: shell document (\d+) is not the live one' })
+$orphanDropped = @($after | Where-Object { $_ -match 'page creation dropped( before its profile loaded)?: shell document (\d+) is not the live one' })
 $targets = @(Invoke-RestMethod -TimeoutSec 10 http://127.0.0.1:9222/json/list)
 $orphan = @($targets | Where-Object { $_.url -like '*form.html?orphan*' })
 Check 'retired-document-makes-no-page' (($orphanDropped.Count -ge 1) -and ($orphan.Count -eq 0)) "$($orphanDropped -join ' / '); targets: $(($targets | ForEach-Object { $_.url }) -join ' | ')"
+
+Start-Sleep -Seconds 5
+$before = (ShellLog).Count
+$orphanProfile = "$Data\Chromium\Ardia orphanprofile"
+Cdp-Eval '(() => { window.__ardiaHost.invoke("tab.create", { key: "orphan-profile-probe", claim: "orphan-profile-claim", profile: "orphanprofile", url: "file:///C:/pilot/form.html?orphanprofile", testDelayMs: 4000 }); return "asked"; })()' | Out-Null
+Start-Sleep -Milliseconds 300
+Cdp-Command 'Page.crash' @{} -NoReply | Out-Null
+Start-Sleep -Seconds 2
+Cdp-Command 'Page.reload' @{ ignoreCache = $true } | Out-Null
+Start-Sleep -Seconds 8
+$after = @(ShellLog | Select-Object -Skip $before)
+$after | ForEach-Object { Log "log $_" }
+$profileDropped = @($after | Where-Object { $_ -match 'page creation dropped before its profile loaded: shell document (\d+) is not the live one' })
+$targets = @(Invoke-RestMethod -TimeoutSec 10 http://127.0.0.1:9222/json/list)
+$orphan = @($targets | Where-Object { $_.url -like '*form.html?orphanprofile*' })
+$madeProfile = Test-Path -LiteralPath $orphanProfile
+Check 'retired-document-loads-no-profile' (($profileDropped.Count -ge 1) -and ($orphan.Count -eq 0) -and -not $madeProfile) "$($profileDropped -join ' / '); $orphanProfile on disk: $madeProfile"
+$alive = Cdp-Eval '__ardiaHost.invoke("tab.create", { key: "after-orphan", claim: "after-orphan-claim", profile: "orphanprofile", url: "file:///C:/pilot/form.html?after" }).then(() => "made", e => "refused " + e)'
+Start-Sleep -Seconds 3
+Check 'live-document-still-loads-that-profile' (($alive -eq 'made') -and (Test-Path -LiteralPath $orphanProfile)) "the live document's tab.create answered '$alive'; $orphanProfile on disk: $(Test-Path -LiteralPath $orphanProfile)"
 Stop-Engine
 $results | ConvertTo-Json -Depth 4 | Set-Content "$Proof\stale-results.json"
+Remove-PilotRun $RunRoot
 "DONE stale"

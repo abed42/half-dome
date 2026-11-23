@@ -196,4 +196,6 @@ Stop-Engine
 $rec.WaitForExit(($Record + 10) * 1000) | Out-Null
 $results | ConvertTo-Json -Depth 4 | Set-Content "$Proof\$Label-results.json"
 Get-Content "$Data\Chromium\chrome_debug.log" -ErrorAction SilentlyContinue | Select-String -Pattern 'WebUI shell' | Select-Object -Last 60 | ForEach-Object { $_.Line } | Set-Content "$Proof\$Label-shell-log.txt"
+Stop-Engine
+Remove-PilotRun $RunRoot
 "DONE $Label"

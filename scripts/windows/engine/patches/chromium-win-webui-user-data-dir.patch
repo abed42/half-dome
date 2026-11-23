@@ -1,9 +1,33 @@
 --- a/chrome/install_static/user_data_dir.cc
 +++ b/chrome/install_static/user_data_dir.cc
-@@ -108,6 +108,82 @@
+@@ -10,6 +10,8 @@
+ #include <stdlib.h>
+ 
+ #include <optional>
++#include <string>
++#include <vector>
+ 
+ #include "chrome/chrome_elf/nt_registry/nt_registry.h"
+ #include "chrome/install_static/install_details.h"
+@@ -108,6 +110,182 @@
    return GetCommandLineSwitch(command_line, L"headless").has_value();
  }
  
++std::wstring FinalPathOfHandle(HANDLE handle, DWORD volume) {
++  const DWORD flags = volume | FILE_NAME_NORMALIZED;
++  std::wstring path;
++  const DWORD size = ::GetFinalPathNameByHandleW(handle, nullptr, 0, flags);
++  if (size == 0)
++    return path;
++  path.resize(size);
++  const DWORD written =
++      ::GetFinalPathNameByHandleW(handle, &path[0], size, flags);
++  path.resize(written > 0 && written < size ? written : 0);
++  while (!path.empty() && path.back() == L'\\')
++    path.pop_back();
++  return path;
++}
++
 +std::wstring ResolvedFolder(std::wstring path) {
 +  std::wstring rest;
 +  while (!path.empty() &&
@@ -21,25 +45,13 @@
 +      nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
 +  if (handle == INVALID_HANDLE_VALUE)
 +    return std::wstring();
-+  constexpr DWORD kFlags = VOLUME_NAME_GUID | FILE_NAME_NORMALIZED;
-+  std::wstring resolved;
-+  const DWORD size = ::GetFinalPathNameByHandleW(handle, nullptr, 0, kFlags);
-+  if (size > 0) {
-+    resolved.resize(size);
-+    const DWORD written =
-+        ::GetFinalPathNameByHandleW(handle, &resolved[0], size, kFlags);
-+    resolved.resize(written > 0 && written < size ? written : 0);
-+  }
++  const std::wstring resolved = FinalPathOfHandle(handle, VOLUME_NAME_GUID);
 +  ::CloseHandle(handle);
-+  if (resolved.empty())
-+    return resolved;
-+  while (!resolved.empty() && resolved.back() == L'\\')
-+    resolved.pop_back();
-+  return resolved + rest;
++  return resolved.empty() ? resolved : resolved + rest;
 +}
 +
 +bool WithinOrSameFolder(const std::wstring& inner, const std::wstring& outer) {
-+  if (inner.size() < outer.size() ||
++  if (outer.empty() || inner.size() < outer.size() ||
 +      ::CompareStringOrdinal(inner.c_str(), static_cast<int>(outer.size()),
 +                             outer.c_str(), static_cast<int>(outer.size()),
 +                             TRUE) != CSTR_EQUAL) {
@@ -54,26 +66,123 @@
 +  return path;
 +}
 +
++std::wstring AsciiLower(std::wstring text) {
++  for (wchar_t& c : text) {
++    if (c >= L'A' && c <= L'Z')
++      c = static_cast<wchar_t>(c - L'A' + L'a');
++  }
++  return text;
++}
++
 +bool IsWebUIShell(const std::wstring& command_line) {
-+  return GetCommandLineSwitchValue(command_line, L"ardia-shell") == L"webui";
++  const std::vector<std::wstring> tokens =
++      TokenizeCommandLineToArray(command_line);
++  std::wstring value;
++  bool found = false;
++  for (size_t i = 1; i < tokens.size(); ++i) {
++    const std::wstring& token = tokens[i];
++    if (token == L"--")
++      break;
++    size_t prefix = 0;
++    for (const wchar_t* candidate : {L"--", L"-", L"/"}) {
++      const size_t length = ::wcslen(candidate);
++      if (token.size() > length && token.compare(0, length, candidate) == 0) {
++        prefix = length;
++        break;
++      }
++    }
++    if (prefix == 0)
++      continue;
++    const size_t equals = token.find(L'=', prefix);
++    const std::wstring name = AsciiLower(token.substr(
++        prefix, equals == std::wstring::npos ? std::wstring::npos
++                                             : equals - prefix));
++    if (name == L"single-argument")
++      break;
++    if (name != L"ardia-shell")
++      continue;
++    found = true;
++    value = equals == std::wstring::npos ? std::wstring()
++                                         : token.substr(equals + 1);
++  }
++  return found && value == L"webui";
++}
++
++void AddReparseTargets(const std::wstring& folder,
++                       int depth,
++                       std::vector<std::wstring>* out) {
++  WIN32_FIND_DATAW data;
++  HANDLE find = ::FindFirstFileExW((folder + L"\\*").c_str(),
++                                   FindExInfoBasic, &data,
++                                   FindExSearchLimitToDirectories, nullptr, 0);
++  if (find == INVALID_HANDLE_VALUE)
++    return;
++  do {
++    const std::wstring name = data.cFileName;
++    if (name == L"." || name == L".." ||
++        !(data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
++      continue;
++    }
++    const std::wstring child = folder + L"\\" + name;
++    if (data.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
++      out->push_back(ResolvedFolder(child));
++    } else if (depth > 1) {
++      AddReparseTargets(child, depth - 1, out);
++    }
++  } while (::FindNextFileW(find, &data));
++  ::FindClose(find);
++}
++
++std::vector<std::wstring> ReactNativeFolders() {
++  std::vector<std::wstring> folders;
++  for (const wchar_t* variable : {L"LOCALAPPDATA", L"APPDATA"}) {
++    const std::wstring base = GetEnvironmentString(variable);
++    if (base.empty())
++      continue;
++    const std::wstring root = WithTrailingSlash(base) + L"Ardia";
++    folders.push_back(ResolvedFolder(root));
++    folders.push_back(ResolvedFolder(root + L"\\User Data"));
++    if (::GetFileAttributesW(root.c_str()) != INVALID_FILE_ATTRIBUTES)
++      AddReparseTargets(root, 2, &folders);
++  }
++  return folders;
 +}
 +
 +bool JoinsReactNativeFolders(const std::wstring& folder) {
 +  const std::wstring mine = ResolvedFolder(folder);
 +  if (mine.empty())
 +    return true;
-+  for (const wchar_t* variable : {L"LOCALAPPDATA", L"APPDATA"}) {
-+    const std::wstring base = GetEnvironmentString(variable);
-+    if (base.empty())
-+      continue;
-+    const std::wstring theirs =
-+        ResolvedFolder(WithTrailingSlash(base) + L"Ardia");
++  for (const std::wstring& theirs : ReactNativeFolders()) {
 +    if (theirs.empty() || WithinOrSameFolder(mine, theirs) ||
 +        WithinOrSameFolder(theirs, mine)) {
 +      return true;
 +    }
 +  }
 +  return false;
++}
++
++HANDLE g_pinned_webui_folder = INVALID_HANDLE_VALUE;
++
++std::wstring PinWebUIFolder(const std::wstring& folder) {
++  HANDLE handle = ::CreateFileW(folder.c_str(), 0,
++                                FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
++                                OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS,
++                                nullptr);
++  if (handle == INVALID_HANDLE_VALUE)
++    return std::wstring();
++  std::wstring path = FinalPathOfHandle(handle, VOLUME_NAME_DOS);
++  if (path.compare(0, 8, L"\\\\?\\UNC\\") == 0)
++    path = L"\\\\" + path.substr(8);
++  else if (path.compare(0, 4, L"\\\\?\\") == 0)
++    path = path.substr(4);
++  if (path.empty()) {
++    ::CloseHandle(handle);
++    return path;
++  }
++  if (g_pinned_webui_folder != INVALID_HANDLE_VALUE)
++    ::CloseHandle(g_pinned_webui_folder);
++  g_pinned_webui_folder = handle;
++  return path;
 +}
 +
 +void RefuseWebUIShell() {
@@ -83,7 +192,7 @@
  }  // namespace
  
  bool GetUserDataDirectoryImpl(const std::wstring& command_line,
-@@ -135,6 +211,13 @@
+@@ -135,6 +313,13 @@
      }
    }
  
@@ -97,7 +206,7 @@
    // Headless Chrome instances are expected to run in parallel with the headful
    // Chrome and other headless Chrome instances. In order to do so, headless
    // Chrome needs a dedicated user data directory for each headless instance.
-@@ -157,8 +240,18 @@
+@@ -157,8 +342,18 @@
      user_data_dir.pop_back();
    }
  
@@ -116,13 +225,17 @@
    if (!got_valid_directory) {
      *invalid_supplied_directory = user_data_dir;
      got_valid_directory = GetDefaultUserDataDirectory(mode, &user_data_dir);
-@@ -171,6 +264,11 @@
+@@ -171,6 +366,15 @@
    if (!got_valid_directory)
      return false;
  
-+  if (webui && JoinsReactNativeFolders(user_data_dir)) {
-+    RefuseWebUIShell();
-+    return false;
++  if (webui) {
++    const std::wstring pinned = PinWebUIFolder(user_data_dir);
++    if (pinned.empty() || JoinsReactNativeFolders(pinned)) {
++      RefuseWebUIShell();
++      return false;
++    }
++    user_data_dir = pinned;
 +  }
 +
    *result = MakeAbsoluteFilePath(user_data_dir);

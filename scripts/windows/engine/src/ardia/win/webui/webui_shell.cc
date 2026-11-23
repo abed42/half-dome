@@ -41,6 +41,7 @@
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/sequenced_task_runner.h"
@@ -1490,6 +1491,29 @@ void ShellWindow::EngineCall(const std::string& name,
           call, std::move(json), std::string(route->field), std::move(done)));
 }
 
+namespace {
+
+std::optional<GURL> AllowedPageUrl(const std::string& requested) {
+  std::string text = requested.empty() ? "about:blank" : requested;
+  if (base::StartsWith(text, "ardia://",
+                       base::CompareCase::INSENSITIVE_ASCII)) {
+    text.replace(0, 8, "chrome://");
+  }
+  const GURL url(text);
+  if (!url.is_valid() || url.SchemeIs("javascript")) {
+    return std::nullopt;
+  }
+  const GURL inner = url.SchemeIs("view-source") ? GURL(url.GetContent()) : url;
+  if (inner.SchemeIs("javascript") || inner.SchemeIs("view-source") ||
+      (inner.SchemeIs("chrome") &&
+       base::TrimString(inner.host(), ".", base::TRIM_TRAILING) == "ardia")) {
+    return std::nullopt;
+  }
+  return url;
+}
+
+}
+
 Page* ShellWindow::OwnedPage(const base::DictValue& args) {
   const std::optional<int> id = args.FindInt("id");
   auto found = id ? pages_.find(*id) : pages_.end();
@@ -1505,6 +1529,11 @@ void ShellWindow::CreatePage(const base::DictValue& args, Done done) {
   if (key.empty() || key.size() > 256 || claim.empty() || claim.size() > 256) {
     return std::move(done).Run(false,
                                base::Value("A key and a claim are required"));
+  }
+  const base::Value* requested_url = args.Find("url");
+  if ((requested_url && !requested_url->is_string()) ||
+      !AllowedPageUrl(String(args, "url"))) {
+    return std::move(done).Run(false, base::Value("Invalid or reserved tab URL"));
   }
   if (ParseProfileName(String(args, "profile")).off_the_record) {
     return std::move(done).Run(
@@ -1530,6 +1559,14 @@ void ShellWindow::StartPage(base::DictValue args,
                             Done done,
                             base::WeakPtr<Handler> origin,
                             uint64_t generation) {
+  if (!origin || !OwnsHandler(origin.get(), generation)) {
+    Note("page creation dropped before its profile loaded: shell document " +
+         base::NumberToString(generation) + " is not the live one (" +
+         base::NumberToString(renderer_generation_) + ")");
+    return std::move(done).Run(false,
+                               base::Value("The shell document that asked "
+                                           "for this page is gone"));
+  }
   const std::string profile = String(args, "profile");
   WithProfile(profile,
               base::BindOnce(&ShellWindow::CreatePageIn,
@@ -1575,13 +1612,8 @@ void ShellWindow::CreatePageIn(base::DictValue args,
     return std::move(done).Run(
         false, base::Value("Private pages are not in the Windows WebUI pilot"));
   }
-  std::string text = String(args, "url");
-  if (text.starts_with("ardia://")) {
-    text.replace(0, 8, "chrome://");
-  }
-  const GURL url(text.empty() ? "about:blank" : text);
-  if (!url.is_valid() || url.SchemeIs("javascript") ||
-      (url.SchemeIs("chrome") && url.host() == "ardia")) {
+  const std::optional<GURL> url = AllowedPageUrl(String(args, "url"));
+  if (!url) {
     return std::move(done).Run(false, base::Value("Invalid or reserved tab URL"));
   }
   auto page = std::make_unique<Page>();
@@ -1608,7 +1640,7 @@ void ShellWindow::CreatePageIn(base::DictValue args,
         profile, ProfileKeepAliveOrigin::kAppWindow);
   }
   page->contents->GetController().LoadURL(
-      url, content::Referrer(), ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+      *url, content::Referrer(), ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
       std::string());
   contents_->ApplyShellInput();
   base::DictValue lease;
@@ -1675,16 +1707,13 @@ void ShellWindow::PageCommand(const base::DictValue& args, Done done) {
   content::NavigationController& controller = page->contents->GetController();
   if (command == "loadUrl" && values && !values->empty() &&
       (*values)[0].is_string()) {
-    std::string text = (*values)[0].GetString();
-    if (text.starts_with("ardia://")) {
-      text.replace(0, 8, "chrome://");
-    }
-    const GURL url(text);
-    if (!url.is_valid() || url.SchemeIs("javascript") ||
-        (url.SchemeIs("chrome") && url.host() == "ardia")) {
+    const std::string& text = (*values)[0].GetString();
+    const std::optional<GURL> url =
+        text.empty() ? std::nullopt : AllowedPageUrl(text);
+    if (!url) {
       return std::move(done).Run(false, base::Value("Invalid or reserved URL"));
     }
-    controller.LoadURL(url, content::Referrer(), ui::PAGE_TRANSITION_TYPED,
+    controller.LoadURL(*url, content::Referrer(), ui::PAGE_TRANSITION_TYPED,
                        std::string());
     return std::move(done).Run(true, base::Value());
   }

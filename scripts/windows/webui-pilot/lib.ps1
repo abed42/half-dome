@@ -146,14 +146,37 @@ function Cdp-Eval([string]$expression, [string]$match = 'chrome://ardia/') {
 }
 
 $App = 'C:\pilot\app'
-$Data = 'C:\pilot\data'
+$RunsRoot = 'C:\pilot\runs'
 $Proof = 'C:\pilot\proof'
-New-Item -ItemType Directory -Force $Proof | Out-Null
+$RunRoot = $null
+$Data = $null
+New-Item -ItemType Directory -Force $Proof, $RunsRoot | Out-Null
+
+function New-PilotRun {
+  $id = [guid]::NewGuid().ToString('N')
+  $root = Join-Path $RunsRoot $id
+  New-Item -ItemType Directory $root | Out-Null
+  Set-Content -LiteralPath (Join-Path $root '.pilot-run') $id -NoNewline
+  $script:RunRoot = $root
+  $script:Data = Join-Path $root 'data'
+  New-Item -ItemType Directory $script:Data | Out-Null
+  $root
+}
+
+function Remove-PilotRun([string]$root) {
+  $marker = Join-Path $root '.pilot-run'
+  if (-not (Test-Path -LiteralPath $marker)) { throw "refusing to delete ${root}: it has no .pilot-run marker" }
+  $id = Get-Content -LiteralPath $marker -Raw
+  if ($root -ne (Join-Path $RunsRoot $id)) { throw "refusing to delete ${root}: its marker names run $id" }
+  Get-ChildItem -LiteralPath $root -Recurse -Force -Attributes ReparsePoint -ErrorAction SilentlyContinue |
+    Sort-Object { $_.FullName.Length } -Descending |
+    ForEach-Object { if ($_.PSIsContainer) { cmd /c rmdir "$($_.FullName)" | Out-Null } else { Remove-Item -LiteralPath $_.FullName -Force } }
+  Remove-Item -LiteralPath $root -Recurse -Force
+}
 
 function Start-Shell([switch]$Fresh, [string[]]$Extra = @()) {
-  if ($Fresh) { Remove-Item -Recurse -Force $Data -ErrorAction SilentlyContinue }
-  New-Item -ItemType Directory -Force $Data | Out-Null
-  $env:ARDIA_DATA_DIR = $Data
+  if ($Fresh -or -not $script:Data) { New-PilotRun | Out-Null }
+  $env:ARDIA_DATA_DIR = $script:Data
   $env:ARDIA_REMOTE_DEBUGGING_PORT = '9222'
   $arguments = @('--ardia-shell=webui', '--enable-logging', '--v=0') + $Extra
   Start-Process "$App\chrome.exe" -ArgumentList $arguments -PassThru

@@ -7,9 +7,11 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 #include "base/base_paths_win.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
@@ -263,20 +265,70 @@ bool SameFolder(const std::wstring& a, const std::wstring& b) {
   return first && second && SameText(*first, *second);
 }
 
+base::FilePath AppDataRoot(const wchar_t* variable, int key) {
+  wchar_t value[MAX_PATH];
+  const DWORD length = ::GetEnvironmentVariableW(variable, value, MAX_PATH);
+  if (length > 0 && length < MAX_PATH) {
+    return base::FilePath(std::wstring(value, length));
+  }
+  base::FilePath folder;
+  return base::PathService::Get(key, &folder) ? folder : base::FilePath();
+}
+
+void AddReparseTargets(const base::FilePath& folder,
+                       int depth,
+                       std::vector<std::optional<std::wstring>>* out) {
+  base::FileEnumerator children(folder, false,
+                                base::FileEnumerator::DIRECTORIES);
+  for (base::FilePath child = children.Next(); !child.empty();
+       child = children.Next()) {
+    if (children.GetInfo().find_data().dwFileAttributes &
+        FILE_ATTRIBUTE_REPARSE_POINT) {
+      out->push_back(CanonicalPath(child));
+    } else if (depth > 1) {
+      AddReparseTargets(child, depth - 1, out);
+    }
+  }
+}
+
+std::vector<std::optional<std::wstring>> ReactNativeFolders() {
+  std::vector<std::optional<std::wstring>> folders;
+  for (const auto& [variable, key] :
+       {std::pair(L"LOCALAPPDATA", static_cast<int>(base::DIR_LOCAL_APP_DATA)),
+        std::pair(L"APPDATA", static_cast<int>(base::DIR_ROAMING_APP_DATA))}) {
+    const base::FilePath base_folder = AppDataRoot(variable, key);
+    if (base_folder.empty()) {
+      folders.push_back(std::nullopt);
+      continue;
+    }
+    const base::FilePath root = base_folder.Append(FILE_PATH_LITERAL("Ardia"));
+    folders.push_back(CanonicalPath(root));
+    folders.push_back(CanonicalPath(root.Append(FILE_PATH_LITERAL("User Data"))));
+    if (Exists(root)) {
+      AddReparseTargets(root, 2, &folders);
+    }
+  }
+  return folders;
+}
+
 std::wstring ReactNativeFolderClash(const std::vector<std::wstring>& folders) {
-  std::vector<std::wstring> canonical;
+  const std::vector<std::optional<std::wstring>> theirs = ReactNativeFolders();
   for (const std::wstring& folder : folders) {
-    std::optional<std::wstring> resolved = CanonicalPath(base::FilePath(folder));
-    if (!resolved) {
+    std::optional<std::wstring> mine = CanonicalPath(base::FilePath(folder));
+    if (!mine) {
       return L"the WebUI folder " + folder + L" can't be resolved";
     }
-    canonical.push_back(*resolved);
+    for (const std::optional<std::wstring>& protected_folder : theirs) {
+      if (!protected_folder) {
+        return L"a React Native app folder can't be resolved";
+      }
+      if (Overlaps(*mine, *protected_folder)) {
+        return L"the WebUI folder " + folder +
+               L" resolves to the React Native app's " + *protected_folder;
+      }
+    }
   }
-  const std::wstring clash = RealFolderClashOf(canonical, {L"Ardia"});
-  return clash.empty() ? clash
-                       : L"the WebUI folders resolve to the React Native "
-                         L"app's: " +
-                             clash;
+  return std::wstring();
 }
 
 }
