@@ -605,7 +605,7 @@ bool WaitsForFollowers(BlockerOp op) { return op == BlockerOp::kRemoveAllowed; }
 
 std::variant<base::Value, Failure> AfterFollowers(std::variant<base::Value, Failure> reply, int failed) {
   if (failed <= 0 || std::holds_alternative<Failure>(reply)) return reply;
-  return Failure{"ERR_PARTIAL", "The default profile changed, but another loaded profile didn't follow yet"};
+  return Failure{"ERR_PARTIAL", "Another loaded profile didn't follow the default profile's content blocker settings yet"};
 }
 
 bool AnswersWithoutBlocker(const BlockerRequest& request) {
