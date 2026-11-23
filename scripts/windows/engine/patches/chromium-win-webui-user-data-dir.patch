@@ -1,6 +1,6 @@
 --- a/chrome/install_static/user_data_dir.cc
 +++ b/chrome/install_static/user_data_dir.cc
-@@ -108,6 +108,88 @@
+@@ -108,6 +108,82 @@
    return GetCommandLineSwitch(command_line, L"headless").has_value();
  }
  
@@ -48,56 +48,83 @@
 +  return inner.size() == outer.size() || inner[outer.size()] == L'\\';
 +}
 +
-+std::wstring WebUIUserDataDirectory() {
-+  std::wstring local = GetEnvironmentString(L"LOCALAPPDATA");
-+  if (local.empty())
-+    return std::wstring();
-+  if (local.back() != L'\\')
-+    local.push_back(L'\\');
-+  const std::wstring folder = local + L"Ardia WebUI";
-+  const std::wstring profile = folder + L"\\Chromium";
-+  std::wstring roaming = GetEnvironmentString(L"APPDATA");
-+  if (!roaming.empty() && roaming.back() != L'\\')
-+    roaming.push_back(L'\\');
-+  const std::wstring mine[] = {ResolvedFolder(folder), ResolvedFolder(profile)};
-+  const std::wstring theirs[] = {
-+      ResolvedFolder(local + L"Ardia"),
-+      roaming.empty() ? std::wstring() : ResolvedFolder(roaming + L"Ardia")};
-+  bool clash = false;
-+  for (const std::wstring& a : mine) {
-+    clash = clash || a.empty();
-+    for (const std::wstring& b : theirs) {
-+      if (!a.empty() && !b.empty() &&
-+          (WithinOrSameFolder(a, b) || WithinOrSameFolder(b, a))) {
-+        clash = true;
-+      }
-+    }
-+  }
-+  if (!clash)
-+    return profile;
-+  std::wstring temp(MAX_PATH + 1, L'\0');
-+  const DWORD length = ::GetTempPathW(MAX_PATH + 1, &temp[0]);
-+  if (length == 0 || length > MAX_PATH)
-+    return std::wstring();
-+  temp.resize(length);
-+  if (temp.back() != L'\\')
-+    temp.push_back(L'\\');
-+  return temp + L"Ardia WebUI refused";
++std::wstring WithTrailingSlash(std::wstring path) {
++  if (!path.empty() && path.back() != L'\\')
++    path.push_back(L'\\');
++  return path;
 +}
 +
++bool IsWebUIShell(const std::wstring& command_line) {
++  return GetCommandLineSwitchValue(command_line, L"ardia-shell") == L"webui";
++}
++
++bool JoinsReactNativeFolders(const std::wstring& folder) {
++  const std::wstring mine = ResolvedFolder(folder);
++  if (mine.empty())
++    return true;
++  for (const wchar_t* variable : {L"LOCALAPPDATA", L"APPDATA"}) {
++    const std::wstring base = GetEnvironmentString(variable);
++    if (base.empty())
++      continue;
++    const std::wstring theirs =
++        ResolvedFolder(WithTrailingSlash(base) + L"Ardia");
++    if (theirs.empty() || WithinOrSameFolder(mine, theirs) ||
++        WithinOrSameFolder(theirs, mine)) {
++      return true;
++    }
++  }
++  return false;
++}
++
++void RefuseWebUIShell() {
++  ::TerminateProcess(::GetCurrentProcess(), 1);
++}
 +
  }  // namespace
  
  bool GetUserDataDirectoryImpl(const std::wstring& command_line,
-@@ -135,6 +217,11 @@
+@@ -135,6 +211,13 @@
      }
    }
  
-+  if (user_data_dir.empty() &&
-+      GetCommandLineSwitchValue(command_line, L"ardia-shell") == L"webui") {
-+    user_data_dir = WebUIUserDataDirectory();
++  const bool webui = IsWebUIShell(command_line);
++  if (webui && user_data_dir.empty()) {
++    const std::wstring local = GetEnvironmentString(L"LOCALAPPDATA");
++    if (!local.empty())
++      user_data_dir = WithTrailingSlash(local) + L"Ardia WebUI\\Chromium";
 +  }
 +
    // Headless Chrome instances are expected to run in parallel with the headful
    // Chrome and other headless Chrome instances. In order to do so, headless
    // Chrome needs a dedicated user data directory for each headless instance.
+@@ -157,8 +240,18 @@
+     user_data_dir.pop_back();
+   }
+ 
++  if (webui &&
++      (user_data_dir.empty() || JoinsReactNativeFolders(user_data_dir))) {
++    RefuseWebUIShell();
++    return false;
++  }
++
+   bool got_valid_directory =
+       !user_data_dir.empty() && RecursiveDirectoryCreate(user_data_dir);
++  if (!got_valid_directory && webui) {
++    RefuseWebUIShell();
++    return false;
++  }
+   if (!got_valid_directory) {
+     *invalid_supplied_directory = user_data_dir;
+     got_valid_directory = GetDefaultUserDataDirectory(mode, &user_data_dir);
+@@ -171,6 +264,11 @@
+   if (!got_valid_directory)
+     return false;
+ 
++  if (webui && JoinsReactNativeFolders(user_data_dir)) {
++    RefuseWebUIShell();
++    return false;
++  }
++
+   *result = MakeAbsoluteFilePath(user_data_dir);
+   return true;
+ }

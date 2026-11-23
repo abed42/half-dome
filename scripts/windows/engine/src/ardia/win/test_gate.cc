@@ -254,6 +254,15 @@ std::wstring HoldScratchFolders(const std::wstring& data_dir,
   return RealFolderClashOf(canonical, {L"Ardia", L"Ardia WebUI"});
 }
 
+bool SameFolder(const std::wstring& a, const std::wstring& b) {
+  if (a.empty() || b.empty()) {
+    return false;
+  }
+  const std::optional<std::wstring> first = CanonicalPath(base::FilePath(a));
+  const std::optional<std::wstring> second = CanonicalPath(base::FilePath(b));
+  return first && second && SameText(*first, *second);
+}
+
 std::wstring ReactNativeFolderClash(const std::vector<std::wstring>& folders) {
   std::vector<std::wstring> canonical;
   for (const std::wstring& folder : folders) {

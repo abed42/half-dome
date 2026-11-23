@@ -619,6 +619,10 @@ bool WebUIRelaunched(const base::CommandLine& command_line,
 }
 
 std::wstring LocalAppDataDirectory() {
+  const std::wstring from_environment = Environment(L"LOCALAPPDATA");
+  if (!from_environment.empty()) {
+    return from_environment;
+  }
   base::FilePath local;
   if (!base::PathService::Get(base::DIR_LOCAL_APP_DATA, &local)) {
     return std::wstring();
@@ -651,7 +655,7 @@ void RelaunchIntoWebUIProfile() {
     base::Process::TerminateCurrentProcessImmediately(1);
   }
   RefuseReactNativeFolders(app_data, user_data);
-  if (SamePath(user_data, ChromiumUserDataDir())) {
+  if (SameFolder(user_data, ChromiumUserDataDir())) {
     return;
   }
   base::CommandLine relaunch = base::CommandLine::FromString(::GetCommandLineW());
@@ -665,7 +669,6 @@ void RelaunchIntoWebUIProfile() {
                   "taken after a relaunch; not starting";
     base::Process::TerminateCurrentProcessImmediately(1);
   }
-  base::CreateDirectory(base::FilePath(user_data));
   relaunch.RemoveSwitch(switches::kUserDataDir);
   relaunch.AppendSwitchNative(switches::kUserDataDir, user_data);
   relaunch.AppendSwitch(kWebUIRelaunchedSwitch);
@@ -679,9 +682,7 @@ void BeforeWebUIChromeMain(base::CommandLine* command_line) {
   command_line->RemoveSwitch(kWebUIRelaunchedSwitch);
   const std::wstring app_data = WebUIAppData();
   const std::wstring user_data = WebUIUserDataDirectory(app_data);
-  const std::wstring app_folder = ReactNativeAppDataDirectory(LocalAppDataDirectory());
-  if (user_data.empty() || !SamePath(user_data, ChromiumUserDataDir()) ||
-      SamePath(app_data, app_folder) || Inside(user_data, app_folder)) {
+  if (user_data.empty() || !SameFolder(user_data, ChromiumUserDataDir())) {
     LOG(ERROR) << "Ardia engine: the WebUI shell has no profile folder of its "
                   "own; not starting";
     base::Process::TerminateCurrentProcessImmediately(1);

@@ -117,7 +117,6 @@ namespace {
 constexpr char kWindowId[] = "main";
 constexpr char kShellProfile[] = "default";
 constexpr char kSessionName[] = "session.json";
-constexpr char kDocumentsFolder[] = "Ardia Documents";
 constexpr int kDefaultWidth = 1280;
 constexpr int kDefaultHeight = 800;
 constexpr int kMinimumWidth = 480;
@@ -125,7 +124,6 @@ constexpr int kMinimumHeight = 360;
 constexpr int kResizeCornerWidth = 16;
 constexpr size_t kAssetLimit = 64 * 1024 * 1024;
 constexpr size_t kUnhandledLimit = 400;
-constexpr base::TimeDelta kSettleAfterShown = base::Seconds(5);
 constexpr DWORD kMaximizeClickLimitMs = 5000;
 
 class ShellWindow;
@@ -177,8 +175,8 @@ std::string MimeType(std::string_view path) {
   return std::string();
 }
 
-base::FilePath DocumentDirectory(Profile* profile) {
-  return profile->GetPath().AppendASCII(kDocumentsFolder);
+base::FilePath SessionDirectory() {
+  return base::FilePath(AppDataDirectory());
 }
 
 std::optional<base::DictValue> ReadSession(const base::FilePath& directory) {
@@ -663,8 +661,6 @@ class ShellWindow : public views::WidgetDelegate,
     widget_->Show();
     RoundCorners();
     FocusShell();
-    base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
-        FROM_HERE, base::BindOnce(&MarkStartSettled), kSettleAfterShown);
   }
 
   void Activate() {
@@ -961,7 +957,15 @@ class ShellWindow : public views::WidgetDelegate,
   }
 
   void CreatePage(const base::DictValue& args, Done done);
-  void CreatePageIn(base::DictValue args, Done done, Profile* profile);
+  void CreatePageIn(base::DictValue args,
+                    Done done,
+                    base::WeakPtr<Handler> origin,
+                    uint64_t generation,
+                    Profile* profile);
+  void StartPage(base::DictValue args,
+                 Done done,
+                 base::WeakPtr<Handler> origin,
+                 uint64_t generation);
   void SetViewport(const base::DictValue& args, Done done);
   void PageCommand(const base::DictValue& args, Done done);
   void ReleasePage(const base::DictValue& args, Done done);
@@ -995,6 +999,9 @@ class ShellWindow : public views::WidgetDelegate,
   views::UnhandledKeyboardEventHandler unhandled_keys_;
   std::optional<bool> reported_maximized_;
   bool maximize_pressed_ = false;
+  bool painted_ = false;
+  base::WeakPtr<Handler> request_handler_;
+  uint64_t request_generation_ = 0;
   DWORD maximize_pressed_at_ = 0;
   size_t logged_pass_regions_ = static_cast<size_t>(-1);
   std::vector<std::string> unhandled_;
@@ -1117,6 +1124,8 @@ class Handler : public content::WebUIMessageHandler,
       return;
     }
     AllowJavascript();
+    g_shell->request_handler_ = weak_factory_.GetWeakPtr();
+    g_shell->request_generation_ = generation_;
     const base::DictValue& args = arguments[2].GetDict();
     auto done = base::BindOnce(&ShellWindow::DeliverReply,
                                g_shell->weak_factory_.GetWeakPtr(),
@@ -1241,7 +1250,7 @@ void ShellWindow::Invoke(const std::string& method,
   }
   if (method == "session.read") {
     FileRunner()->PostTaskAndReplyWithResult(
-        FROM_HERE, base::BindOnce(&ReadSession, DocumentDirectory(profile_)),
+        FROM_HERE, base::BindOnce(&ReadSession, SessionDirectory()),
         base::BindOnce(
             [](Done done, std::optional<base::DictValue> session) {
               std::move(done).Run(true, session ? base::Value(std::move(*session))
@@ -1259,7 +1268,7 @@ void ShellWindow::Invoke(const std::string& method,
     }
     FileRunner()->PostTaskAndReplyWithResult(
         FROM_HERE,
-        base::BindOnce(&WriteSession, DocumentDirectory(profile_),
+        base::BindOnce(&WriteSession, SessionDirectory(),
                        base->Clone(), session->Clone()),
         base::BindOnce(
             [](Done done, std::optional<base::DictValue> merged) {
@@ -1339,6 +1348,14 @@ void ShellWindow::Invoke(const std::string& method,
     return std::move(done).Run(true, base::Value());
   }
   if (method == "ArdiaShell.restoreShortcutFocus") {
+    return std::move(done).Run(true, base::Value());
+  }
+  if (method == "ArdiaShell.shellPainted") {
+    if (!painted_) {
+      painted_ = true;
+      MarkStartSettled();
+      Note("shell painted; the start is settled");
+    }
     return std::move(done).Run(true, base::Value());
   }
   if (method == "ArdiaShell.testDelayedReply" && ardiacore::TestInstance()) {
@@ -1493,10 +1510,31 @@ void ShellWindow::CreatePage(const base::DictValue& args, Done done) {
     return std::move(done).Run(
         false, base::Value("Private pages are not in the Windows WebUI pilot"));
   }
-  WithProfile(String(args, "profile"),
+  const int delay = ardiacore::TestInstance()
+                      ? std::clamp(args.FindInt("testDelayMs").value_or(0), 0,
+                                   10000)
+                      : 0;
+  auto start = base::BindOnce(&ShellWindow::StartPage,
+                              weak_factory_.GetWeakPtr(), args.Clone(),
+                              std::move(done), request_handler_,
+                              request_generation_);
+  if (delay > 0) {
+    base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+        FROM_HERE, std::move(start), base::Milliseconds(delay));
+    return;
+  }
+  std::move(start).Run();
+}
+
+void ShellWindow::StartPage(base::DictValue args,
+                            Done done,
+                            base::WeakPtr<Handler> origin,
+                            uint64_t generation) {
+  const std::string profile = String(args, "profile");
+  WithProfile(profile,
               base::BindOnce(&ShellWindow::CreatePageIn,
-                             weak_factory_.GetWeakPtr(), args.Clone(),
-                             std::move(done)));
+                             weak_factory_.GetWeakPtr(), std::move(args),
+                             std::move(done), std::move(origin), generation));
 }
 
 base::DictValue ShellWindow::NavigationEvent(Page* page) {
@@ -1518,7 +1556,17 @@ base::DictValue ShellWindow::NavigationEvent(Page* page) {
 
 void ShellWindow::CreatePageIn(base::DictValue args,
                                Done done,
+                               base::WeakPtr<Handler> origin,
+                               uint64_t generation,
                                Profile* profile) {
+  if (!origin || !OwnsHandler(origin.get(), generation)) {
+    Note("page creation dropped: shell document " +
+         base::NumberToString(generation) + " is not the live one (" +
+         base::NumberToString(renderer_generation_) + ")");
+    return std::move(done).Run(false,
+                               base::Value("The shell document that asked "
+                                           "for this page is gone"));
+  }
   if (!profile || !widget_ || !contents_) {
     return std::move(done).Run(false,
                                base::Value("The page's profile did not load"));
@@ -1578,8 +1626,7 @@ void ShellWindow::CreatePageIn(base::DictValue args,
   identity.Set("chromeTabId", page->id);
   identity.Set("lease", std::move(lease));
   identity.Set("snapshot", std::move(snapshot));
-  Note("page " + base::NumberToString(page->id) + " created for " +
-       url.possibly_invalid_spec());
+  Note("page " + base::NumberToString(page->id) + " created");
   pages_[page->id] = std::move(page);
   std::move(done).Run(true, base::Value(std::move(identity)));
 }
@@ -1857,6 +1904,27 @@ bool ShellWindow::PreTranslate(const MSG& msg) {
   return false;
 }
 
+void RefuseMissingBundle() {
+  const std::string folder = AssetDirectory().AsUTF8Unsafe();
+  LOG(ERROR) << "Ardia WebUI shell: the shell UI could not load from "
+             << folder << "; quitting";
+  NoteForTest("webui shell: the shell UI could not load from " + folder +
+              "; quitting");
+  const DWORD background = ::GetEnvironmentVariableW(L"ARDIA_BACKGROUND",
+                                                     nullptr, 0);
+  if (background == 0) {
+    const std::wstring text = L"Ardia couldn't start: the browser UI is "
+                              L"missing from " +
+                              base::UTF8ToWide(folder) +
+                              L".\n\nInstalling Ardia again usually fixes "
+                              L"this.";
+    ::MessageBoxW(nullptr, text.c_str(), L"Ardia",
+                  MB_OK | MB_ICONERROR | MB_SETFOREGROUND | MB_TOPMOST);
+  }
+  MarkStartSettled();
+  QuitApp();
+}
+
 class ShellDataSource : public content::URLDataSource {
  public:
   std::string GetSource() override { return "ardia"; }
@@ -1899,15 +1967,20 @@ class ShellDataSource : public content::URLDataSource {
         FROM_HERE,
         base::BindOnce(&ReadAsset, AssetDirectory(), AssetPath(url),
                        g_shell->BootstrapJson(),
-                       DocumentDirectory(g_shell->profile())),
+                       SessionDirectory()),
         base::BindOnce(
-            [](GotDataCallback callback, std::optional<std::string> contents) {
+            [](GotDataCallback callback, bool entry,
+               std::optional<std::string> contents) {
+              if (!contents && entry) {
+                base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+                    FROM_HERE, base::BindOnce(&RefuseMissingBundle));
+              }
               std::move(callback).Run(
                   contents ? base::MakeRefCounted<base::RefCountedString>(
                                  std::move(*contents))
                            : nullptr);
             },
-            std::move(callback)));
+            std::move(callback), AssetPath(url) == "index.html"));
   }
 };
 
