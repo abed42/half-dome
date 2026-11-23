@@ -648,6 +648,19 @@ void RefuseReactNativeFolders(const std::wstring& app_data,
   base::Process::TerminateCurrentProcessImmediately(1);
 }
 
+void RefuseShellModeDisagreement(bool webui) {
+  const bool early = install_static::IsWebUIShellCommandLine(::GetCommandLineW());
+  const bool reparsed = WebUIShellRequested(
+      base::CommandLine::FromString(::GetCommandLineW()));
+  if (webui == early && reparsed == early) {
+    return;
+  }
+  LOG(ERROR) << "Ardia engine: install_static read the shell mode as "
+             << (early ? "webui" : "default") << " and Chromium as "
+             << (webui ? "webui" : "default") << "; not starting";
+  base::Process::TerminateCurrentProcessImmediately(1);
+}
+
 void RelaunchIntoWebUIProfile() {
   const std::wstring app_data = WebUIAppData();
   const std::wstring user_data = WebUIUserDataDirectory(app_data);
@@ -750,6 +763,7 @@ void BeforeChromeMain() {
   }
   command_line->RemoveSwitch(switches::kProcessType);
   const bool webui = WebUIShellRequested(*command_line);
+  RefuseShellModeDisagreement(webui);
   if (webui) {
     RelaunchIntoWebUIProfile();
   }

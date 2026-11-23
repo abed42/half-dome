@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/base_paths_win.h"
-#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
@@ -275,20 +274,40 @@ base::FilePath AppDataRoot(const wchar_t* variable, int key) {
   return base::PathService::Get(key, &folder) ? folder : base::FilePath();
 }
 
-void AddReparseTargets(const base::FilePath& folder,
-                       int depth,
-                       std::vector<std::optional<std::wstring>>* out) {
-  base::FileEnumerator children(folder, false,
-                                base::FileEnumerator::DIRECTORIES);
-  for (base::FilePath child = children.Next(); !child.empty();
-       child = children.Next()) {
-    if (children.GetInfo().find_data().dwFileAttributes &
-        FILE_ATTRIBUTE_REPARSE_POINT) {
-      out->push_back(CanonicalPath(child));
-    } else if (depth > 1) {
-      AddReparseTargets(child, depth - 1, out);
+std::optional<std::wstring> FirstLinkInside(const std::wstring& root) {
+  std::vector<std::wstring> pending{root};
+  while (!pending.empty()) {
+    const std::wstring folder = std::move(pending.back());
+    pending.pop_back();
+    WIN32_FIND_DATAW data;
+    HANDLE find = ::FindFirstFileExW((folder + L"\\*").c_str(),
+                                     FindExInfoBasic, &data,
+                                     FindExSearchNameMatch, nullptr,
+                                     FIND_FIRST_EX_LARGE_FETCH);
+    if (find == INVALID_HANDLE_VALUE) {
+      return folder;
+    }
+    std::optional<std::wstring> link;
+    do {
+      const std::wstring name = data.cFileName;
+      if (name == L"." || name == L"..") {
+        continue;
+      }
+      const std::wstring child = folder + L"\\" + name;
+      if (data.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
+        link = child;
+        break;
+      }
+      if (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+        pending.push_back(child);
+      }
+    } while (::FindNextFileW(find, &data));
+    ::FindClose(find);
+    if (link) {
+      return link;
     }
   }
+  return std::nullopt;
 }
 
 std::vector<std::optional<std::wstring>> ReactNativeFolders() {
@@ -304,9 +323,6 @@ std::vector<std::optional<std::wstring>> ReactNativeFolders() {
     const base::FilePath root = base_folder.Append(FILE_PATH_LITERAL("Ardia"));
     folders.push_back(CanonicalPath(root));
     folders.push_back(CanonicalPath(root.Append(FILE_PATH_LITERAL("User Data"))));
-    if (Exists(root)) {
-      AddReparseTargets(root, 2, &folders);
-    }
   }
   return folders;
 }
@@ -317,6 +333,12 @@ std::wstring ReactNativeFolderClash(const std::vector<std::wstring>& folders) {
     std::optional<std::wstring> mine = CanonicalPath(base::FilePath(folder));
     if (!mine) {
       return L"the WebUI folder " + folder + L" can't be resolved";
+    }
+    if (Exists(base::FilePath(folder))) {
+      if (const std::optional<std::wstring> link = FirstLinkInside(*mine)) {
+        return L"the WebUI folder " + folder + L" holds a link or an unreadable "
+               L"folder at " + *link;
+      }
     }
     for (const std::optional<std::wstring>& protected_folder : theirs) {
       if (!protected_folder) {

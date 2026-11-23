@@ -7,7 +7,7 @@ function Check([string]$name, [bool]$ok, [string]$detail) {
 }
 function ShellLog { @(Get-Content "$Data\Chromium\chrome_debug.log" -ErrorAction SilentlyContinue | Select-String 'WebUI shell' | ForEach-Object { $_.Line.Substring($_.Line.IndexOf('WebUI shell')) }) }
 function PagesCreated { @(ShellLog | Where-Object { $_ -match 'page \d+ created' }).Count }
-function PageTargets { $all = Invoke-RestMethod -TimeoutSec 10 http://127.0.0.1:9222/json/list; @($all | ForEach-Object { $_ } | Where-Object { $_.type -eq 'page' -and $_.url -notlike 'chrome://ardia/*' } | ForEach-Object { $_.url }) }
+function PageTargets { @(Cdp-List | Where-Object { $_.type -eq 'page' -and $_.url -notlike 'chrome://ardia/*' } | ForEach-Object { $_.url }) }
 function Js([string]$value) { $value | ConvertTo-Json -Compress }
 function Invoke-Host([string]$method, [string]$argsJson) {
   Cdp-Eval "__ardiaHost.invoke($(Js $method), $argsJson).then(r => JSON.stringify({ ok: true, r }), e => JSON.stringify({ ok: false, e: String(e && e.message || e) }))"

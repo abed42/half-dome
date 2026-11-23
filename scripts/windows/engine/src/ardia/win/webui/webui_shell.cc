@@ -476,6 +476,12 @@ class ShellContents : public views::View, public views::ViewTargeterDelegate {
     SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
   }
 
+  ~ShellContents() override {
+    shell_ = nullptr;
+    pass_.clear();
+    RemoveAllChildViews();
+  }
+
   void SetShell(views::WebView* shell) { shell_ = shell; }
 
   void SetPassRegions(std::vector<gfx::Rect> pass) {
@@ -611,11 +617,33 @@ class ShellWindow : public views::WidgetDelegate,
   }
 
   ~ShellWindow() override {
-    DropPages();
+    TearDown();
     widget_.reset();
     if (g_shell == this) {
       g_shell = nullptr;
     }
+  }
+
+  void TearDown() {
+    if (torn_down_) {
+      return;
+    }
+    RetireRenderer();
+    torn_down_ = true;
+    request_handler_.reset();
+    DropPages();
+    if (shell_ && shell_->web_contents()) {
+      shell_->web_contents()->SetDelegate(nullptr);
+    }
+    transparency_.reset();
+    if (contents_) {
+      contents_->SetPassRegions({});
+      contents_->SetShell(nullptr);
+    }
+    contents_ = nullptr;
+    shell_ = nullptr;
+    frame_ = nullptr;
+    Note("shell torn down while its views were alive");
   }
 
   void DropPages() {
@@ -782,8 +810,7 @@ class ShellWindow : public views::WidgetDelegate,
       focus_manager_ = nullptr;
     }
 
-    DropPages();
-    transparency_.reset();
+    TearDown();
     Note("window closed");
     base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&QuitApp));
@@ -883,6 +910,10 @@ class ShellWindow : public views::WidgetDelegate,
   HWND Hwnd() const { return views::HWNDForWidget(widget_.get()); }
 
   void RetireRenderer() {
+    if (torn_down_) {
+      handler_ = nullptr;
+      return;
+    }
     const bool had_document = handler_ != nullptr;
     handler_ = nullptr;
     renderer_document_ = content::WeakDocumentPtr();
@@ -1002,6 +1033,7 @@ class ShellWindow : public views::WidgetDelegate,
   bool maximize_pressed_ = false;
   bool painted_ = false;
   base::WeakPtr<Handler> request_handler_;
+  bool torn_down_ = false;
   uint64_t request_generation_ = 0;
   DWORD maximize_pressed_at_ = 0;
   size_t logged_pass_regions_ = static_cast<size_t>(-1);

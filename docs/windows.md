@@ -1546,44 +1546,73 @@ stale-document check (8) all passed.
   `BeforeChromeMain` does nothing (the first pilot run opened the wrong folder). So `chromium-win-webui-user-data-dir.patch`
   (the one Windows patch the pilot adds, after `chromium-win-install-names.patch`) decides it in `install_static`:
   with `--ardia-shell=webui` and no `--user-data-dir`, policy or `ARDIA_DATA_DIR` naming another folder, it picks
-  `%LOCALAPPDATA%\Ardia WebUI\Chromium`. It reads the switch the way `base::CommandLine` does, so both stages agree
-  on the mode: `--`, `-` and `/` prefixes, any letter case in the name, the last value winning, and nothing after `--`
-  or `--single-argument`. `--ARDIA-SHELL=webui`, `-ardia-shell=webui` and `/ardia-shell=webui` all start the WebUI
-  shell in its own folder.
+  `%LOCALAPPDATA%\Ardia WebUI\Chromium`.
+- **Both stages read the switch the same way.** `install_static::IsWebUIShellCommandLine` repeats what
+  `base::CommandLine::ParseFromString` and `AppendSwitchesAndArguments` do in Chromium 158 (`base/command_line.cc`):
+  trim the whole command line with base's whitespace set, split it as `CommandLineToArgvW` does (`install_static`'s
+  `TokenizeCommandLineToArray`), skip the program, trim each argument, stop reading switches at `--`, take `--`, `-`
+  or `/` as a prefix, stop at `single-argument` compared case-sensitively before the name is lowercased (so
+  `--SINGLE-ARGUMENT` is an ordinary switch, as in base), lowercase the name, and let the last value win.
+  `install_static_unittests` runs the same 48 command lines through both parsers (`UserDataDir.ArdiaShell*`: trimming,
+  `--single-argument` in three cases, quotes, `=` and repeated switches) and checks the tokens against
+  `CommandLineToArgvW`. At startup `BeforeChromeMain` also asks both and exits with code 1 if they disagree
+  (`RefuseShellModeDisagreement`), so a spelling the two parsers read differently stops the engine instead of
+  opening one profile in the other's mode.
 - Whichever folder was chosen (command line, policy, `ARDIA_DATA_DIR` or that default) is resolved through the opened
   handle of its nearest existing part (`GetFinalPathNameByHandle`, by volume GUID, so `\\?\`, 8.3, UNC
   `\\localhost\C$`, `subst` and junction spellings all land on one path), before it is created and again after.
-  It is compared with the React Native app's folders resolved the same way: `%LOCALAPPDATA%\Ardia` and `%APPDATA%\Ardia`,
-  their `User Data` folders (followed wherever a junction moved them, another drive included), and the target of every
-  junction or symlink up to two levels inside either. If they are the same, one contains the other, a folder can't
-  be resolved, or the chosen folder can't be created, the process exits with code 1 there, before Crashpad starts.
-  There is no fallback: neither Chromium's default folder (the React Native app's) nor a temporary one.
-- After the last check `install_static` keeps a handle open on the profile folder without delete sharing for the life
-  of the process, and hands Chromium the handle's final path, not the spelling it was given. While the handle is open
-  NTFS refuses to rename or delete that folder or any folder above it, so it can't be swapped for a junction after it
-  was checked.
-- **What is left.** Between resolving the folder and opening that handle (microseconds, in `chrome_elf` before any
-  thread or window exists) another process could still swap a parent folder for a junction. Only a process running as
-  the same user can do that, and such a process can already write both profiles directly, so the race gives it
-  nothing it doesn't have; closing it fully would mean handing Crashpad and Chromium an open handle instead of a path,
-  which is out of scope for the pilot. The check is there against mistakes and stale links, not against code already
-  running as the user.
+  It is compared with the React Native app's folders resolved the same way: `%LOCALAPPDATA%\Ardia` and `%APPDATA%\Ardia`
+  and their `User Data` folders (followed wherever a junction moved them). If they are the same, one contains the
+  other, a folder can't be resolved, or the chosen folder can't be created, the process exits with code 1 there,
+  before Crashpad starts. There is no fallback: neither Chromium's default folder (the React Native app's) nor a
+  temporary one.
+- **No links inside the WebUI tree.** After the folder is created, `install_static` walks the whole profile tree
+  (`FindFirstFileEx`, never following a link) and exits with code 1 if any file or folder in it is a reparse point:
+  a junction, a directory or file symlink, at any depth. Ardia's own check walks the WebUI app-data folder the same
+  way (`FirstLinkInside`). The pilot's tree is its own, so the walk is bounded, and it doesn't matter where a link
+  points: a stale link to an unrelated folder refuses too. The WebUI folder itself may still be a link (a profile
+  moved to another drive); its target is what gets compared above.
+- After those checks `install_static` keeps a handle open on the profile folder for the life of the process, opened
+  with `FILE_LIST_DIRECTORY | SYNCHRONIZE` and sharing read and write but not delete, and hands Chromium the handle's
+  final path, not the spelling it was given. A handle with no access rights is left out of Windows' sharing check, so
+  it is the real access that makes the missing delete share hold: while the handle is open, renaming or deleting the
+  folder fails, and so does renaming the folder above it, because NTFS doesn't rename a folder with an open handle
+  inside.
+- **What is left.**
+  - Between resolving the folder and opening that handle (microseconds, before Crashpad or chrome.dll), and between
+    the tree walk and Chromium opening each file, another process could swap a parent folder or plant a link. Only a
+    process running as the same user can do that, and such a process can already write both profiles directly, so
+    the race gives it nothing it doesn't have. Closing it fully would mean handing Crashpad and Chromium an open
+    handle instead of a path, which is out of scope for the pilot.
+  - Links someone deliberately puts inside the React Native app's own profile pointing into the WebUI tree are out of
+    scope for the same reason: only a same-user process can make them, and the WebUI shell doesn't walk the React
+    Native profile at startup. The checks are there against mistakes and stale links, not against code already
+    running as the user.
 - If the folder Chromium will use is safe but isn't the WebUI one (an explicit `--user-data-dir`), the engine starts
   itself again with the WebUI folder and exits (`RelaunchIntoWebUIProfile`, once: a second mismatch refuses to start).
   Folders are compared by resolved path (`SameFolder`), not by spelling.
 - Ardia's own code checks again before Chromium opens the profile (`ReactNativeFolderClash`, the test gate's
-  `CanonicalPath`, with the same set of React Native folders) and exits with code 1 on the same conditions.
+  `CanonicalPath`, with the same set of React Native folders and the link walk) and exits with code 1 on the same
+  conditions.
 - Checked in a throwaway Windows 11 guest by `scripts/windows/webui-pilot/junction.ps1`. It never touches the account's
   own folders: every launch gets `LOCALAPPDATA` and `APPDATA` inside a run folder of its own under `C:\pilot\runs`,
   marked with a `.pilot-run` file holding a fresh id, and the harness deletes only a folder whose marker names it
-  (links are unlinked first, never followed). Each of these exits 1 with no window, and no file or folder in the React
-  Native folder is added, removed or changed: `Ardia WebUI` as a junction to `Ardia` (with the switch also spelled
-  `--ARDIA-SHELL`, `-ardia-shell`, `/ardia-shell` and `--Ardia-Shell`); `Ardia WebUI\Chromium` as a junction to
-  `Ardia\User Data`; `--user-data-dir` pointing into `Ardia\User Data`, also spelled `\\?\…`, as its 8.3 short name and
-  as `\\localhost\C$\…`; `ARDIA_DATA_DIR` pointing at `Ardia`; `Ardia WebUI` made a file, so the profile folder can't
-  be created; and `Ardia\User Data` moved elsewhere behind a junction with `Ardia WebUI\Chromium` joined to the same
-  place. The same launch with none of these opens the window in `Ardia WebUI\Chromium` (also with the switch spelled
-  upper case or with one dash), and `Ardia WebUI` can't be renamed while it runs.
+  (links are unlinked first, never followed). Each launch starts suspended, the harness reads its real command line
+  back and splits it with `CommandLineToArgvW`, and a case counts only if the engine got exactly the arguments meant.
+  Each of these exits 1 with no window, and no file or folder in the React Native folder is added, removed or
+  changed: `Ardia WebUI` as a junction to `Ardia` (with the switch also spelled `--ARDIA-SHELL`, `-ardia-shell`,
+  `/ardia-shell`, `--Ardia-Shell`, padded with spaces, and after `--SINGLE-ARGUMENT`); `Ardia WebUI\Chromium` as a
+  junction to `Ardia\User Data`; a junction and a directory symlink at depth 1 (`Chromium\Default`) and at depth 3
+  (`Chromium\Default\Local Storage\leveldb`) into the React Native profile, a junction to an unrelated folder, a
+  file symlink to its `Local State`, and a junction beside `Chromium` in the app-data folder; `--user-data-dir`
+  pointing into `Ardia\User Data`, also spelled `\\?\…`, as its 8.3 short name and as `\\localhost\C$\…`;
+  `ARDIA_DATA_DIR` pointing at `Ardia`; `Ardia WebUI` made a file, so the profile folder can't be created; and
+  `Ardia\User Data` moved elsewhere behind a junction with `Ardia WebUI\Chromium` joined to the same place. The same
+  launch with none of these opens the window in `Ardia WebUI\Chromium` (also with the switch spelled upper case or
+  with one dash, and with a `--user-data-dir` that has a space in it), and `Ardia WebUI` can't be renamed while it
+  runs. With `ARDIA_TEST_PIN_PAUSE_MS` in a test build, `install_static` waits right after the pin, before chrome.dll
+  loads or Crashpad starts; renaming `Ardia WebUI\Chromium` or `Ardia WebUI` then fails, which shows the handle
+  alone holds the folder.
 - The WebUI shell's session (`session.json`) lives in its app-data folder, so the launch guard's recovery sets it aside
   after unfinished starts as it does the React Native app's. A start counts as finished when the shell reports it has
   painted (`ArdiaShell.shellPainted`); if the UI bundle's entry page can't be read, the engine says which folder it
@@ -1599,10 +1628,10 @@ stale-document check (8) all passed.
 | File | What it does |
 | --- | --- |
 | `src/ardia/win/webui/webui_mode.{h,cc}` | the switch and the folder rules above |
-| `src/ardia/win/webui/webui_shell.{h,cc}` | the bridge bound to the live shell document as on Linux (`Trusted`: the shell's live primary main frame with the committed origin `chrome://ardia/`; `OwnsHandler`: the handler of that document's generation; a new document (a reload or a renderer swap) or a renderer exit retires the generation, which drops its pending replies (`DeliverReply`), its events and its pages; `OnJavascriptDisallowed` drops that handler's pending replies at once and retires the generation only if the handler no longer owns the live document; a page whose creation was asked by a retired document is never made and its profile never loaded; tab URLs pass one check (`AllowedPageUrl`) before any profile loads and again before a page navigates: no `javascript:`, no `chrome://ardia` in any spelling or behind `view-source:`, nothing that doesn't parse; a row in `boundaries.json`); one `views::Widget` (`ShellTreeHost`, a `DesktopWindowTreeHostWin` with Chrome's client-area insets; `ShellFrame`, a `views::FrameView` hit tester), the `chrome://ardia` WebUI config, data source and `ardiaRequest` handler, the transparent shell `WebView` above the page `WebView`s, input pass-through, page leases and navigation events, accelerators, `session.read`/`session.write`, `engine.call` for the 36 routes of `ac_linux_contract.h` through the Windows `ac_*` table |
+| `src/ardia/win/webui/webui_shell.{h,cc}` | the bridge bound to the live shell document as on Linux (`Trusted`: the shell's live primary main frame with the committed origin `chrome://ardia/`; `OwnsHandler`: the handler of that document's generation; a new document (a reload or a renderer swap) or a renderer exit retires the generation, which drops its pending replies (`DeliverReply`), its events and its pages; `OnJavascriptDisallowed` drops that handler's pending replies at once and retires the generation only if the handler no longer owns the live document; a page whose creation was asked by a retired document is never made and its profile never loaded; closing the window tears the shell down while its views are still alive (`TearDown`, from `OnWidgetDestroying` and before the widget is reset: the document is retired, pages, delegate, pass-through regions and the view pointers are cleared, and `ShellContents` deletes its children before its own state), so destroying the shell's WebContents can't call back into freed views; tab URLs pass one check (`AllowedPageUrl`) before any profile loads and again before a page navigates: no `javascript:`, no `chrome://ardia` in any spelling or behind `view-source:`, nothing that doesn't parse; a row in `boundaries.json`); one `views::Widget` (`ShellTreeHost`, a `DesktopWindowTreeHostWin` with Chrome's client-area insets; `ShellFrame`, a `views::FrameView` hit tester), the `chrome://ardia` WebUI config, data source and `ardiaRequest` handler, the transparent shell `WebView` above the page `WebView`s, input pass-through, page leases and navigation events, accelerators, `session.read`/`session.write`, `engine.call` for the 36 routes of `ac_linux_contract.h` through the Windows `ac_*` table |
 | `src/ardia/win/webui/webui_caption_script.h` | lines added to `host-bootstrap.js` that report the shell's maximize button rectangle (`ArdiaShell.setMaximizeButton`) |
 | `scripts/windows/assemble-webui.ps1` | engine + `apps/linux/dist` as `ardia-ui\` beside `chrome.exe`, the layout `scripts/linux/package.py` ships |
-| `scripts/windows/webui-pilot/` | the real-input run below (`run.ps1`, its helpers and test page), the stale-document check (`stale.ps1`), the hostile-input check at the bridge's sinks (`bridge.ps1`) and the junction check (`junction.ps1`); they find, wait on and stop only processes started from the pilot's own folder, run each launch in its own marked folder under `C:\pilot\runs`, and delete only a folder whose `.pilot-run` marker names it |
+| `scripts/windows/webui-pilot/` | the real-input run below (`run.ps1`, its helpers and test page), the stale-document check (`stale.ps1`), the hostile-input check at the bridge's sinks (`bridge.ps1`), the junction check (`junction.ps1`) and the close-cycle check (`close.ps1`); they track the processes they start and stop only those and their children, give each run its own remote-debugging port, run each launch in its own marked folder under `C:\pilot\runs`, and delete only a folder whose `.pilot-run` marker names it |
 
 The frontend is `apps/linux`'s production build, unchanged, with Linux wording. Host calls the pilot doesn't answer
 resolve to `null` (and `engine.call`s outside the routes fail as unknown) and are logged once each as

@@ -33,7 +33,7 @@ Check 'reload-is-a-new-generation' ($live.Count -ge 1) "$($live -join ' / ')"
 $reloaded = Cdp-Eval 'String(performance.timeOrigin)'
 $answer = Cdp-Eval '__ardiaHost.invoke("ArdiaShell.windowIdentity", {})'
 Check 'new-document-answers' (($answer -eq 'main') -and ($reloaded -ne $origin)) "new document (time origin $origin -> $reloaded) answers '$answer'"
-$targets = @(Invoke-RestMethod -TimeoutSec 10 http://127.0.0.1:9222/json/list)
+$targets = (Cdp-List)
 Log ("targets after reload: " + (($targets | ForEach-Object { $_.url }) -join ' | '))
 
 Start-Sleep -Seconds 5
@@ -47,7 +47,7 @@ Start-Sleep -Seconds 8
 $after = @(ShellLog | Select-Object -Skip $before)
 $after | ForEach-Object { Log "log $_" }
 $orphanDropped = @($after | Where-Object { $_ -match 'page creation dropped( before its profile loaded)?: shell document (\d+) is not the live one' })
-$targets = @(Invoke-RestMethod -TimeoutSec 10 http://127.0.0.1:9222/json/list)
+$targets = (Cdp-List)
 $orphan = @($targets | Where-Object { $_.url -like '*form.html?orphan*' })
 Check 'retired-document-makes-no-page' (($orphanDropped.Count -ge 1) -and ($orphan.Count -eq 0)) "$($orphanDropped -join ' / '); targets: $(($targets | ForEach-Object { $_.url }) -join ' | ')"
 
@@ -63,7 +63,7 @@ Start-Sleep -Seconds 8
 $after = @(ShellLog | Select-Object -Skip $before)
 $after | ForEach-Object { Log "log $_" }
 $profileDropped = @($after | Where-Object { $_ -match 'page creation dropped before its profile loaded: shell document (\d+) is not the live one' })
-$targets = @(Invoke-RestMethod -TimeoutSec 10 http://127.0.0.1:9222/json/list)
+$targets = (Cdp-List)
 $orphan = @($targets | Where-Object { $_.url -like '*form.html?orphanprofile*' })
 $madeProfile = Test-Path -LiteralPath $orphanProfile
 Check 'retired-document-loads-no-profile' (($profileDropped.Count -ge 1) -and ($orphan.Count -eq 0) -and -not $madeProfile) "$($profileDropped -join ' / '); $orphanProfile on disk: $madeProfile"

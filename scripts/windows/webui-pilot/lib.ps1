@@ -4,8 +4,63 @@ using System;
 using System.Text;
 using System.Threading;
 using System.Diagnostics;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 public static class Pilot {
+  [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)] public struct STARTUPINFO { public int cb; public string reserved; public string desktop; public string title; public int x, y, width, height, xChars, yChars, fill, flags; public short show, reserved2; public IntPtr reserved3, stdIn, stdOut, stdErr; }
+  [StructLayout(LayoutKind.Sequential)] public struct PROCESS_INFORMATION { public IntPtr process; public IntPtr thread; public int pid; public int tid; }
+  [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)] public struct PROCESSENTRY32 { public int size; public int usage; public int pid; public IntPtr heap; public int module; public int threads; public int parent; public int priority; public int flags; [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)] public string exe; }
+  [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)] static extern bool CreateProcessW(string app, StringBuilder commandLine, IntPtr pa, IntPtr ta, bool inherit, uint flags, IntPtr env, string cwd, ref STARTUPINFO si, out PROCESS_INFORMATION pi);
+  [DllImport("kernel32.dll")] static extern uint ResumeThread(IntPtr thread);
+  [DllImport("kernel32.dll")] static extern uint WaitForSingleObject(IntPtr handle, uint ms);
+  [DllImport("kernel32.dll")] static extern bool GetExitCodeProcess(IntPtr process, out uint code);
+  [DllImport("kernel32.dll")] static extern IntPtr CreateToolhelp32Snapshot(uint flags, uint pid);
+  [DllImport("kernel32.dll", CharSet = CharSet.Unicode)] static extern bool Process32FirstW(IntPtr snapshot, ref PROCESSENTRY32 entry);
+  [DllImport("kernel32.dll", CharSet = CharSet.Unicode)] static extern bool Process32NextW(IntPtr snapshot, ref PROCESSENTRY32 entry);
+  [DllImport("kernel32.dll")] static extern bool CloseHandle(IntPtr handle);
+  [DllImport("shell32.dll", CharSet = CharSet.Unicode)] static extern IntPtr CommandLineToArgvW(string commandLine, out int count);
+  [DllImport("kernel32.dll")] static extern IntPtr LocalFree(IntPtr memory);
+  [DllImport("user32.dll")] public static extern bool PostMessage(IntPtr hwnd, uint msg, IntPtr w, IntPtr l);
+  [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)] static extern IntPtr CreateFileW(string name, uint access, uint share, IntPtr sa, uint disposition, uint flags, IntPtr template);
+  public static IntPtr OpenFolder(string path, uint access) { return CreateFileW(path, access, 0x1 | 0x2, IntPtr.Zero, 3, 0x02000000, IntPtr.Zero); }
+  public static void CloseFolder(IntPtr handle) { CloseHandle(handle); }
+  public static HashSet<int> Roots = new HashSet<int>();
+  static Dictionary<int, PROCESS_INFORMATION> started = new Dictionary<int, PROCESS_INFORMATION>();
+  public static int StartSuspended(string exe, string commandLine) {
+    STARTUPINFO si = new STARTUPINFO(); si.cb = Marshal.SizeOf(typeof(STARTUPINFO));
+    PROCESS_INFORMATION pi;
+    if (!CreateProcessW(exe, new StringBuilder(commandLine), IntPtr.Zero, IntPtr.Zero, false, 0x00000004, IntPtr.Zero, null, ref si, out pi)) return -1;
+    started[pi.pid] = pi; Roots.Add(pi.pid); return pi.pid;
+  }
+  public static void Resume(int pid) { ResumeThread(started[pid].thread); }
+  public static long WaitExit(int pid, int ms) {
+    PROCESS_INFORMATION pi = started[pid];
+    if (WaitForSingleObject(pi.process, (uint)ms) != 0) return -1;
+    uint code; GetExitCodeProcess(pi.process, out code); return code;
+  }
+  public static string[] Argv(string commandLine) {
+    int count; IntPtr argv = CommandLineToArgvW(commandLine, out count);
+    var result = new string[count];
+    for (int i = 0; i < count; i++) result[i] = Marshal.PtrToStringUni(Marshal.ReadIntPtr(argv, i * IntPtr.Size));
+    LocalFree(argv); return result;
+  }
+  public static Dictionary<int, int> Parents() {
+    var map = new Dictionary<int, int>();
+    IntPtr snapshot = CreateToolhelp32Snapshot(2, 0);
+    PROCESSENTRY32 e = new PROCESSENTRY32(); e.size = Marshal.SizeOf(typeof(PROCESSENTRY32));
+    if (Process32FirstW(snapshot, ref e)) { do { map[e.pid] = e.parent; } while (Process32NextW(snapshot, ref e)); }
+    CloseHandle(snapshot); return map;
+  }
+  public static bool IsTracked(int pid) {
+    if (!IsPilotProcess(pid)) return false;
+    var parents = Parents();
+    for (int hop = 0, at = pid; hop < 16; hop++) {
+      if (Roots.Contains(at)) return true;
+      int parent; if (!parents.TryGetValue(at, out parent) || parent == 0 || parent == at) return false;
+      at = parent;
+    }
+    return false;
+  }
   [StructLayout(LayoutKind.Sequential)] public struct MOUSEINPUT { public int dx; public int dy; public uint mouseData; public uint dwFlags; public uint time; public IntPtr extra; }
   [StructLayout(LayoutKind.Sequential)] public struct KEYBDINPUT { public ushort wVk; public ushort wScan; public uint dwFlags; public uint time; public IntPtr extra; }
   [StructLayout(LayoutKind.Explicit)] public struct UNION { [FieldOffset(0)] public MOUSEINPUT mi; [FieldOffset(0)] public KEYBDINPUT ki; }
@@ -70,7 +125,7 @@ public static class Pilot {
     var c = new StringBuilder(256); GetClassName(h, c, 256);
     if (!c.ToString().StartsWith("Chrome_WidgetWin")) return false;
     uint pid; GetWindowThreadProcessId(h, out pid);
-    if (!IsPilotProcess((int)pid)) return false;
+    if (!IsTracked((int)pid)) return false;
     RECT r; GetWindowRect(h, out r);
     return (r.Right - r.Left) > 400 && (r.Bottom - r.Top) > 300;
   }
@@ -117,8 +172,10 @@ function Wait-Shell([int]$seconds = 60) {
 
 function Rect-Text($r) { "$($r.Left),$($r.Top) $($r.Right - $r.Left)x$($r.Bottom - $r.Top)" }
 
+function Cdp-List { $all = Invoke-RestMethod -TimeoutSec 10 "http://127.0.0.1:$($script:Port)/json/list"; @($all | ForEach-Object { $_ }) }
+
 function Cdp-Command([string]$method, $params, [string]$match = 'chrome://ardia/', [switch]$NoReply) {
-  $targets = Invoke-RestMethod -TimeoutSec 10 http://127.0.0.1:9222/json/list
+  $targets = Cdp-List
   $target = $targets | Where-Object { $_.url -like "$match*" } | Select-Object -First 1
   if (-not $target) { return $null }
   $ws = New-Object System.Net.WebSockets.ClientWebSocket
@@ -145,11 +202,12 @@ function Cdp-Eval([string]$expression, [string]$match = 'chrome://ardia/') {
   if ($result) { $result.result.value } else { $null }
 }
 
-$App = 'C:\pilot\app'
+$App = if ($env:PILOT_APP) { $env:PILOT_APP } else { 'C:\pilot\app' }
 $RunsRoot = 'C:\pilot\runs'
 $Proof = 'C:\pilot\proof'
 $RunRoot = $null
 $Data = $null
+$Port = 0
 New-Item -ItemType Directory -Force $Proof, $RunsRoot | Out-Null
 
 function New-PilotRun {
@@ -160,6 +218,8 @@ function New-PilotRun {
   $script:RunRoot = $root
   $script:Data = Join-Path $root 'data'
   New-Item -ItemType Directory $script:Data | Out-Null
+  $busy = @(Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue | ForEach-Object LocalPort)
+  do { $script:Port = Get-Random -Minimum 9300 -Maximum 9900 } while ($busy -contains $script:Port)
   $root
 }
 
@@ -177,14 +237,30 @@ function Remove-PilotRun([string]$root) {
 function Start-Shell([switch]$Fresh, [string[]]$Extra = @()) {
   if ($Fresh -or -not $script:Data) { New-PilotRun | Out-Null }
   $env:ARDIA_DATA_DIR = $script:Data
-  $env:ARDIA_REMOTE_DEBUGGING_PORT = '9222'
+  $env:ARDIA_REMOTE_DEBUGGING_PORT = "$($script:Port)"
   $arguments = @('--ardia-shell=webui', '--enable-logging', '--v=0') + $Extra
-  Start-Process "$App\chrome.exe" -ArgumentList $arguments -PassThru
+  $p = Start-Process "$App\chrome.exe" -ArgumentList (Join-Arguments $arguments) -PassThru
+  [Pilot]::Roots.Add($p.Id) | Out-Null
+  $p
 }
+
+function Quote-Argument([string]$value) {
+  if ($value -and $value -notmatch '[\s"]') { return $value }
+  $out = '"'
+  $slashes = 0
+  foreach ($c in $value.ToCharArray()) {
+    if ($c -eq '\') { $slashes++; continue }
+    if ($c -eq '"') { $out += ('\' * ($slashes * 2 + 1)) + '"' } else { $out += ('\' * $slashes) + $c }
+    $slashes = 0
+  }
+  $out + ('\' * ($slashes * 2)) + '"'
+}
+
+function Join-Arguments([string[]]$arguments) { ($arguments | ForEach-Object { Quote-Argument $_ }) -join ' ' }
 
 [Pilot]::AppDir = $App + '\'
 
-function Engine-Processes { @(Get-Process chrome -ErrorAction SilentlyContinue | Where-Object { [Pilot]::IsPilotProcess($_.Id) }) }
+function Engine-Processes { @(Get-Process chrome -ErrorAction SilentlyContinue | Where-Object { [Pilot]::IsTracked($_.Id) }) }
 
 function Stop-Engine {
   Engine-Processes | Stop-Process -Force -ErrorAction SilentlyContinue

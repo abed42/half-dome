@@ -9,7 +9,7 @@
  
  #include "chrome/chrome_elf/nt_registry/nt_registry.h"
  #include "chrome/install_static/install_details.h"
-@@ -108,6 +110,182 @@
+@@ -108,8 +110,232 @@ bool IsHeadlessMode(const std::wstring& command_line) {
    return GetCommandLineSwitch(command_line, L"headless").has_value();
  }
  
@@ -66,73 +66,6 @@
 +  return path;
 +}
 +
-+std::wstring AsciiLower(std::wstring text) {
-+  for (wchar_t& c : text) {
-+    if (c >= L'A' && c <= L'Z')
-+      c = static_cast<wchar_t>(c - L'A' + L'a');
-+  }
-+  return text;
-+}
-+
-+bool IsWebUIShell(const std::wstring& command_line) {
-+  const std::vector<std::wstring> tokens =
-+      TokenizeCommandLineToArray(command_line);
-+  std::wstring value;
-+  bool found = false;
-+  for (size_t i = 1; i < tokens.size(); ++i) {
-+    const std::wstring& token = tokens[i];
-+    if (token == L"--")
-+      break;
-+    size_t prefix = 0;
-+    for (const wchar_t* candidate : {L"--", L"-", L"/"}) {
-+      const size_t length = ::wcslen(candidate);
-+      if (token.size() > length && token.compare(0, length, candidate) == 0) {
-+        prefix = length;
-+        break;
-+      }
-+    }
-+    if (prefix == 0)
-+      continue;
-+    const size_t equals = token.find(L'=', prefix);
-+    const std::wstring name = AsciiLower(token.substr(
-+        prefix, equals == std::wstring::npos ? std::wstring::npos
-+                                             : equals - prefix));
-+    if (name == L"single-argument")
-+      break;
-+    if (name != L"ardia-shell")
-+      continue;
-+    found = true;
-+    value = equals == std::wstring::npos ? std::wstring()
-+                                         : token.substr(equals + 1);
-+  }
-+  return found && value == L"webui";
-+}
-+
-+void AddReparseTargets(const std::wstring& folder,
-+                       int depth,
-+                       std::vector<std::wstring>* out) {
-+  WIN32_FIND_DATAW data;
-+  HANDLE find = ::FindFirstFileExW((folder + L"\\*").c_str(),
-+                                   FindExInfoBasic, &data,
-+                                   FindExSearchLimitToDirectories, nullptr, 0);
-+  if (find == INVALID_HANDLE_VALUE)
-+    return;
-+  do {
-+    const std::wstring name = data.cFileName;
-+    if (name == L"." || name == L".." ||
-+        !(data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
-+      continue;
-+    }
-+    const std::wstring child = folder + L"\\" + name;
-+    if (data.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
-+      out->push_back(ResolvedFolder(child));
-+    } else if (depth > 1) {
-+      AddReparseTargets(child, depth - 1, out);
-+    }
-+  } while (::FindNextFileW(find, &data));
-+  ::FindClose(find);
-+}
-+
 +std::vector<std::wstring> ReactNativeFolders() {
 +  std::vector<std::wstring> folders;
 +  for (const wchar_t* variable : {L"LOCALAPPDATA", L"APPDATA"}) {
@@ -142,8 +75,6 @@
 +    const std::wstring root = WithTrailingSlash(base) + L"Ardia";
 +    folders.push_back(ResolvedFolder(root));
 +    folders.push_back(ResolvedFolder(root + L"\\User Data"));
-+    if (::GetFileAttributesW(root.c_str()) != INVALID_FILE_ATTRIBUTES)
-+      AddReparseTargets(root, 2, &folders);
 +  }
 +  return folders;
 +}
@@ -161,13 +92,44 @@
 +  return false;
 +}
 +
++bool TreeHasReparsePoint(const std::wstring& root) {
++  std::vector<std::wstring> pending{root};
++  while (!pending.empty()) {
++    const std::wstring folder = std::move(pending.back());
++    pending.pop_back();
++    WIN32_FIND_DATAW data;
++    HANDLE find = ::FindFirstFileExW((folder + L"\\*").c_str(),
++                                     FindExInfoBasic, &data,
++                                     FindExSearchNameMatch, nullptr,
++                                     FIND_FIRST_EX_LARGE_FETCH);
++    if (find == INVALID_HANDLE_VALUE)
++      return true;
++    bool linked = false;
++    do {
++      const std::wstring name = data.cFileName;
++      if (name == L"." || name == L"..")
++        continue;
++      if (data.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
++        linked = true;
++        break;
++      }
++      if (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
++        pending.push_back(folder + L"\\" + name);
++    } while (::FindNextFileW(find, &data));
++    ::FindClose(find);
++    if (linked)
++      return true;
++  }
++  return false;
++}
++
 +HANDLE g_pinned_webui_folder = INVALID_HANDLE_VALUE;
 +
 +std::wstring PinWebUIFolder(const std::wstring& folder) {
-+  HANDLE handle = ::CreateFileW(folder.c_str(), 0,
-+                                FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
-+                                OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS,
-+                                nullptr);
++  HANDLE handle = ::CreateFileW(
++      folder.c_str(), FILE_LIST_DIRECTORY | SYNCHRONIZE,
++      FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING,
++      FILE_FLAG_BACKUP_SEMANTICS, nullptr);
 +  if (handle == INVALID_HANDLE_VALUE)
 +    return std::wstring();
 +  std::wstring path = FinalPathOfHandle(handle, VOLUME_NAME_DOS);
@@ -189,14 +151,102 @@
 +  ::TerminateProcess(::GetCurrentProcess(), 1);
 +}
 +
++void PauseAfterPinForTestBuild() {
++  wchar_t exe[MAX_PATH];
++  const DWORD length = ::GetModuleFileNameW(nullptr, exe, MAX_PATH);
++  if (length == 0 || length >= MAX_PATH)
++    return;
++  std::wstring marker(exe, length);
++  const size_t slash = marker.find_last_of(L'\\');
++  if (slash == std::wstring::npos)
++    return;
++  marker.resize(slash + 1);
++  marker.append(L"Ardia.test-build");
++  if (::GetFileAttributesW(marker.c_str()) == INVALID_FILE_ATTRIBUTES)
++    return;
++  const std::wstring pause = GetEnvironmentString(L"ARDIA_TEST_PIN_PAUSE_MS");
++  if (pause.empty())
++    return;
++  DWORD milliseconds = 0;
++  for (wchar_t c : pause) {
++    if (c < L'0' || c > L'9')
++      return;
++    milliseconds = milliseconds * 10 + static_cast<DWORD>(c - L'0');
++    if (milliseconds > 30000)
++      milliseconds = 30000;
++  }
++  ::Sleep(milliseconds);
++}
++
++constexpr wchar_t kBaseWhitespace[] = {
++    0x09,   0x0B,   0x0C,   0x20,   0x0A,   0x0D,   0x0085, 0x00A0,
++    0x1680, 0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005, 0x2006,
++    0x2007, 0x2008, 0x2009, 0x200A, 0x2028, 0x2029, 0x202F, 0x205F,
++    0x3000, 0};
++
++std::wstring TrimmedLikeBase(const std::wstring& text) {
++  const size_t first = text.find_first_not_of(kBaseWhitespace);
++  if (first == std::wstring::npos)
++    return std::wstring();
++  const size_t last = text.find_last_not_of(kBaseWhitespace);
++  return text.substr(first, last - first + 1);
++}
++
++size_t SwitchPrefixLength(const std::wstring& text) {
++  for (const wchar_t* prefix : {L"--", L"-", L"/"}) {
++    const size_t length = ::wcslen(prefix);
++    if (text.compare(0, length, prefix) == 0)
++      return length;
++  }
++  return 0;
++}
++
++std::wstring AsciiLower(std::wstring text) {
++  for (wchar_t& c : text) {
++    if (c >= L'A' && c <= L'Z')
++      c = static_cast<wchar_t>(c - L'A' + L'a');
++  }
++  return text;
++}
++
  }  // namespace
  
++bool IsWebUIShellCommandLine(const std::wstring& command_line) {
++  const std::wstring trimmed = TrimmedLikeBase(command_line);
++  if (trimmed.empty())
++    return false;
++  const std::vector<std::wstring> tokens = TokenizeCommandLineToArray(trimmed);
++  bool parse_switches = true;
++  std::optional<std::wstring> value;
++  for (size_t i = 1; i < tokens.size(); ++i) {
++    const std::wstring arg = TrimmedLikeBase(tokens[i]);
++    parse_switches = parse_switches && arg != L"--";
++    if (!parse_switches)
++      continue;
++    const size_t prefix = SwitchPrefixLength(arg);
++    if (prefix == 0 || prefix == arg.size())
++      continue;
++    const size_t equals = arg.find(L'=');
++    const std::wstring switch_string = arg.substr(0, equals);
++    if (switch_string.substr(prefix) == L"single-argument")
++      break;
++    const std::wstring key = AsciiLower(switch_string);
++    if (key.substr(SwitchPrefixLength(key)) != L"ardia-shell")
++      continue;
++    value = equals == std::wstring::npos ? std::wstring()
++                                         : arg.substr(equals + 1);
++  }
++  return value.has_value() && *value == L"webui";
++}
++
  bool GetUserDataDirectoryImpl(const std::wstring& command_line,
-@@ -135,6 +313,13 @@
+                               const InstallConstants& mode,
+                               std::wstring* result,
+@@ -135,6 +361,13 @@ bool GetUserDataDirectoryImpl(const std::wstring& command_line,
      }
    }
  
-+  const bool webui = IsWebUIShell(command_line);
++  const bool webui = IsWebUIShellCommandLine(command_line);
 +  if (webui && user_data_dir.empty()) {
 +    const std::wstring local = GetEnvironmentString(L"LOCALAPPDATA");
 +    if (!local.empty())
@@ -206,7 +256,7 @@
    // Headless Chrome instances are expected to run in parallel with the headful
    // Chrome and other headless Chrome instances. In order to do so, headless
    // Chrome needs a dedicated user data directory for each headless instance.
-@@ -157,8 +342,18 @@
+@@ -157,8 +390,18 @@ bool GetUserDataDirectoryImpl(const std::wstring& command_line,
      user_data_dir.pop_back();
    }
  
@@ -225,19 +275,169 @@
    if (!got_valid_directory) {
      *invalid_supplied_directory = user_data_dir;
      got_valid_directory = GetDefaultUserDataDirectory(mode, &user_data_dir);
-@@ -171,6 +366,15 @@
+@@ -171,6 +414,17 @@ bool GetUserDataDirectoryImpl(const std::wstring& command_line,
    if (!got_valid_directory)
      return false;
  
 +  if (webui) {
 +    const std::wstring pinned = PinWebUIFolder(user_data_dir);
-+    if (pinned.empty() || JoinsReactNativeFolders(pinned)) {
++    if (pinned.empty() || JoinsReactNativeFolders(pinned) ||
++        TreeHasReparsePoint(pinned)) {
 +      RefuseWebUIShell();
 +      return false;
 +    }
++    PauseAfterPinForTestBuild();
 +    user_data_dir = pinned;
 +  }
 +
    *result = MakeAbsoluteFilePath(user_data_dir);
    return true;
  }
+--- a/chrome/install_static/user_data_dir.h
++++ b/chrome/install_static/user_data_dir.h
+@@ -49,6 +49,8 @@ bool GetUserDataDirectory(std::wstring* user_data_directory,
+ // data directory specification.
+ bool IsTemporaryUserDataDirectoryCreatedForHeadless();
+ 
++bool IsWebUIShellCommandLine(const std::wstring& command_line);
++
+ }  // namespace install_static
+ 
+ #endif  // CHROME_INSTALL_STATIC_USER_DATA_DIR_H_
+--- a/chrome/install_static/user_data_dir_win_unittest.cc
++++ b/chrome/install_static/user_data_dir_win_unittest.cc
+@@ -4,12 +4,23 @@
+ 
+ #include "chrome/install_static/user_data_dir.h"
+ 
++#include <windows.h>
++
++#include <shellapi.h>
++
+ #include <algorithm>
++#include <string>
++#include <vector>
+ 
++#include "base/command_line.h"
++#include "base/compiler_specific.h"
++#include "base/strings/string_util.h"
++#include "base/strings/utf_string_conversions.h"
+ #include "base/test/test_reg_util_win.h"
+ #include "build/branding_buildflags.h"
+ #include "chrome/chrome_elf/nt_registry/nt_registry.h"
+ #include "chrome/install_static/install_details.h"
++#include "chrome/install_static/install_util.h"
+ #include "testing/gmock/include/gmock/gmock.h"
+ #include "testing/gtest/include/gtest/gtest.h"
+ 
+@@ -217,5 +228,110 @@ TEST(UserDataDir, HasNoHeadlessTempUserDataDirIfProvidedByPolicy) {
+   EXPECT_FALSE(IsTemporaryUserDataDirectoryCreatedForHeadless());
+ }
+ 
++
++constexpr int kEither = -1;
++
++struct ShellSwitchCase {
++  const wchar_t* command_line;
++  int webui;
++};
++
++constexpr ShellSwitchCase kShellSwitchCases[] = {
++    {L"chrome.exe --ardia-shell=webui", 1},
++    {L"chrome.exe --ARDIA-SHELL=webui", 1},
++    {L"chrome.exe --Ardia-Shell=webui", 1},
++    {L"chrome.exe -ardia-shell=webui", 1},
++    {L"chrome.exe /ardia-shell=webui", 1},
++    {L"chrome.exe\t--ardia-shell=webui", 1},
++    {L"chrome.exe --ardia-shell=WebUI", 0},
++    {L"chrome.exe --ardia-shell", 0},
++    {L"chrome.exe --ardia-shell=", 0},
++    {L"chrome.exe --ardia-shell=webui --ardia-shell=rnw", 0},
++    {L"chrome.exe --ardia-shell=rnw --ARDIA-SHELL=webui", 1},
++    {L"chrome.exe -- --ardia-shell=webui", 0},
++    {L"chrome.exe --ardia-shell=webui -- --ardia-shell=rnw", 1},
++    {L"chrome.exe \" -- \" --ardia-shell=webui", 0},
++    {L"chrome.exe \"\t--\t\" --ardia-shell=webui", 0},
++    {L"chrome.exe \" --ardia-shell=webui \"", 1},
++    {L"chrome.exe \"--ardia-shell=webui\"", 1},
++    {L"chrome.exe --ardia-shell=\"webui\"", 1},
++    {L"chrome.exe \"--ardia-shell=web ui\"", 0},
++    {L"chrome.exe --ardia-shell=webui\x3000", 1},
++    {L"chrome.exe --ardia-shell=webui\x00A0", 1},
++    {L"chrome.exe \x3000--ardia-shell=webui", 1},
++    {L"chrome.exe ---ardia-shell=webui", 0},
++    {L"chrome.exe --ardia-shell==webui", 0},
++    {L"chrome.exe --ardia\x2011shell=webui", 0},
++    {L"chrome.exe --ardia-shell=w\x00E9" L"bui", 0},
++    {L"chrome.exe --single-argument --ardia-shell=webui", 0},
++    {L"chrome.exe --SINGLE-ARGUMENT --ardia-shell=webui", 1},
++    {L"chrome.exe --Single-Argument --ardia-shell=webui", 1},
++    {L"chrome.exe /single-argument --ardia-shell=webui", 0},
++    {L"chrome.exe -single-argument=x --ardia-shell=webui", 0},
++    {L"chrome.exe \" --single-argument\" --ardia-shell=webui", 0},
++    {L"chrome.exe --ardia-shell=webui --single-argument --ardia-shell=rnw", 1},
++    {L"   chrome.exe --ardia-shell=webui", 1},
++    {L" --ardia-shell=webui", 0},
++    {L"\"--ardia-shell=webui\" --other", 0},
++    {L"\"C:\\Program Files\\Ardia\\chrome.exe\" --ardia-shell=webui", 1},
++    {L"chrome.exe --user-data-dir=\"C:\\a b\" --ardia-shell=webui", 1},
++    {L"chrome.exe --ardia-shell=webui \"\"", 1},
++    {L"chrome.exe \"\"--ardia-shell=webui", kEither},
++    {L"chrome.exe \"a\"\"b\" --ardia-shell=webui", kEither},
++    {L"chrome.exe --ardia-shell=webui\\\" x", kEither},
++    {L"chrome.exe \"--ardia-shell=webui", kEither},
++    {L"chrome.exe -", 0},
++    {L"chrome.exe --", 0},
++    {L"chrome.exe --=webui", 0},
++    {L"", 0},
++    {L"   ", 0},
++};
++
++std::vector<std::wstring> CommandLineToArgvWTokens(
++    const std::wstring& command_line) {
++  std::vector<std::wstring> tokens;
++  HMODULE shell = ::LoadLibraryExW(L"api-ms-win-downlevel-shell32-l1-1-0.dll",
++                                   nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
++  if (!shell)
++    return tokens;
++  auto* split = reinterpret_cast<decltype(::CommandLineToArgvW)*>(
++      ::GetProcAddress(shell, "CommandLineToArgvW"));
++  int count = 0;
++  wchar_t** args = split ? split(command_line.c_str(), &count) : nullptr;
++  if (!args) {
++    ::FreeLibrary(shell);
++    return tokens;
++  }
++  for (int i = 0; i < count; ++i)
++    tokens.emplace_back(UNSAFE_BUFFERS(args[i]));
++  ::LocalFree(args);
++  ::FreeLibrary(shell);
++  return tokens;
++}
++
++TEST(UserDataDir, ArdiaShellSwitchMatchesBaseCommandLine) {
++  for (const ShellSwitchCase& c : kShellSwitchCases) {
++    SCOPED_TRACE(base::WideToUTF8(c.command_line));
++    const bool early = IsWebUIShellCommandLine(c.command_line);
++    const bool late = base::CommandLine::FromString(c.command_line)
++                          .GetSwitchValueASCII("ardia-shell") == "webui";
++    EXPECT_EQ(early, late);
++    if (c.webui != kEither)
++      EXPECT_EQ(late, c.webui == 1);
++  }
++}
++
++TEST(UserDataDir, ArdiaShellTokensMatchCommandLineToArgvW) {
++  for (const ShellSwitchCase& c : kShellSwitchCases) {
++    SCOPED_TRACE(base::WideToUTF8(c.command_line));
++    const std::wstring trimmed(
++        base::TrimWhitespace(std::wstring_view(c.command_line), base::TRIM_ALL));
++    if (trimmed.empty())
++      continue;
++    EXPECT_EQ(TokenizeCommandLineToArray(trimmed),
++              CommandLineToArgvWTokens(trimmed));
++  }
++}
++
+ }  // namespace
+ }  // namespace install_static
