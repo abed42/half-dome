@@ -114,9 +114,10 @@ export function usePresence<T>(value: T | null, motion: { show: Fade; hide: Fade
   const appear = useRef(new Animated.Value(showing && !enter ? 1 : 0)).current;
   const heading = useRef(showing && !enter);
   useEffect(() => {
-    if (heading.current === showing) return;
+    const target = showing ? 1 : 0;
+    if (heading.current === showing && currentValue(appear) === target) return;
     heading.current = showing;
-    const run = Animated.timing(appear, { toValue: showing ? 1 : 0, ...(showing ? motion.show : motion.hide), useNativeDriver: true });
+    const run = Animated.timing(appear, { toValue: target, ...(showing ? motion.show : motion.hide), useNativeDriver: true });
     run.start(({ finished }) => finished && !showing && setMounted(false));
     return () => run.stop();
   }, [showing]);
