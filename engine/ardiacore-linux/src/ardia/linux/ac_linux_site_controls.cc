@@ -335,7 +335,7 @@ std::variant<ServiceRequest, Failure> PrepareServiceCall(std::string_view name,
   }
   if (name == "sites.registrableDomains") {
     const base::Value* hosts = args.Find("hosts");
-    if (!OnlyKeys(args, {"hosts"}) || !hosts || !hosts->is_list() || hosts->GetList().empty() ||
+    if (!OnlyKeys(args, {"hosts"}) || !hosts || !hosts->is_list() || hosts->GetList().size() == 0 ||
         hosts->GetList().size() > kMaxRegistrableHosts)
       return Invalid("hosts must list 1 to 256 host names");
     base::ListValue names;
@@ -343,7 +343,7 @@ std::variant<ServiceRequest, Failure> PrepareServiceCall(std::string_view name,
       if (!host.is_string() || host.GetString().size() > kMaxRegistrableHost) return Invalid("each host must be a string");
       names.Append(base::Value(host.GetString()));
     }
-    return ServiceRequest{"ac_registrable_domains", base::DictValue().Set("hosts", std::move(names))};
+    return ServiceRequest{"ac_registrable_domains", base::DictValue().Set("hosts", base::Value(std::move(names)))};
   }
   if (name == "profiles.clearBrowsingData") {
     if (!OnlyKeys(args, {"types", "since"})) return Invalid("unexpected browsing data arguments");
@@ -422,7 +422,7 @@ std::variant<base::Value, Failure> CompleteServiceCall(std::string_view name,
       if (!domain.is_string()) return BadReply("Malformed registrable domain");
       out.Append(base::Value(domain.GetString()));
     }
-    return base::Value(base::DictValue().Set("domains", std::move(out)));
+    return base::Value(base::DictValue().Set("domains", base::Value(std::move(out))));
   }
   if (name == "profiles.clearBrowsingData") {
     const std::optional<bool> ok = Bool(dict, "ok");

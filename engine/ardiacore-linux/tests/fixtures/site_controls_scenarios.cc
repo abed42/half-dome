@@ -151,7 +151,7 @@ void HandlesAndProfiles() {
   }
   assert(IsContentBlockerCall("contentBlocker.state") && !IsContentBlockerCall("sites.settings"));
   const auto capabilities = Capabilities();
-  assert(capabilities.size() == 17);
+  assert(capabilities.size() == 19);
   for (const auto name : capabilities) assert(Handles(name) && name != "contentBlocker.devDelayNextLoad");
   auto route = [](std::string_view name, std::string_view requested) { return RouteProfile(name, requested, false); };
   auto from_private = [](std::string_view name, std::string_view requested) { return RouteProfile(name, requested, true); };
@@ -456,13 +456,13 @@ void CustomFilterLists() {
   assert(!ChangedBlocker(BlockerOp::kIsAllowed, &removed_yes));
   assert(BridgeOpName(BlockerOp::kRemoveAllowed) == "removeAllowed");
   assert(PrivateBlockerRefusal("contentBlocker.removeAllowed", base::DictValue().Set("host", "example.com"), true)->code == "ERR_PROFILE_PRIVATE");
-  auto registrable = PrepareServiceCall("sites.registrableDomains", base::DictValue().Set("hosts", base::Value(base::ListValue().Append("a.example.com").Append("ardia-probe.a.example.com"))));
+  auto registrable = PrepareServiceCall("sites.registrableDomains", base::DictValue().Set("hosts", base::Value(base::ListValue().Append(base::Value("a.example.com")).Append(base::Value("ardia-probe.a.example.com")))));
   assert(std::get<ServiceRequest>(registrable).service == "ac_registrable_domains");
   assert(AsFailure(PrepareServiceCall("sites.registrableDomains", base::DictValue())));
   assert(AsFailure(PrepareServiceCall("sites.registrableDomains", base::DictValue().Set("hosts", base::Value(base::ListValue())))));
-  assert(AsFailure(PrepareServiceCall("sites.registrableDomains", base::DictValue().Set("hosts", base::Value(base::ListValue().Append(3))))));
-  auto domains = CompleteServiceCall("sites.registrableDomains", base::Value(base::DictValue().Set("domains", base::Value(base::ListValue().Append("example.com").Append("example.com")))));
-  assert(std::get<base::Value>(domains).GetDict().FindList("domains")->size() == 2);
+  assert(AsFailure(PrepareServiceCall("sites.registrableDomains", base::DictValue().Set("hosts", base::Value(base::ListValue().Append(base::Value(3)))))));
+  auto domains = CompleteServiceCall("sites.registrableDomains", base::Value(base::DictValue().Set("domains", base::Value(base::ListValue().Append(base::Value("example.com")).Append(base::Value("example.com"))))));
+  assert(std::get<base::Value>(domains).GetDict().Find("domains")->GetList().size() == 2);
   assert(Handles("sites.registrableDomains") && Handles("contentBlocker.removeAllowed"));
   assert(BridgeOpName(BlockerOp::kAddList) == "addList");
   assert(BridgeOpName(BlockerOp::kRemoveList) == "removeList");
