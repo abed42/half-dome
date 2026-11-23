@@ -1,7 +1,7 @@
 param([string]$Label = 'dpi100', [switch]$Fresh, [int]$Record = 200)
 . C:\pilot\lib.ps1
 $ErrorActionPreference = 'Continue'
-$results = [ordered]@{}
+$results = New-Object System.Collections.Specialized.OrderedDictionary ([StringComparer]::Ordinal)
 function Check([string]$name, [bool]$ok, [string]$detail) {
   $results[$name] = @{ ok = $ok; detail = $detail }
   Log ("{0} {1}: {2}" -f ($(if ($ok) { 'PASS' } else { 'FAIL' }), $name, $detail))

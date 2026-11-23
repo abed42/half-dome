@@ -1525,8 +1525,11 @@ only where the engine, Windows itself or a decision stands in the way.
 Issue #3686, part of #3678 (Track 4 of the cross-platform design: Windows on the desktop host). The pilot asks whether
 Windows can drop React Native Windows and run the Linux model: Chromium is the app, and the shared desktop UI
 (`apps/linux`, later `apps/desktop`) is served from `chrome://ardia/`. It proves the hard parts on one window before any
-Linux patch is widened or the host is moved. Proven on 2026-11-22 on Windows 11 (Boat VM, `dockurr/windows`,
-1920×1080) at 100% and 150% scaling, with a Windows x64 engine built from `main` at `22a996d` plus this change.
+Linux patch is widened or the host is moved. Proven on 2026-11-23 in a fresh Windows 11 guest (Boat VM, `dockurr/windows`,
+1920×1080) at 100% and 150% scaling, with a Windows x64 engine and UI bundle built from this change on `main` at
+`12f9fd5`: the real-input run (28 checks at each scale), the junction check (18), the bridge's hostile-input check (11
+checks over 15 malformed requests, 6 bad arguments, 12 reserved tab URLs and 5 reserved navigations) and the
+stale-document check (8) all passed.
 
 ### Selecting the shell and keeping real data out
 

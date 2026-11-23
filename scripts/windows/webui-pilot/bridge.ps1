@@ -1,13 +1,13 @@
 . C:\pilot\lib.ps1
 $ErrorActionPreference = 'Continue'
-$results = [ordered]@{}
+$results = New-Object System.Collections.Specialized.OrderedDictionary ([StringComparer]::Ordinal)
 function Check([string]$name, [bool]$ok, [string]$detail) {
   $results[$name] = @{ ok = $ok; detail = $detail }
   Log ("{0} {1}: {2}" -f ($(if ($ok) { 'PASS' } else { 'FAIL' }), $name, $detail))
 }
 function ShellLog { @(Get-Content "$Data\Chromium\chrome_debug.log" -ErrorAction SilentlyContinue | Select-String 'WebUI shell' | ForEach-Object { $_.Line.Substring($_.Line.IndexOf('WebUI shell')) }) }
 function PagesCreated { @(ShellLog | Where-Object { $_ -match 'page \d+ created' }).Count }
-function PageTargets { @(Invoke-RestMethod -TimeoutSec 10 http://127.0.0.1:9222/json/list | Where-Object { $_.type -eq 'page' -and $_.url -notlike 'chrome://ardia/*' } | ForEach-Object { $_.url }) }
+function PageTargets { $all = Invoke-RestMethod -TimeoutSec 10 http://127.0.0.1:9222/json/list; @($all | ForEach-Object { $_ } | Where-Object { $_.type -eq 'page' -and $_.url -notlike 'chrome://ardia/*' } | ForEach-Object { $_.url }) }
 function Js([string]$value) { $value | ConvertTo-Json -Compress }
 function Invoke-Host([string]$method, [string]$argsJson) {
   Cdp-Eval "__ardiaHost.invoke($(Js $method), $argsJson).then(r => JSON.stringify({ ok: true, r }), e => JSON.stringify({ ok: false, e: String(e && e.message || e) }))"
@@ -18,7 +18,6 @@ Stop-Engine
 Start-Shell -Fresh | Out-Null
 Wait-Shell 60 | Out-Null
 Start-Sleep -Seconds 10
-Cdp-Eval '(() => { const original = window.__ardiaReply; window.__bridgeReplies = []; window.__ardiaReply = (id, ok, value) => { window.__bridgeReplies.push({ id, ok }); return original(id, ok, value); }; return "watching"; })()' | Out-Null
 
 $made = Invoke-Host 'tab.create' '{ "key": "bridge-ok", "claim": "bridge-claim", "profile": "default", "url": "file:///C:/pilot/form.html?bridge" }' | ConvertFrom-Json
 $control = $made.r.browserId
@@ -51,15 +50,29 @@ foreach ($case in $malformed.GetEnumerator()) {
   Log "malformed $($case.Key): $sent"
 }
 Start-Sleep -Seconds 4
-$replies = Cdp-Eval 'JSON.stringify(window.__bridgeReplies)' | ConvertFrom-Json
 $targets = PageTargets
 $created = PagesCreated
-$refusedWithAnswer = @('m-args', 'm-unknown', 'm-key', 'm-bigkey', 'm-urltype')
-$answered = @($replies | Where-Object { $refusedWithAnswer -contains $_.id -and -not $_.ok }).Count
-$silent = @($replies | Where-Object { @('m-one', 'm-four', 'm-op', 'm-payload', 'm-array', '', 7) -contains $_.id -or "$($_.id)" -match '^x{300}$' }).Count
 $leaked = @($targets | Where-Object { $_ -like '*malformed*' })
 Check 'malformed-requests-make-no-page' (($created -eq $baseCreated) -and ($leaked.Count -eq 0) -and ($targets.Count -eq 1)) "$($malformed.Count) malformed requests; pages created $baseCreated -> $created; pages: $($targets -join ' | ')"
-Check 'malformed-requests-answered-or-dropped' (($answered -eq $refusedWithAnswer.Count) -and ($silent -eq 0)) "refused with an answer: $answered of $($refusedWithAnswer.Count); answered when the shape is wrong: $silent; replies: $($replies | ConvertTo-Json -Compress)"
+$identity = Cdp-Eval '__ardiaHost.invoke("ArdiaShell.windowIdentity", {})'
+Check 'bridge-answers-after-malformed-requests' ($identity -eq 'main') "ArdiaShell.windowIdentity answered '$identity'"
+$refusals = [ordered]@{
+  'key-missing'   = '{ "claim": "C", "profile": "default", "url": "file:///C:/pilot/form.html?refused-key" }'
+  'key-oversized' = "{ `"key`": $(Js ('k' * 300)), `"claim`": `"C`", `"profile`": `"default`", `"url`": `"file:///C:/pilot/form.html?refused-bigkey`" }"
+  'claim-missing' = '{ "key": "refused-claim", "profile": "default", "url": "file:///C:/pilot/form.html?refused-claim" }'
+  'url-not-text'  = '{ "key": "refused-urltype", "claim": "C", "profile": "default", "url": { "href": "file:///C:/pilot/form.html?refused-urltype" } }'
+  'url-is-list'   = '{ "key": "refused-urllist", "claim": "C", "profile": "default", "url": ["file:///C:/pilot/form.html?refused-urllist"] }'
+  'private-profile' = '{ "key": "refused-private", "claim": "C", "profile": "@default", "url": "file:///C:/pilot/form.html?refused-private" }'
+}
+$refusedCount = 0
+foreach ($case in $refusals.GetEnumerator()) {
+  $answer = Invoke-Host 'tab.create' $case.Value | ConvertFrom-Json
+  Log "refusal $($case.Key) -> $($answer | ConvertTo-Json -Compress -Depth 6)"
+  if (-not $answer.ok) { $refusedCount++ }
+}
+Start-Sleep -Seconds 2
+$targets = PageTargets
+Check 'bad-create-arguments-refused' (($refusedCount -eq $refusals.Count) -and ((PagesCreated) -eq $baseCreated) -and (@($targets | Where-Object { $_ -like '*refused*' }).Count -eq 0)) "$refusedCount of $($refusals.Count) refused with an answer; pages: $($targets -join ' | ')"
 
 $reserved = @(
   'javascript:alert(1)', 'JavaScript:alert(1)', 'chrome://ardia/', 'CHROME://ARDIA/index.html', 'chrome://ardia./',
