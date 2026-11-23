@@ -1525,11 +1525,12 @@ only where the engine, Windows itself or a decision stands in the way.
 Issue #3686, part of #3678 (Track 4 of the cross-platform design: Windows on the desktop host). The pilot asks whether
 Windows can drop React Native Windows and run the Linux model: Chromium is the app, and the shared desktop UI
 (`apps/linux`, later `apps/desktop`) is served from `chrome://ardia/`. It proves the hard parts on one window before any
-Linux patch is widened or the host is moved. Proven on 2026-11-23 in a fresh Windows 11 guest (Boat VM, `dockurr/windows`,
-1920×1080) at 100% and 150% scaling, with a Windows x64 engine and UI bundle built from this change on `main` at
-`12f9fd5`: the real-input run (28 checks at each scale), the junction check (18), the bridge's hostile-input check (11
-checks over 15 malformed requests, 6 bad arguments, 12 reserved tab URLs and 5 reserved navigations) and the
-stale-document check (8) all passed.
+Linux patch is widened or the host is moved. Proven on 2026-11-23 in a fresh Windows 11 guest (`dockurr/windows` on
+a Boat VM, 1920×1080) at 100% and 150% scaling, with a Windows x64 engine and UI bundle built from this change on
+`main` at `16bd298`: the real-input run (28 checks at each scale), the junction check (31, every launch's real
+argv checked), the bridge's hostile-input check (11 checks over 15 malformed requests, 6 bad arguments, 12 reserved
+tab URLs and 5 reserved navigations), the stale-document check (8), the close-cycle check (12 closes with
+pass-through regions active) and `install_static_unittests --gtest_filter=UserDataDir.ArdiaShell*` all passed.
 
 ### Selecting the shell and keeping real data out
 
@@ -1667,6 +1668,16 @@ Proofs (screenshots, two 105 s recordings, logs) are in the PR.
 
 Found on the way, and the fixes the desktop host needs too:
 
+- **Tear the shell down while its views are alive.** With `CLIENT_OWNS_WIDGET`, `~ShellContents` freed its pass-through
+  regions before `views::View` deleted the shell `WebView`, whose WebContents teardown reached `RetireRenderer` and
+  wrote into the freed vector. The engine before `TearDown` crashed on 12 of 12 closes with pass-through regions active
+  (`close.ps1`: exit `0x80000003` and a Crashpad dump each time, by `ArdiaShell.closeWindow` and by `WM_CLOSE`); with
+  it, 12 of 12 exit 0 with no dump. The desktop host owns its widget the same way and needs the same order.
+- **Running `install_static_unittests` on Windows** needs `icudtl.dat`, `dbghelp.dll`, `dbgcore.dll` and
+  `msdia140.dll` beside it and a process at normal priority (a scheduled task's background priority fails its start
+  check). Seven of Chromium's own `UserDataDir` tests fail there because they expect `Chromium\User Data` and the
+  `Chromium` policy key, which Helium and `chromium-win-install-names.patch` rename; the `UserDataDir.ArdiaShell*`
+  tests are the ones this change adds, and they pass.
 - **Pass-through needs a root `WindowTargeter` on Windows.** The Linux model (shell `WebView` above the page
   `WebView`s, `WidgetDelegate::ShouldDescendIntoChildForEventHandling` skipping the shell where a page shows) was not
   enough: `Widget::ShouldDescendIntoChildForEventHandling` then compares view and window layers
