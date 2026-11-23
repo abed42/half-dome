@@ -79,7 +79,7 @@ function mark(key: string, kind: string, from: number, until = Infinity): number
 type NewTab = { journey: "j2"; key: string; t0: number; heard: number; bar?: number; barSettled?: boolean; keyAt?: number; suggested?: number };
 type Switch = { journey: "j3"; key: string; t0: number; heard: number };
 type Navigate = { journey: "j4"; key: string; t0: number; until?: number };
-type Launch = { journey: "j1"; t0: number; firstWindow?: number; commit?: number; usable?: number; keys: string[]; tabs: number; windows: number };
+type Launch = { journey: "j1"; t0: number; firstWindow?: number; render?: number; commit?: number; usable?: number; keys: string[]; tabs: number; windows: number };
 type Pending = NewTab | Switch | Navigate | Launch;
 
 const MAX_PENDING = 50;
@@ -198,7 +198,7 @@ let previousLaunch: PreviousLaunch = { lastLaunchAt: null, lastQuitAt: null, fir
 
 let firstRootCommitted = false;
 
-export function launchCommitted() {
+export function launchCommitted(renderedAt?: number) {
   if (firstRootCommitted) return;
   firstRootCommitted = true;
   if (launch || launchSent || !on) return;
@@ -210,7 +210,7 @@ export function launchCommitted() {
     const tab = activeTabId(s, id);
     if (tab && s.tabs[tab]?.url && !isAsleep(s.tabs[tab])) keys.push(tab);
   }
-  launch = { journey: "j1", t0: start, commit: Date.now(), keys, tabs: Object.keys(s.tabs).length, windows: s.windowOrder.length };
+  launch = { journey: "j1", t0: start, render: renderedAt, commit: Date.now(), keys, tabs: Object.keys(s.tabs).length, windows: s.windowOrder.length };
   frame("launch", "content");
   probeUsable(launch);
   begin(launch);
@@ -269,7 +269,7 @@ function sendLaunch(l: Launch, content: number | null, paints: number[]) {
     early_window_ms: ms(launchMarks?.earlyWindowShown),
     rn_ms: ms(launchMarks?.reactNativeStarted),
     js_ms: ms(jsStartedAt),
-    commit_ms: ms(l.commit), first_commit_ms: firstCommitMs(l.commit),
+    commit_ms: ms(l.commit), first_commit_ms: firstCommitMs(l.render, l.commit),
     content_ms: ms(content),
     usable_ms: ms(l.usable === undefined ? undefined : Math.max(l.usable, content ?? 0)),
     tab_request_ms: ms(tab ? mark(tab, "request", l.t0) : null),
