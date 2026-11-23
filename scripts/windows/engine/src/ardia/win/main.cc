@@ -22,6 +22,7 @@
 #include "ardia/win/test_gate.h"
 #include "ardia/win/webui/webui_mode.h"
 #include "ardia/win/webui/webui_shell.h"
+#include "base/base_paths.h"
 #include "base/base_paths_win.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
@@ -638,6 +639,11 @@ void RelaunchIntoWebUIProfile() {
     return;
   }
   base::CommandLine relaunch = base::CommandLine::FromString(::GetCommandLineW());
+  base::FilePath program;
+  if (!base::PathService::Get(base::FILE_EXE, &program)) {
+    base::Process::TerminateCurrentProcessImmediately(1);
+  }
+  relaunch.SetProgram(program);
   if (relaunch.HasSwitch(kWebUIRelaunchedSwitch)) {
     LOG(ERROR) << "Ardia engine: the WebUI shell's profile folder was not "
                   "taken after a relaunch; not starting";

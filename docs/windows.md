@@ -1688,6 +1688,15 @@ layouts flyout over an HTML button. Open points:
   (`chromium-win-install-names.patch`) so `install_static` picks the right folder at once.
 - **`install_static` puts `ARDIA_DATA_DIR` ahead of `--user-data-dir`** (`chromium-win-install-names.patch`), which is
   why a test instance's WebUI profile is `<ARDIA_DATA_DIR>\Chromium`.
+- **Profile checks compare path spellings.** `SamePath`/`Inside` (and the asset containment of the data source, as on
+  Linux) don't resolve junctions, so a junction planted in `%LOCALAPPDATA%\Ardia WebUI` or `ardia-ui\` would be
+  followed. The desktop host should check the opened folders' final paths, as the test gate already does
+  (`test_gate.cc`, `CanonicalPath`). The test gate now refuses `%LOCALAPPDATA%\Ardia WebUI` as a scratch folder.
+- **Crashpad starts before `ChromeMain`.** No Crashpad folder appeared under `%LOCALAPPDATA%\Ardia` in the run above,
+  but the first, relaunching process opens Crashpad at `install_static`'s folder if crash reporting is on; a WebUI
+  install mode removes the relaunch and this with it.
+- **Private pages and private `engine.call`s are refused** in the pilot (a private page would trip
+  `ScopedProfileKeepAlive`'s check on an off-the-record profile).
 - **Pages are bare `WebContents`.** No tab helpers, `TabStripModel`, dialogs, permission prompts, downloads, popups or
   devtools: that is what the companion-browser model of the Linux host (and its patches) gives.
 

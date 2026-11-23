@@ -108,14 +108,15 @@ std::wstring RealFolderClashOf(const std::vector<std::wstring>& canonical) {
     if (!base::PathService::Get(key, &folder) || folder.empty()) {
       return L"the real profile folder can't be resolved";
     }
-    std::optional<std::wstring> real =
-        CanonicalPath(folder.Append(FILE_PATH_LITERAL("Ardia")));
-    if (!real) {
-      return L"the real profile folder can't be resolved";
-    }
-    for (const std::wstring& mine : canonical) {
-      if (Overlaps(mine, *real)) {
-        return L"ARDIA_DATA_DIR is or overlaps the real profile folder";
+    for (const wchar_t* name : {L"Ardia", L"Ardia WebUI"}) {
+      std::optional<std::wstring> real = CanonicalPath(folder.Append(name));
+      if (!real) {
+        return L"the real profile folder can't be resolved";
+      }
+      for (const std::wstring& mine : canonical) {
+        if (Overlaps(mine, *real)) {
+          return L"ARDIA_DATA_DIR is or overlaps the real profile folder";
+        }
       }
     }
   }

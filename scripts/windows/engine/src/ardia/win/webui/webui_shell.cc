@@ -899,6 +899,8 @@ class ShellWindow : public views::WidgetDelegate,
   void SetViewport(const base::DictValue& args, Done done);
   void PageCommand(const base::DictValue& args, Done done);
   void ReleasePage(const base::DictValue& args, Done done);
+  void ClosePage(const base::DictValue& args, Done done);
+  void DropPage(int id);
   void SetInputRegions(const base::DictValue& args, Done done);
   void SetKeyboardShortcuts(const base::ListValue* values, Done done);
   void EngineCall(const std::string& name, const std::string& profile,
@@ -1097,8 +1099,11 @@ void ShellWindow::Invoke(const std::string& method,
   if (method == "tab.command") {
     return PageCommand(args, std::move(done));
   }
-  if (method == "tab.release" || method == "tab.close") {
+  if (method == "tab.release") {
     return ReleasePage(args, std::move(done));
+  }
+  if (method == "tab.close") {
+    return ClosePage(args, std::move(done));
   }
   if (method == "shell.inputRegions") {
     return SetInputRegions(args, std::move(done));
@@ -1266,6 +1271,13 @@ void ShellWindow::EngineCall(const std::string& name,
                                .Set("message", "This engine call is not in the "
                                                "Windows WebUI pilot")));
   }
+  if (ParseProfileName(profile).off_the_record) {
+    return std::move(done).Run(
+        false, base::Value(base::DictValue()
+                               .Set("code", "ERR_PROFILE")
+                               .Set("message", "Private engine calls are not "
+                                               "in the Windows WebUI pilot")));
+  }
   std::string json = args && args->is_string() ? args->GetString() : "{}";
   struct Pending {
     Done done;
@@ -1362,6 +1374,10 @@ void ShellWindow::CreatePageIn(base::DictValue args,
   if (!profile || !widget_ || !contents_) {
     return std::move(done).Run(false,
                                base::Value("The page's profile did not load"));
+  }
+  if (profile->IsOffTheRecord()) {
+    return std::move(done).Run(
+        false, base::Value("Private pages are not in the Windows WebUI pilot"));
   }
   std::string text = String(args, "url");
   if (text.starts_with("ardia://")) {
@@ -1512,18 +1528,39 @@ void ShellWindow::PageCommand(const base::DictValue& args, Done done) {
   std::move(done).Run(true, base::Value());
 }
 
-void ShellWindow::ReleasePage(const base::DictValue& args, Done done) {
-  const std::optional<int> id = args.FindInt("id");
-  auto found = id ? pages_.find(*id) : pages_.end();
+void ShellWindow::DropPage(int id) {
+  auto found = pages_.find(id);
   if (found == pages_.end()) {
-    return std::move(done).Run(true, base::Value());
+    return;
   }
   if (found->second->view && contents_) {
     found->second->view->SetWebContents(nullptr);
     contents_->RemoveChildViewT(found->second->view.get());
   }
+  found->second->events.reset();
   pages_.erase(found);
-  contents_->ApplyShellInput();
+  if (contents_) {
+    contents_->ApplyShellInput();
+  }
+}
+
+void ShellWindow::ReleasePage(const base::DictValue& args, Done done) {
+  Page* page = OwnedPage(args);
+  if (!page) {
+    return std::move(done).Run(false, base::Value("No owned live tab"));
+  }
+  DropPage(page->id);
+  std::move(done).Run(true, base::Value());
+}
+
+void ShellWindow::ClosePage(const base::DictValue& args, Done done) {
+  const std::string key = String(args, "key");
+  for (const auto& [id, page] : pages_) {
+    if (page->key == key) {
+      DropPage(id);
+      break;
+    }
+  }
   std::move(done).Run(true, base::Value());
 }
 
@@ -1636,6 +1673,10 @@ bool ShellWindow::PreTranslate(const MSG& msg) {
       ToggleMaximize();
     }
     return true;
+  }
+  if (msg.message == WM_LBUTTONUP || msg.message == WM_CAPTURECHANGED ||
+      msg.message == WM_CANCELMODE) {
+    maximize_pressed_ = false;
   }
   if (msg.message == WM_NCMOUSEMOVE) {
     if (msg.wParam != HTMAXBUTTON) {
