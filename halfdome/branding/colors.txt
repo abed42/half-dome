@@ -1,0 +1,6 @@
+order bottom-left → peak → right
+C1 deep royal blue (28, 58, 168)
+C2 cobalt (55, 110, 230)
+C3 warm coral (255, 120, 130)
+C4 light coral (255, 170, 175)
+style: Arc-like thick white border, soft grey metallic squircle

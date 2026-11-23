@@ -1,31 +1,20 @@
-> **Half Dome** (`abed42/half-dome`) is a tracking fork of [ardia-browser/ardia](https://github.com/ardia-browser/ardia).
-> Branding and experiments live under [`halfdome/`](halfdome/) and [HALFDOME.md](HALFDOME.md). Ardia release tags are rebased in with [`halfdome/scripts/sync-ardia.sh`](halfdome/scripts/sync-ardia.sh).
+<p align="center">
+  <img src="halfdome/branding/icon-1024.png" width="256" height="256" alt="Half Dome app icon">
+</p>
+
+<h1 align="center">Half Dome</h1>
 
 <p align="center">
-  <img src="halfdome/branding/icon-1024.png" width="128" height="128" alt="Half Dome app icon">
+  A tracking fork of <a href="https://github.com/ardia-browser/ardia">Ardia</a> — Arc’s sidebar and Dia’s polish on real Chromium.<br>
+  Their engineers carry the browser treadmill. We carry the experiments.
 </p>
 
 <p align="center">
-  <img src="apps/site/src/assets/app-icon.png" width="64" height="64" alt="Ardia's app icon">
-</p>
-
-<h1 align="center">Touch grass.</h1>
-
-<p align="center">
-  Arc’s sidebar and Dia’s polish on real Chromium.<br>
-  Free and open source. Ads and trackers stay out.
-</p>
-
-<h3 align="center">
-  <a href="https://github.com/ardia-browser/ardia/releases/download/v0.2.48/Ardia-0.2.48.dmg">Download Ardia 0.2.48 for Mac</a>
-</h3>
-
-<p align="center">
-  134 MB DMG · macOS 14 Sonoma or later · Apple Silicon · Notarized by Apple<br>
-  Like your paint wet? <a href="https://ardia.dev/nightly">The nightly</a> has every fix the day it’s made, smudges and all.<br>
-  Homebrew: <code>brew install ardia-browser/tap/ardia</code><br>
-  On your phone: <a href="https://testflight.apple.com/join/yXHasDmr">iPhone (TestFlight)</a> · <a href="https://github.com/ardia-browser/ardia/releases/download/android-v1.0.2/Ardia-1.0.2.apk">Android (APK)</a><br>
-  <a href="https://ardia.dev">ardia.dev</a> · <a href="https://ardia.dev/release-notes">What’s new</a> · <a href="https://github.com/ardia-browser/ardia/releases">All releases</a> · <a href="https://discord.gg/TdhuXrbcA6">Discord</a>
+  <a href="HALFDOME.md">How the fork works</a>
+  ·
+  <a href="halfdome/scripts/sync-ardia.sh">Sync from Ardia releases</a>
+  ·
+  <a href="https://github.com/ardia-browser/ardia">Upstream Ardia</a>
 </p>
 
 <p align="center">
