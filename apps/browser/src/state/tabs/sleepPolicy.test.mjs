@@ -65,6 +65,7 @@ test("the engine's reasons map to the protection that matters most", () => {
   assert.equal(engineVeto([7, 26]), "typedInput", "typed text outranks a recent visit");
   assert.equal(engineVeto([ENGINE_KEPT.postedDocument, 26]), "postedDocument");
   assert.equal(engineVeto([ENGINE_KEPT.beforeUnload]), "beforeUnload");
+  assert.equal(engineVeto([ENGINE_KEPT.download, 6]), "download", "a download the tab started, which only the engine can attribute");
   assert.equal(engineVeto([16]), "call");
   assert.equal(engineVeto([7]), "recentlySeen");
   assert.equal(engineVeto([25]), "other");

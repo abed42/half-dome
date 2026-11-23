@@ -18,6 +18,7 @@ export type SleepVeto =
   | "typedInput"
   | "postedDocument"
   | "beforeUnload"
+  | "download"
   | "other";
 
 export type TabSleepFacts = {
@@ -111,7 +112,7 @@ export function tabsToSleep(awake: readonly TabSleepFacts[], now: number, rules:
   return plan;
 }
 
-export const ENGINE_KEPT = { postedDocument: 100, beforeUnload: 101 } as const;
+export const ENGINE_KEPT = { postedDocument: 100, beforeUnload: 101, download: 102 } as const;
 
 const ENGINE_VETOES: Readonly<Record<number, SleepVeto>> = {
   [-1]: "notSleepable",
@@ -130,9 +131,10 @@ const ENGINE_VETOES: Readonly<Record<number, SleepVeto>> = {
   27: "typedInput",
   [ENGINE_KEPT.postedDocument]: "postedDocument",
   [ENGINE_KEPT.beforeUnload]: "beforeUnload",
+  [ENGINE_KEPT.download]: "download",
 };
 
-const ENGINE_ORDER: readonly SleepVeto[] = ["postedDocument", "beforeUnload", "typedInput", "call", "pictureInPicture", "audible", "recentlyAudible", "recentlySeen", "shown", "notSleepable"];
+const ENGINE_ORDER: readonly SleepVeto[] = ["postedDocument", "beforeUnload", "typedInput", "download", "call", "pictureInPicture", "audible", "recentlyAudible", "recentlySeen", "shown", "notSleepable"];
 
 export function engineVeto(keptBy: readonly number[]): SleepVeto | null {
   if (!keptBy.length) return null;

@@ -1,0 +1,113 @@
+The embedder can keep a page from every discard but an external one, for state Chrome doesn't track: a page reached
+by a form post (reloading it would send the form again), a page with an unload prompt, a page that started a
+download still running. DiscardEligibilityPolicy asks one startup-registered callback,
+SetEmbedderDiscardVeto(base::RepeatingCallback<bool(const PageNode*)>), right after its checks that the page is a
+loaded tab and before the early answer for an external or frozen-with-growing-memory discard, and refuses a vetoed
+page outright as kOptedOut, the reason Chrome already gives a page an enterprise policy keeps. Performance manager
+depends on no Ardia code: ArdiaCore registers the callback (ac_discard_veto.mm) and decides what it vetoes. An
+external discard (the tab menu's Sleep Tab) is never vetoed. Every other protection is Chrome's. New unit test:
+TestEmbedderVetoKeepsAllButExternal, which covers the frozen-with-growing-memory discard.
+
+diff --git a/chrome/browser/performance_manager/policies/discard_eligibility_policy.cc b/chrome/browser/performance_manager/policies/discard_eligibility_policy.cc
+--- a/chrome/browser/performance_manager/policies/discard_eligibility_policy.cc
++++ b/chrome/browser/performance_manager/policies/discard_eligibility_policy.cc
+@@ -5,6 +5,7 @@
+ #include "chrome/browser/performance_manager/policies/discard_eligibility_policy.h"
+ 
+ #include "base/metrics/histogram_functions.h"
++#include "base/no_destructor.h"
+ #include "base/strings/strcat.h"
+ #include "chrome/browser/glic/public/glic_keyed_service.h"
+ #include "chrome/browser/glic/public/glic_keyed_service_factory.h"
+@@ -31,6 +32,11 @@ namespace {
+ 
+ BASE_FEATURE(kIgnoreDiscardAttemptMarker, base::FEATURE_DISABLED_BY_DEFAULT);
+ 
++EmbedderDiscardVeto& DiscardVeto() {
++  static base::NoDestructor<EmbedderDiscardVeto> veto;
++  return *veto;
++}
++
+ // Not intended for launch.
+ // This feature can be used during testing to ensure realistic priority
+ // ordering of tabs even when devtools is connected.
+@@ -173,6 +179,10 @@ bool DiscardEligibilityPolicy::IsDiscardAllowed(
+   return true;
+ }
+ 
++void SetEmbedderDiscardVeto(EmbedderDiscardVeto veto) {
++  DiscardVeto() = std::move(veto);
++}
++
+ CanDiscardResult DiscardEligibilityPolicy::CanDiscard(
+     const PageNode* page_node,
+     DiscardReason discard_reason,
+@@ -246,6 +256,15 @@ DiscardEligibilityPolicy::CanDiscardWithCustomRecentVisibilityWindow(
+     return CanDiscardResult::kDisallowed;
+   }
+ 
++  if (discard_reason != DiscardReason::EXTERNAL && DiscardVeto() &&
++      DiscardVeto().Run(page_node)) {
++    add_reason(CannotDiscardReason::kOptedOut);
++    const CannotDiscardReason vetoed[] = {CannotDiscardReason::kOptedOut};
++    RecordDiscardDecisionMetrics(page_node, discard_reason,
++                                 CanDiscardResult::kProtected, vetoed);
++    return CanDiscardResult::kProtected;
++  }
++
+   bool is_proactive_or_suggested;
+   switch (discard_reason) {
+     case DiscardReason::EXTERNAL:
+diff --git a/chrome/browser/performance_manager/policies/discard_eligibility_policy.h b/chrome/browser/performance_manager/policies/discard_eligibility_policy.h
+--- a/chrome/browser/performance_manager/policies/discard_eligibility_policy.h
++++ b/chrome/browser/performance_manager/policies/discard_eligibility_policy.h
+@@ -41,6 +41,10 @@ inline constexpr base::TimeDelta kNonVisiblePagesUrgentProtectionTime =
+ 
+ }  // namespace internal
+ 
++using EmbedderDiscardVeto = base::RepeatingCallback<bool(const PageNode*)>;
++
++void SetEmbedderDiscardVeto(EmbedderDiscardVeto veto);
++
+ #if BUILDFLAG(IS_ANDROID)
+ // TODO(crbug.com/412839833): kTabAudioProtectionTime may be needed on Android
+ // as well.
+diff --git a/chrome/browser/performance_manager/policies/discard_eligibility_policy_unittest.cc b/chrome/browser/performance_manager/policies/discard_eligibility_policy_unittest.cc
+--- a/chrome/browser/performance_manager/policies/discard_eligibility_policy_unittest.cc
++++ b/chrome/browser/performance_manager/policies/discard_eligibility_policy_unittest.cc
+@@ -9,6 +9,7 @@
+ #include <utility>
+ 
+ #include "base/strings/string_number_conversions.h"
++#include "base/test/bind.h"
+ #include "base/test/metrics/histogram_tester.h"
+ #include "base/test/scoped_feature_list.h"
+ #include "base/time/time.h"
+@@ -541,6 +542,27 @@ TEST_F(DiscardEligibilityPolicyTest, TestCannotDiscardPinnedTab) {
+        DiscardReason::EXTERNAL, DiscardReason::FROZEN_WITH_GROWING_MEMORY});
+ }
+ 
++TEST_F(DiscardEligibilityPolicyTest, TestEmbedderVetoKeepsAllButExternal) {
++  const PageNode* asked = nullptr;
++  SetEmbedderDiscardVeto(
++      base::BindLambdaForTesting([&asked](const PageNode* page) {
++        asked = page;
++        return true;
++      }));
++  ExpectCanDiscardProtected(
++      page_node(),
++      {DiscardReason::URGENT, DiscardReason::PROACTIVE,
++       DiscardReason::SUGGESTED, DiscardReason::FROZEN_WITH_GROWING_MEMORY},
++      CannotDiscardReason::kOptedOut);
++  EXPECT_EQ(asked, page_node());
++  ExpectCanDiscardEligible(page_node(), {DiscardReason::EXTERNAL});
++  SetEmbedderDiscardVeto(base::BindRepeating([](const PageNode*) {
++    return false;
++  }));
++  ExpectCanDiscardEligibleAllReasons(page_node());
++  SetEmbedderDiscardVeto(EmbedderDiscardVeto());
++}
++
+ TEST_F(DiscardEligibilityPolicyTest, TestCannotDiscardWithDevToolsOpen) {
+   PageLiveStateDecorator::Data::GetOrCreateForPageNode(page_node())
+       ->SetIsDevToolsOpenForTesting(true);

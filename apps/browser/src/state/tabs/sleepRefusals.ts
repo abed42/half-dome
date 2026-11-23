@@ -1,8 +1,8 @@
 import { ENGINE_KEPT } from "./sleepPolicy";
 
-export type KeptAwakeReason = "playingOrSharing" | "audio" | "pictureInPicture" | "capturing" | "device" | "devTools" | "typedInput" | "postedDocument" | "beforeUnload" | "noPage" | "other";
+export type KeptAwakeReason = "playingOrSharing" | "audio" | "pictureInPicture" | "capturing" | "device" | "devTools" | "typedInput" | "postedDocument" | "beforeUnload" | "download" | "noPage" | "other";
 
-const OVERRIDDEN_BY_ASKING: ReadonlySet<number> = new Set([6, 7, 13, 14, 23, 25]);
+const OVERRIDDEN_BY_ASKING: ReadonlySet<number> = new Set([6, 7, 13, 14, 23, 25, ENGINE_KEPT.postedDocument, ENGINE_KEPT.beforeUnload, ENGINE_KEPT.download]);
 
 const REASONS: Readonly<Record<number, KeptAwakeReason>> = {
   [-1]: "noPage",
@@ -20,6 +20,7 @@ const REASONS: Readonly<Record<number, KeptAwakeReason>> = {
   27: "typedInput",
   [ENGINE_KEPT.postedDocument]: "postedDocument",
   [ENGINE_KEPT.beforeUnload]: "beforeUnload",
+  [ENGINE_KEPT.download]: "download",
 };
 
 export const onlyAutomaticProtections = (keptBy: readonly number[]) => keptBy.length > 0 && keptBy.every((r) => OVERRIDDEN_BY_ASKING.has(r));
