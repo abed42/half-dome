@@ -38,6 +38,7 @@ import { startSharedFolders } from "./state/sharedFolders/engine";
 import { setStoreBatching, useBrowser } from "./state/browser/store";
 import { installErrorReporting, startTelemetry } from "./state/telemetry";
 import { launchCommitted } from "./state/telemetry/journeys";
+import { launchRendering } from "./state/telemetry/jsStart";
 import { markFirstWindow } from "./state/telemetry/track";
 import { noteWindowRoot } from "./state/telemetry/windowRootCounts";
 
@@ -78,6 +79,7 @@ if (__DEV__ || perfProbeEnabled) require("./components/dev/devHarness").startDev
 const devMountDelay = () => (__DEV__ ? ((globalThis as { acDevMountDelayMs?: number }).acDevMountDelayMs ?? 0) : 0);
 
 function Root({ windowId }: { windowId: string }) {
+  launchRendering();
   const [delay] = useState(devMountDelay);
   const [held, setHeld] = useState(delay > 0);
   useEffect(() => {

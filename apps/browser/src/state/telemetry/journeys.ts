@@ -2,7 +2,7 @@ import { useBrowser, type BrowserState } from "../browser/store";
 import { activeTabId } from "../browser/model";
 import { capture, consentNow, isSharing, onConsentPeriodChange } from "./client";
 import { appInfo, percentile } from "./transport";
-import { jsStartedAt } from "./jsStart";
+import { firstCommitMs, jsStartedAt } from "./jsStart";
 import { launchCohortFields } from "./launchCohort";
 import { fieldTiming } from "../../platform/fieldTiming";
 import { isAsleep } from "../tabs/pageSession";
@@ -269,7 +269,7 @@ function sendLaunch(l: Launch, content: number | null, paints: number[]) {
     early_window_ms: ms(launchMarks?.earlyWindowShown),
     rn_ms: ms(launchMarks?.reactNativeStarted),
     js_ms: ms(jsStartedAt),
-    commit_ms: ms(l.commit),
+    commit_ms: ms(l.commit), first_commit_ms: firstCommitMs(l.commit),
     content_ms: ms(content),
     usable_ms: ms(l.usable === undefined ? undefined : Math.max(l.usable, content ?? 0)),
     tab_request_ms: ms(tab ? mark(tab, "request", l.t0) : null),

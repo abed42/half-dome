@@ -31,6 +31,7 @@ globalThis.fetch = async () => ({ status: 200 });
 
 const client = await import("./client.ts");
 const journeys = await import("./journeys.ts");
+const jsStart = await import("./jsStart.ts");
 const track = await import("./track.ts");
 const { useBrowser } = await import("../browser/store.ts");
 const DAY = 86_400_000;
@@ -43,6 +44,9 @@ test("a launch with sharing on at start sends one perf_launch with launch_ms, ho
   assert.equal(client.isSharing(), true);
   journeys.startJourneys(null);
 
+  jsStart.launchRendering();
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  jsStart.launchRendering();
   journeys.launchCommitted();
   journeys.launchCommitted();
   assert.equal(journeys.devJourneys().pending.length, 1);
@@ -58,10 +62,11 @@ test("a launch with sharing on at start sends one perf_launch with launch_ms, ho
   const saved = JSON.parse(stub.docs.get("telemetry-queue.json"));
   const launches = saved.events.filter((e) => e.event === "perf_launch");
   assert.equal(launches.length, 1);
-  const { launch_ms, commit_ms, usable_ms } = launches[0].properties;
+  const { launch_ms, commit_ms, first_commit_ms, usable_ms } = launches[0].properties;
   assert.ok(launch_ms >= 1500 && launch_ms < 60_000, `launch_ms ${launch_ms}`);
   assert.ok(commit_ms >= 1500 && commit_ms <= launch_ms, `commit_ms ${commit_ms}`);
   assert.ok(usable_ms >= 1500 && usable_ms < 60_000, `usable_ms ${usable_ms}`);
+  assert.ok(first_commit_ms >= 20 && first_commit_ms < 1000, `first_commit_ms ${first_commit_ms}`);
 });
 
 test("perf_launch carries the early launch marks in order from process start, the load average and whether the launch was hidden", () => {
