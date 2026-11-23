@@ -122,6 +122,7 @@ constexpr int kResizeCornerWidth = 16;
 constexpr size_t kAssetLimit = 64 * 1024 * 1024;
 constexpr size_t kUnhandledLimit = 400;
 constexpr base::TimeDelta kSettleAfterShown = base::Seconds(5);
+constexpr DWORD kMaximizeClickLimitMs = 5000;
 
 class ShellWindow;
 ShellWindow* g_shell = nullptr;
@@ -926,6 +927,7 @@ class ShellWindow : public views::WidgetDelegate,
   views::UnhandledKeyboardEventHandler unhandled_keys_;
   std::optional<bool> reported_maximized_;
   bool maximize_pressed_ = false;
+  DWORD maximize_pressed_at_ = 0;
   size_t logged_pass_regions_ = static_cast<size_t>(-1);
   std::vector<std::string> unhandled_;
   base::WeakPtrFactory<ShellWindow> weak_factory_{this};
@@ -1345,6 +1347,10 @@ void ShellWindow::CreatePage(const base::DictValue& args, Done done) {
     return std::move(done).Run(false,
                                base::Value("A key and a claim are required"));
   }
+  if (ParseProfileName(String(args, "profile")).off_the_record) {
+    return std::move(done).Run(
+        false, base::Value("Private pages are not in the Windows WebUI pilot"));
+  }
   WithProfile(String(args, "profile"),
               base::BindOnce(&ShellWindow::CreatePageIn,
                              weak_factory_.GetWeakPtr(), args.Clone(),
@@ -1545,21 +1551,28 @@ void ShellWindow::DropPage(int id) {
 }
 
 void ShellWindow::ReleasePage(const base::DictValue& args, Done done) {
-  Page* page = OwnedPage(args);
-  if (!page) {
+  const std::optional<int> id = args.FindInt("id");
+  auto found = id ? pages_.find(*id) : pages_.end();
+  if (found == pages_.end()) {
+    return std::move(done).Run(true, base::Value());
+  }
+  if (found->second->claim != String(args, "claim")) {
     return std::move(done).Run(false, base::Value("No owned live tab"));
   }
-  DropPage(page->id);
+  DropPage(*id);
   std::move(done).Run(true, base::Value());
 }
 
 void ShellWindow::ClosePage(const base::DictValue& args, Done done) {
   const std::string key = String(args, "key");
+  std::vector<int> closing;
   for (const auto& [id, page] : pages_) {
     if (page->key == key) {
-      DropPage(id);
-      break;
+      closing.push_back(id);
     }
+  }
+  for (int id : closing) {
+    DropPage(id);
   }
   std::move(done).Run(true, base::Value());
 }
@@ -1642,13 +1655,24 @@ const wchar_t* SizeCursor(WPARAM hit) {
 
 bool ShellWindow::PreTranslate(const MSG& msg) {
   HWND root = Hwnd();
-  if (!root || !msg.hwnd || ::GetAncestor(msg.hwnd, GA_ROOT) != root) {
+  const bool ours = root && msg.hwnd && ::GetAncestor(msg.hwnd, GA_ROOT) == root;
+  const bool button = msg.message == WM_LBUTTONDOWN ||
+                      msg.message == WM_LBUTTONUP ||
+                      msg.message == WM_NCLBUTTONDOWN ||
+                      msg.message == WM_NCLBUTTONUP;
+  if (button && !(ours && msg.wParam == HTMAXBUTTON &&
+                  (msg.message == WM_NCLBUTTONDOWN ||
+                   msg.message == WM_NCLBUTTONUP))) {
+    maximize_pressed_ = false;
+  }
+  if (!ours) {
     return false;
   }
   const bool child = msg.hwnd != root;
   if (msg.message == WM_NCLBUTTONDOWN || msg.message == WM_NCLBUTTONDBLCLK) {
     if (msg.wParam == HTMAXBUTTON) {
       maximize_pressed_ = true;
+      maximize_pressed_at_ = msg.time;
       return true;
     }
     if (child && IsSizingHit(msg.wParam)) {
@@ -1668,15 +1692,12 @@ bool ShellWindow::PreTranslate(const MSG& msg) {
     return false;
   }
   if (msg.message == WM_NCLBUTTONUP && msg.wParam == HTMAXBUTTON) {
-    if (maximize_pressed_) {
-      maximize_pressed_ = false;
+    if (maximize_pressed_ &&
+        msg.time - maximize_pressed_at_ <= kMaximizeClickLimitMs) {
       ToggleMaximize();
     }
-    return true;
-  }
-  if (msg.message == WM_LBUTTONUP || msg.message == WM_CAPTURECHANGED ||
-      msg.message == WM_CANCELMODE) {
     maximize_pressed_ = false;
+    return true;
   }
   if (msg.message == WM_NCMOUSEMOVE) {
     if (msg.wParam != HTMAXBUTTON) {
