@@ -5,6 +5,7 @@ import { useIsIncognito, useProfiles, useWindowId, useWindowProfile } from "../.
 import { setMeasuredWidth, useMeasuredWidth } from "../../state/windows/measuredWidths";
 import { ContextMenuArea, radius, Symbol, Text, useHover } from "../ui";
 import { openProfileItemMenu } from "./profileMenu";
+import { dismissSpacesTip } from "../../state/profiles/spacesTip";
 import { openProfileMenu } from "../../state/browser/actions";
 import { WINDOW_CHROME } from "../../lib/windowChrome";
 import { CARD_INSET } from "../../lib/windowLayout";
@@ -60,7 +61,13 @@ export function ProfileIndicator({ room, profileShown = true }: { room: number; 
           {title}
         </Text>
       </View>
-      <ContextMenuArea onContextMenu={() => !incognito && void openProfileItemMenu(profileId, "sidebar", windowId, indicator.current)}>
+      <ContextMenuArea
+        onContextMenu={() => {
+          if (incognito) return;
+          dismissSpacesTip("menu");
+          void openProfileItemMenu(profileId, "sidebar", windowId, indicator.current);
+        }}
+      >
         <Pressable
           onPress={() => !incognito && void openProfileMenu(windowId)}
           onPressIn={pressMotion.onPressIn}

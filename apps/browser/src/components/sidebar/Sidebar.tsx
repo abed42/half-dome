@@ -13,6 +13,7 @@ import { profileIndicatorX, ProfileIndicator } from "../profiles/ProfileIndicato
 import { useWindowChrome } from "../../state/windows/windowButtons";
 import { pagerFor, usePagerPages, useSettledProfile, type PagerPage } from "../../state/windows/profilePager";
 import { PROFILE_DOTS_HEIGHT, ProfileDots, useProfileDotsShown } from "../profiles/ProfileDots";
+import { SpacesTip } from "../profiles/SpacesTip";
 import { SidebarAddressRow, SidebarHeaderTools } from "./AddressBar";
 import { DragGhost } from "./DragGhost";
 import { EdgeGlow } from "./EdgeGlow";
@@ -139,6 +140,7 @@ export function Sidebar({ width }: { width: number }) {
                   ) : null}
                 </View>
               ) : null}
+              {dots ? <SpacesTip windowId={windowId} bottom={footer} width={width} /> : null}
 
               <View style={{ height: header }}>
                 <ContextMenuArea style={StyleSheet.absoluteFill} onContextMenu={() => void openSidebarMenu(windowId)}>

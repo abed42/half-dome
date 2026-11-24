@@ -12,6 +12,7 @@ import { TooltipAbove } from "../ui/TooltipAbove";
 import { SIDEBAR_FOOTER_DOWNLOADS } from "../sidebar/geometry";
 import { switcherCellWidth, switcherIcons, SwitcherMark } from "./ProfileIcons";
 import { openProfileItemMenu } from "./profileMenu";
+import { dismissSpacesTip } from "../../state/profiles/spacesTip";
 import { profileSwitcherShown } from "../../state/profiles/switcherShown";
 import { switcherIconOf } from "../../state/profiles/switcherMark";
 import { profileSwitcher } from "./tokens";
@@ -96,7 +97,12 @@ function Dot({ id, windowId, icon, page, pos, offset, pan, lifted, reordering }:
   return (
     <Animated.View {...hoverProps} {...pan.panHandlers} ref={mark} style={{ zIndex: lifted ? 1 : 0, transform: [{ translateX: offset }] }}>
       <TooltipAbove text={name} active={hovered && !pressed && !reordering} centerX={cell / 2} bottom={BAND / 2 + dotTooltipLift} />
-      <ContextMenuArea onContextMenu={() => void openProfileItemMenu(id, "sidebar", windowId, mark.current)}>
+      <ContextMenuArea
+        onContextMenu={() => {
+          dismissSpacesTip("menu");
+          void openProfileItemMenu(id, "sidebar", windowId, mark.current);
+        }}
+      >
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={name}
