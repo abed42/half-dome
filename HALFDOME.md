@@ -13,7 +13,7 @@ when they belong upstream, open a PR against Ardia.
 | `origin` | `abed42/half-dome` |
 | `upstream` | `ardia-browser/ardia` |
 
-Branch `halfdome` is our line of work. It rebases onto Ardia **release tags**, not every commit on `main`.
+Branch `halfdome` is our line of work. It merges Ardia **release tags**, not every commit on `main`.
 
 ## Sync
 
@@ -23,10 +23,25 @@ When Ardia ships a release:
 halfdome/scripts/sync-ardia.sh v0.2.48
 ```
 
-That fetches `upstream`, rebases `halfdome` onto the tag, and leaves conflicts for you to fix.
-GitHub Action `.github/workflows/sync-ardia.yml` opens a sync PR when Ardia publishes a non-nightly release.
+That fetches `upstream`, creates `sync/ardia-<tag>` from `halfdome`, merges the tag (a merge commit, not a rebase), and leaves conflicts for you to fix. Push the sync branch and open a PR into `halfdome`.
+
+GitHub Action `.github/workflows/sync-ardia.yml` does the same on a 6-hour schedule and on dispatch: it skips when `halfdome` already contains the tag or when `sync/ardia-<tag>` already holds it, pushes with the `SYNC_TOKEN` secret, and opens the PR into `halfdome`.
 
 Keep Half Dome changes under `halfdome/` when you can. Touch Ardia paths only for identity (name, icon, bundle id) or a feature that cannot live as an overlay.
+
+## One-time setup
+
+These are repo settings the workflow cannot change:
+
+1. Make `halfdome` the default branch. Scheduled and `workflow_dispatch` runs load the workflow file from the default branch only; with `main` as default, `sync-ardia.yml` never fires.
+2. Create a fine-grained personal access token with Contents and Pull requests read/write plus the `workflows` permission, and store it as the repository secret `SYNC_TOKEN`. `GITHUB_TOKEN` cannot push commits that change files under `.github/workflows/`, and every Ardia release does.
+3. Disable these inherited Ardia workflows in the fork (Actions → each workflow → Disable), so Half Dome does not publish as Ardia, deploy ardia.dev, or enforce Ardia’s contributor gates:
+   - `release.yml` — cuts Ardia-signed Mac/Linux/Windows releases
+   - `deploy.yml` — deploys ardia.dev
+   - `stale.yml` — Ardia’s outside-PR stale closer
+   - `vouch-check-pr.yml` / `vouch-manage.yml` — Ardia’s vouch gate
+   - `cla.yml` — Ardia’s CLA check
+   - `linked-issue.yml` — Ardia’s linked-issue requirement
 
 ## Identity
 

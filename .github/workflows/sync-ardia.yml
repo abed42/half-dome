@@ -25,16 +25,30 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
+      - name: Require SYNC_TOKEN
+        env:
+          SYNC_TOKEN: ${{ secrets.SYNC_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${SYNC_TOKEN:-}" ]]; then
+            echo "SYNC_TOKEN secret is missing. Add a fine-grained PAT with Contents, Pull requests, and workflows permission." >&2
+            exit 1
+          fi
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: halfdome
+          token: ${{ secrets.SYNC_TOKEN }}
 
       - name: Ensure upstream remote
         run: |
+          set -euo pipefail
           git remote remove upstream 2>/dev/null || true
           git remote add upstream https://github.com/ardia-browser/ardia.git
           git fetch upstream --tags --force
+          git fetch origin halfdome --force
+          git fetch origin 'refs/heads/sync/ardia-*:refs/remotes/origin/sync/ardia-*' 2>/dev/null || true
 
       - name: Resolve Ardia tag
         id: tag
@@ -61,8 +75,8 @@ jobs:
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "Using $TAG"
 
-      - name: Open sync branch and rebase
-        id: rebase
+      - name: Open sync branch and merge
+        id: merge
         env:
           TAG: ${{ steps.tag.outputs.tag }}
         run: |
@@ -70,60 +84,67 @@ jobs:
           git config user.name "half-dome-sync"
           git config user.email "half-dome-sync@users.noreply.github.com"
           BRANCH="sync/ardia-$TAG"
-          git checkout halfdome
-          git checkout -B "$BRANCH"
-          if git merge-base --is-ancestor "$TAG" HEAD; then
+          git checkout -B halfdome origin/halfdome
+
+          if git merge-base --is-ancestor "$TAG" halfdome; then
             echo "already=true" >> "$GITHUB_OUTPUT"
             echo "halfdome already contains $TAG"
             exit 0
           fi
+
+          if git rev-parse -q --verify "refs/remotes/origin/$BRANCH" >/dev/null \
+            && git merge-base --is-ancestor "$TAG" "origin/$BRANCH"; then
+            echo "already=true" >> "$GITHUB_OUTPUT"
+            echo "sync branch $BRANCH already holds $TAG"
+            exit 0
+          fi
+
           echo "already=false" >> "$GITHUB_OUTPUT"
-          if git rebase "$TAG"; then
+          git checkout -B "$BRANCH" halfdome
+
+          if git merge --no-ff -m "Merge Ardia $TAG into halfdome" "$TAG"; then
             echo "conflicts=false" >> "$GITHUB_OUTPUT"
-          else
-            git rebase --abort
-            echo "conflicts=true" >> "$GITHUB_OUTPUT"
-            git checkout halfdome
-            git checkout -B "$BRANCH"
-            git reset --hard halfdome
+            git push --force-with-lease origin "$BRANCH"
             {
-              echo "## Sync blocked by conflicts"
+              echo "## Sync Ardia \`$TAG\`"
               echo
-              echo "Rebase of \`halfdome\` onto \`$TAG\` hit conflicts."
-              echo "Run locally:"
-              echo
-              echo '```bash'
-              echo "halfdome/scripts/sync-ardia.sh $TAG"
-              echo '```'
+              echo "Merged Ardia release \`$TAG\` into \`$BRANCH\` (merge commit, not a rebase)."
+              echo "Review, then merge the PR into \`halfdome\`."
             } > /tmp/sync-body.md
             echo "body_file=/tmp/sync-body.md" >> "$GITHUB_OUTPUT"
             exit 0
           fi
+
+          git merge --abort
+          echo "conflicts=true" >> "$GITHUB_OUTPUT"
+          git checkout -B "$BRANCH" halfdome
+          git commit --allow-empty -m "chore: flag Ardia $TAG sync conflicts"
           git push --force-with-lease origin "$BRANCH"
           {
-            echo "## Sync Ardia \`$TAG\`"
+            echo "## Sync blocked by conflicts"
             echo
-            echo "Rebased \`halfdome\` onto Ardia release \`$TAG\`."
-            echo "Review, then merge into \`halfdome\`."
+            echo "Merge of \`$TAG\` into \`$BRANCH\` hit conflicts."
+            echo "Run locally:"
+            echo
+            echo '```bash'
+            echo "halfdome/scripts/sync-ardia.sh $TAG"
+            echo '```'
           } > /tmp/sync-body.md
           echo "body_file=/tmp/sync-body.md" >> "$GITHUB_OUTPUT"
 
       - name: Open or update pull request
-        if: steps.rebase.outputs.already != 'true'
+        if: steps.merge.outputs.already != 'true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.SYNC_TOKEN }}
           TAG: ${{ steps.tag.outputs.tag }}
-          CONFLICTS: ${{ steps.rebase.outputs.conflicts }}
-          BODY_FILE: ${{ steps.rebase.outputs.body_file }}
+          CONFLICTS: ${{ steps.merge.outputs.conflicts }}
+          BODY_FILE: ${{ steps.merge.outputs.body_file }}
         run: |
           set -euo pipefail
           BRANCH="sync/ardia-$TAG"
           TITLE="Sync Ardia $TAG"
           if [[ "$CONFLICTS" == "true" ]]; then
-            TITLE="Sync Ardia $TAG (conflicts — needs manual rebase)"
-            git checkout -B "$BRANCH"
-            git commit --allow-empty -m "chore: flag Ardia $TAG sync conflicts"
-            git push --force-with-lease origin "$BRANCH"
+            TITLE="Sync Ardia $TAG (conflicts — needs manual merge)"
           fi
           EXISTING="$(gh pr list --base halfdome --head "$BRANCH" --json number --jq '.[0].number')"
           if [[ -n "$EXISTING" ]]; then
