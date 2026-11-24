@@ -140,7 +140,7 @@ export function Sidebar({ width }: { width: number }) {
                   ) : null}
                 </View>
               ) : null}
-              {dots ? <SpacesTip windowId={windowId} bottom={footer} width={width} /> : null}
+              {profileShown ? <SpacesTip windowId={windowId} bottom={Math.max(footer, PROFILE_DOTS_HEIGHT + fieldBand)} width={width} /> : null}
 
               <View style={{ height: header }}>
                 <ContextMenuArea style={StyleSheet.absoluteFill} onContextMenu={() => void openSidebarMenu(windowId)}>

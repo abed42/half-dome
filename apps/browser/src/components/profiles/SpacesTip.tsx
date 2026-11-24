@@ -2,8 +2,11 @@ import { useEffect, useRef } from "react";
 import { Animated, View } from "react-native";
 import { Button, Panel, lineHeight, radius, shadow, space, Symbol, Text, springs } from "../ui";
 import { useTheme } from "../ui/theme";
+import { useIsIncognito } from "../../state/browser/hooks";
 import { useOnboarding } from "../../state/onboarding/onboarding";
 import { useTour } from "../../state/onboarding/tour";
+import { requestCreateProfile } from "../../state/profiles/createProfileRequest";
+import { useProfileOrder } from "../../state/profiles/hooks";
 import {
   dismissSpacesTip,
   markSpacesTipShown,
@@ -12,13 +15,23 @@ import {
   useSpacesTip,
 } from "../../state/profiles/spacesTip";
 import { consentToken } from "../../state/telemetry/usageClient";
-import { useProfileDotsShown } from "./ProfileDots";
 
 export const SPACES_TIP_COPY = {
-  title: "Spaces in Half Dome",
-  body: "Each Space keeps its own tabs and look. Right-click one below to change its icon, name or theme colour.",
-  action: "Got it",
+  title: "Profiles in Half Dome",
+  one: "Each Profile keeps its own tabs, look and logins. Add a second one to switch between them here.",
+  many: "Each Profile keeps its own tabs and look. Right-click one below to change its icon, name or theme color.",
+  gotIt: "Got it",
+  add: "New Profile…",
 } as const;
+
+export function spacesTipCopy(profileCount: number) {
+  const one = profileCount < 2;
+  return {
+    title: SPACES_TIP_COPY.title,
+    body: one ? SPACES_TIP_COPY.one : SPACES_TIP_COPY.many,
+    action: one ? SPACES_TIP_COPY.add : SPACES_TIP_COPY.gotIt,
+  };
+}
 
 const TIP_GAP = space.m;
 const TIP_INSET = space.l;
@@ -26,17 +39,19 @@ const APPEAR_DELAY_MS = 900;
 
 export function SpacesTip({ windowId, bottom, width }: { windowId: string; bottom: number; width: number }) {
   const dismissed = useSpacesTip((s) => s.dismissedAt !== null);
-  const switcherShown = useProfileDotsShown();
+  const incognito = useIsIncognito();
   const onboardingOpen = useOnboarding((s) => s.windowId !== null);
   const tourActive = useTour((s) => s.windowId === windowId && s.stops.length > 0);
   const onboardingDone = !onboardingOpen && spacesTipOnboardingDone();
-  const due = spacesTipDue({ dismissed, onboardingDone, switcherShown, tourActive });
+  const due = !incognito && spacesTipDue({ dismissed, onboardingDone, tourActive });
   if (!due) return null;
   return <TipCard windowId={windowId} bottom={bottom} width={width} />;
 }
 
 function TipCard({ windowId, bottom, width }: { windowId: string; bottom: number; width: number }) {
   const theme = useTheme();
+  const profileCount = useProfileOrder((o) => o.length);
+  const copy = spacesTipCopy(profileCount);
   const appear = useRef(new Animated.Value(0)).current;
   const cardWidth = Math.min(width - TIP_INSET * 2, 220);
 
@@ -53,6 +68,12 @@ function TipCard({ windowId, bottom, width }: { windowId: string; bottom: number
       clearTimeout(timer);
     };
   }, [appear, windowId]);
+
+  const onAction = () => {
+    const consent = consentToken();
+    dismissSpacesTip("gotIt", consent);
+    if (profileCount < 2) void requestCreateProfile(windowId);
+  };
 
   return (
     <Animated.View
@@ -71,16 +92,16 @@ function TipCard({ windowId, bottom, width }: { windowId: string; bottom: number
     >
       <Panel radius={radius.panel} shadow={shadow.card} style={CARD}>
         <View style={HEADER}>
-          <Symbol name="square.stack" size={12} color={theme.icon} style={ICON} />
+          <Symbol name="person.crop.circle" size={12} color={theme.icon} style={ICON} />
           <Text size="small" weight="semibold" style={FILL}>
-            {SPACES_TIP_COPY.title}
+            {copy.title}
           </Text>
           <Button variant="close" look="panel" tooltip="Dismiss" onPress={() => dismissSpacesTip("gotIt", consentToken())} style={CLOSE} />
         </View>
         <Text size="caption" tone="textSecondary" style={BODY}>
-          {SPACES_TIP_COPY.body}
+          {copy.body}
         </Text>
-        <Button variant="pill" tone="prompt" title={SPACES_TIP_COPY.action} onPress={() => dismissSpacesTip("gotIt", consentToken())} />
+        <Button variant="pill" tone="prompt" title={copy.action} onPress={onAction} />
       </Panel>
     </Animated.View>
   );

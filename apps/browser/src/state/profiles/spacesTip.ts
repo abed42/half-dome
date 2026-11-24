@@ -2,7 +2,6 @@ import { create } from "zustand";
 import { readDocument, writeDocument } from "../../platform/documents";
 import { parseSaved, unchanged, versionedJson, type Migrations } from "../../lib/savedDocument";
 import { onboardingCompletedAt } from "../onboarding/onboardingDocument";
-import { useTour } from "../onboarding/tour";
 import { noteSpacesTip } from "../telemetry/usage";
 import type { ConsentToken } from "../telemetry/usageClient";
 
@@ -37,12 +36,11 @@ export const useSpacesTip = create<TipState>()(() => ({ dismissedAt: initial.dis
 export type SpacesTipVisibility = {
   dismissed: boolean;
   onboardingDone: boolean;
-  switcherShown: boolean;
   tourActive: boolean;
 };
 
-export const spacesTipDue = ({ dismissed, onboardingDone, switcherShown, tourActive }: SpacesTipVisibility) =>
-  !dismissed && onboardingDone && switcherShown && !tourActive;
+export const spacesTipDue = ({ dismissed, onboardingDone, tourActive }: SpacesTipVisibility) =>
+  !dismissed && onboardingDone && !tourActive;
 
 export function markSpacesTipShown(consent: ConsentToken | null) {
   if (useSpacesTip.getState().shown) return;
@@ -51,7 +49,9 @@ export function markSpacesTipShown(consent: ConsentToken | null) {
 }
 
 export function dismissSpacesTip(via: "gotIt" | "menu", consent: ConsentToken | null) {
-  if (useSpacesTip.getState().dismissedAt !== null) return;
+  const state = useSpacesTip.getState();
+  if (state.dismissedAt !== null) return;
+  if (via === "menu" && !state.shown) return;
   const dismissedAt = Date.now();
   writeSaved({ dismissedAt });
   useSpacesTip.setState({ dismissedAt });
@@ -60,11 +60,6 @@ export function dismissSpacesTip(via: "gotIt" | "menu", consent: ConsentToken | 
 
 export function spacesTipOnboardingDone() {
   return onboardingCompletedAt() !== null;
-}
-
-export function spacesTipTourActive(windowId: string) {
-  const tour = useTour.getState();
-  return tour.windowId === windowId && tour.stops.length > 0;
 }
 
 export const forgetSpacesTipForTests = () => {
