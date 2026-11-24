@@ -161,7 +161,7 @@ enum CommandTable {
     "focusPreviousPane": "Focus Previous Split Pane",
     "toggleFullUrl": "Show Full URL",
     "toggleJavaScriptFromAppleEvents": "Allow JavaScript from Apple Events",
-    "toggleAddressBar": "Address Bar on Left",
+    "toggleAddressBar": "Show Address Bar in Sidebar",
     "toggleMinimalism": "Minimalism Mode",
     "cast": "Cast…",
     "zoomReset": "Zoom to Actual Size",

@@ -191,7 +191,7 @@ export function describeSetupChoices(choices: SetupChoices): string[] {
   const lines: string[] = [];
   if (s.tabLayout) lines.push(s.tabLayout === "top" ? "Tabs along the top" : "Tabs in the sidebar");
   if (s.sidebarSide === "right" && s.tabLayout !== "top") lines.push("Sidebar on the right");
-  if (s.addressBar && s.tabLayout !== "top") lines.push(s.addressBar === "sidebar" ? "Address on the left" : "Address on top");
+  if (s.addressBar && s.tabLayout !== "top") lines.push(s.addressBar === "sidebar" ? "In the sidebar" : "In the toolbar");
   if (s.newTabOpens) lines.push(s.newTabOpens === "commandBar" ? `${keyText("⌘T")} opens the command bar` : `${keyText("⌘T")} opens the New Tab page`);
   if (s.appearance) lines.push(APPEARANCE_LINE[s.appearance]);
   if (choices.color) lines.push(`${choices.color[0]!.toUpperCase()}${choices.color.slice(1)} theme`);

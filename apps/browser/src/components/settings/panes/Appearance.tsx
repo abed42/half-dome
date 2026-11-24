@@ -25,7 +25,7 @@ import { perLook } from "../../ui/tokens";
 import { PLATFORM_FEATURES } from "../../../lib/platformFeatures";
 import type { SettingsPlace } from "../../../state/settings/settingsWindows";
 
-const ADDRESS_BAR_IN_MENU = PLATFORM_FEATURES.menuBar ? "Also in View › Address Bar on Left." : "";
+const ADDRESS_BAR_IN_MENU = PLATFORM_FEATURES.menuBar ? "Also in View › Show Address Bar in Sidebar." : "";
 
 const MODES: { value: Settings["appearance"]; title: string; description: string }[] = [
   { value: "auto", title: "Automatic", description: "Follow the system appearance setting" },
@@ -57,8 +57,8 @@ const SIDEBAR_TEXT_SIZES: Option<Settings["sidebarTextSize"]>[] = [
 ];
 
 const ADDRESS_BAR: { value: Settings["addressBar"]; title: string; caption: string }[] = [
-  { value: "toolbar", title: "Top", caption: "Above the page, with its buttons." },
-  { value: "sidebar", title: "Left", caption: "In the sidebar above your tabs; the page runs to the top." },
+  { value: "toolbar", title: "In the toolbar", caption: "Above the page, with its buttons." },
+  { value: "sidebar", title: "In the sidebar", caption: "Above your tabs; the page runs to the top." },
 ];
 
 type CommandBarPlace = "field" | "centred";
