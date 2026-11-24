@@ -117,8 +117,8 @@ export const appearanceRows = {
       rows: {
         addressBar: {
           title: "Address bar",
-          description: "In the toolbar or in the sidebar.",
-          keywords: ["url bar", "location bar", "toolbar", "address bar", "address field", "omnibox", "url field", "address bar in sidebar", "arc", "dia"],
+          description: "Top (toolbar) or left (sidebar).",
+          keywords: ["url bar", "location bar", "toolbar", "address bar", "address field", "omnibox", "url field", "address bar in sidebar", "top", "left", "arc", "dia"],
           shown: inSidebar,
           needs: "Use vertical tabs to change this",
         },

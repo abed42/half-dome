@@ -144,7 +144,7 @@ export const SETTING_SPECS = {
   bookmarksBar: oneOf(["always", "newTab", "never"], "never", SYNCED),
   bookmarksImportDismissed: flag(false),
   appearance: oneOf(["auto", "light", "dark"], "auto", SYNCED),
-  addressBar: oneOf(["toolbar", "sidebar"], "toolbar", SYNCED),
+  addressBar: oneOf(["toolbar", "sidebar"], "sidebar", SYNCED),
   compactToolbar: flag(false, SYNCED),
   addressBarButtons: oneOf(["hover", "always"], "hover", SYNCED),
   pageFrame: shaped<number>(PAGE_FRAME.default, validPageFrame, { type: "integer", minimum: PAGE_FRAME.min, maximum: PAGE_FRAME.max }, SYNCED),

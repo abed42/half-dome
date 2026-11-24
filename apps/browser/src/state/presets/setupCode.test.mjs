@@ -115,7 +115,7 @@ test("unknown keys are ignored, unknown values are dropped, repeated keys are re
 test("the summary names what the code sets, in plain words", () => {
   assert.deepEqual(describeSetupChoices(ARC), [
     "Tabs in the sidebar",
-    "Address in the sidebar",
+    "Address on the left",
     "⌘T opens the command bar",
     "Always dark",
     "Green theme",

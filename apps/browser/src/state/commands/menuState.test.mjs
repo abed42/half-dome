@@ -303,6 +303,9 @@ test("Browser Layout menu bar commands switch tab placement in one pick, gate Co
   S().setFocusedWindow(w);
   assert.ok(menuState(S()).checked.includes("setTabLayout:sidebarLeft"));
   assert.ok(menuState(S()).disabled.includes("togglePinnedFold"));
+  assert.ok(menuState(S()).disabled.includes("toggleCompactToolbar"), "Half Dome defaults to the address bar on the left");
+  assert.ok(menuState(S()).checked.includes("toggleAddressBar"));
+  S().updateSettings({ addressBar: "toolbar" });
   assert.ok(!menuState(S()).disabled.includes("toggleCompactToolbar"));
   runCommand({ command: "setTabLayout", arg: "top", windowId: w });
   assert.equal(model.tabLayoutOf(S(), w), "top");

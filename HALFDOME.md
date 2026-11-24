@@ -40,6 +40,18 @@ Keep Half Dome changes under `halfdome/` when you can. Touch Ardia paths only fo
 
 Icon sources: `halfdome/branding/`.
 
+## Layout
+
+Half Dome defaults to Arc’s layout: vertical tabs and the address bar on the **left** (sidebar), so the page runs to the top of the window.
+
+| Control | Where |
+| --- | --- |
+| Settings › Appearance › Address bar | Picture cards: **Top** or **Left** |
+| View › Address Bar on Left | Menu toggle (checked when the URL is in the sidebar) |
+| Sidebar › Browser Layout | Address Bar on Top / Address Bar on Left |
+
+Needs vertical tabs (`tabLayout: sidebar`). With tabs across the top, the address bar stays in the toolbar.
+
 ## Build
 
 Same as Ardia. Prebuilt engine download works until you change `engine/`.

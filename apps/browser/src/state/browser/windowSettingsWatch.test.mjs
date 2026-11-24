@@ -36,7 +36,7 @@ test("a window's layout reads wake its window key whenever they change", () => {
   };
   const switched = run("switch", () => S().activate(ids[2]));
   assert.ok(!switched.has(other), "a switch in one window wakes another window's layout reads");
-  run("address bar", () => S().updateSettings({ addressBar: "sidebar" }));
+  run("address bar", () => S().updateSettings({ addressBar: "toolbar" }));
   run("minimalism", () => S().updateSettings({ minimalismMode: true }));
   run("auto-hide", () => S().updateSettings({ autoHideTabs: true }));
   run("page frame", () => S().updateSettings({ pageFrame: 0 }));

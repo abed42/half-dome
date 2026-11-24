@@ -318,9 +318,8 @@ test("the sidebar background menu: new things, Browser Layout, Close All Tabs la
     "  Sidebar on Right [sidebar.right]",
     "  Top Tab Bar [menubar.rectangle] ⇧⌘S",
     "  ---",
-    "  Address Bar in Toolbar [menubar.rectangle] ✓",
-    "  Address Bar in Sidebar [sidebar.left]",
-    "  Compact Toolbar [rectangle.compress.vertical]",
+    "  Address Bar on Top [menubar.rectangle]",
+    "  Address Bar on Left [sidebar.left] ✓",
     "  ---",
     "  Auto-Hide Tabs [eye.slash] ⌘S",
     "  Minimalism Mode [rectangle.leftthird.inset.filled] ⌃⌘M",
@@ -342,7 +341,7 @@ test("Browser Layout moves the tabs between the sides and the top in one pick, a
   assert.equal(tabLayoutOf(S(), w), "top");
   assert.ok(layout().includes("Top Tab Bar [menubar.rectangle] ✓"));
   assert.ok(layout().includes("Sidebar on Left [sidebar.left] ⇧⌘S"), "the layout toggle shortcut moves to the layout it switches to");
-  assert.ok(!layout().some((l) => l.startsWith("Address Bar in")), "with tabs on top the address bar is in the toolbar");
+  assert.ok(!layout().some((l) => l.startsWith("Address Bar on")), "with tabs on top the address bar is in the toolbar");
   assert.ok(layout().includes("Compact Toolbar [rectangle.compress.vertical]"));
   runBrowserLayoutChoice(w, "layout:sidebarRight");
   assert.equal(tabLayoutOf(S(), w), "sidebar");
@@ -358,7 +357,7 @@ test("Browser Layout moves the tabs between the sides and the top in one pick, a
   runBrowserLayoutChoice(w, "layout:addressToolbar");
   runBrowserLayoutChoice(w, "layout:minimalism");
   assert.equal(S().settings.minimalismMode, true);
-  assert.ok(!layout().some((l) => l.startsWith("Address Bar in")), "minimalism suppresses the address bar placement choices");
+  assert.ok(!layout().some((l) => l.startsWith("Address Bar on")), "minimalism suppresses the address bar placement choices");
   assert.ok(!layout().some((l) => l.startsWith("Compact Toolbar")), "minimalism suppresses Compact Toolbar");
   runBrowserLayoutChoice(w, "layout:addressSidebar");
   assert.equal(S().settings.addressBar, "toolbar");

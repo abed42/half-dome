@@ -34,8 +34,8 @@ export function browserLayoutItems(s: BrowserState, windowId: string): MenuItem[
       { id: "layout:top", title: "Top Tab Bar", symbol: "menubar.rectangle", checked: !inSidebar, ...(inSidebar ? menuShortcut("toggleTabLayout", s) : {}) },
     ],
     [
-      inSidebar && !minimal && { id: "layout:addressToolbar", title: "Address Bar in Toolbar", symbol: "menubar.rectangle", checked: s.settings.addressBar === "toolbar" },
-      inSidebar && !minimal && { id: "layout:addressSidebar", title: "Address Bar in Sidebar", symbol: "sidebar.left", checked: s.settings.addressBar === "sidebar" },
+      inSidebar && !minimal && { id: "layout:addressToolbar", title: "Address Bar on Top", symbol: "menubar.rectangle", checked: s.settings.addressBar === "toolbar" },
+      inSidebar && !minimal && { id: "layout:addressSidebar", title: "Address Bar on Left", symbol: "sidebar.left", checked: s.settings.addressBar === "sidebar" },
       addressInToolbar && { id: "layout:compactToolbar", title: "Compact Toolbar", symbol: "rectangle.compress.vertical", checked: s.settings.compactToolbar },
     ],
     [
