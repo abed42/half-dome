@@ -15,26 +15,10 @@ import { markNewTabBar } from "../../state/omnibox/newTabMarks";
 import { useHeroBarFocusWhenShownAgain } from "../../state/tabs/newTabKeep";
 
 const BAR_HEIGHT = 112;
-const MARKS = {
-  green: { back: require("../../../assets/ntp-mark-back.png"), front: require("../../../assets/ntp-mark-front.png"), sun: require("../../../assets/ntp-mark-sun.png") },
-  plum: { back: require("../../../assets/ntp-mark-plum-back.png"), front: require("../../../assets/ntp-mark-plum-front.png"), sun: require("../../../assets/ntp-mark-plum-sun.png") },
-  blue: { back: require("../../../assets/ntp-mark-blue-back.png"), front: require("../../../assets/ntp-mark-blue-front.png"), sun: require("../../../assets/ntp-mark-blue-sun.png") },
-  purple: { back: require("../../../assets/ntp-mark-purple-back.png"), front: require("../../../assets/ntp-mark-purple-front.png"), sun: require("../../../assets/ntp-mark-purple-sun.png") },
-  pink: { back: require("../../../assets/ntp-mark-pink-back.png"), front: require("../../../assets/ntp-mark-pink-front.png"), sun: require("../../../assets/ntp-mark-pink-sun.png") },
-  red: { back: require("../../../assets/ntp-mark-red-back.png"), front: require("../../../assets/ntp-mark-red-front.png"), sun: require("../../../assets/ntp-mark-red-sun.png") },
-  orange: { back: require("../../../assets/ntp-mark-orange-back.png"), front: require("../../../assets/ntp-mark-orange-front.png"), sun: require("../../../assets/ntp-mark-orange-sun.png") },
-  yellow: { back: require("../../../assets/ntp-mark-yellow-back.png"), front: require("../../../assets/ntp-mark-yellow-front.png"), sun: require("../../../assets/ntp-mark-yellow-sun.png") },
-  neutral: { back: require("../../../assets/ntp-mark-neutral-back.png"), front: require("../../../assets/ntp-mark-neutral-front.png"), sun: require("../../../assets/ntp-mark-neutral-sun.png") },
-};
-const MARK_SIZE = 100;
-const SUN_DELAY = 250;
-const MARK_LAYERS = [
-  { name: "sun", hidden: 80, delay: SUN_DELAY, spring: springs.smooth },
-  { name: "back", hidden: 46, delay: 170, spring: springs.smooth },
-  { name: "front", hidden: 48, delay: 80, spring: springs.smooth },
-] as const;
-const SUN_DRIFT = 6;
-const SUN_DRIFT_SPRING = springs.smooth;
+const HALF_DOME_MARK = require("../../../assets/ntp-halfdome-mark.png");
+const MARK_WIDTH = 148;
+const MARK_HEIGHT = 77;
+const MARK_HIDDEN = 48;
 
 type Size = { width: number; height: number };
 let lastSize: { card: Size; size: Size } | null = null;
@@ -75,22 +59,13 @@ export function NewTabPage({ tabId, toolbar = true, kept = false }: { tabId: str
   useLayoutEffect(() => {
     if (restShown && PLATFORM_FEATURES.newTabBarFirst) markNewTabBar("rest", tabId);
   }, [restShown]);
-  const [rise] = useState(() => {
-    const intro = playIntro && !reduceMotion();
-    const layers = MARK_LAYERS.map((l) => ({ ...l, y: new Animated.Value(intro ? l.hidden : 0) }));
-    return { layers, drift: new Animated.Value(intro ? SUN_DRIFT : 0) };
-  });
+  const [rise] = useState(() => new Animated.Value(playIntro && !reduceMotion() ? MARK_HIDDEN : 0));
   useEffect(() => {
     introPlayed.add(tabId);
   }, [tabId]);
   useEffect(() => {
     if (!playIntro || reduceMotion()) return;
-    const spring = (value: Animated.Value, delay: number, params: typeof springs.smooth) =>
-      Animated.spring(value, { toValue: 0, delay, ...params, useNativeDriver: true });
-    const intro = Animated.parallel([
-      ...rise.layers.map((l) => spring(l.y, l.delay, l.spring)),
-      spring(rise.drift, SUN_DELAY, SUN_DRIFT_SPRING),
-    ]);
+    const intro = Animated.spring(rise, { toValue: 0, delay: 80, ...springs.smooth, useNativeDriver: true });
     intro.start();
     return () => intro.stop();
   }, [playIntro, rise]);
@@ -121,25 +96,23 @@ export function NewTabPage({ tabId, toolbar = true, kept = false }: { tabId: str
         pointerEvents="none"
         style={{
           position: "absolute",
-          left: size.width / 2 + DIA_OFFSET - MARK_SIZE / 2,
+          left: size.width / 2 + DIA_OFFSET - MARK_WIDTH / 2,
           top: top - MARK_ABOVE_BAR,
-          width: MARK_SIZE,
+          width: MARK_WIDTH,
           height: MARK_ABOVE_BAR,
           overflow: "hidden",
+          alignItems: "center",
+          justifyContent: "flex-end",
         }}
       >
-        {rise.layers.map((l) => (
-          <Animated.Image
-            key={l.name}
-            source={(MARKS[theme.profileColor === "incognito" ? "neutral" : theme.profileColor] ?? MARKS.green)[l.name]}
-            style={{
-              position: "absolute",
-              width: MARK_SIZE,
-              height: MARK_SIZE,
-              transform: [{ translateX: l.name === "sun" ? rise.drift : 0 }, { translateY: l.y }],
-            }}
-          />
-        ))}
+        <Animated.Image
+          source={HALF_DOME_MARK}
+          style={{
+            width: MARK_WIDTH,
+            height: MARK_HEIGHT,
+            transform: [{ translateY: rise }],
+          }}
+        />
       </View>}
       <View onLayout={(e) => (setPanelHeight(e.nativeEvent.layout.height), showRest())} style={{ position: "absolute", left: x, top, width }}>
         {restShown && NTP_BAR.shadows.map((level, i) => (
