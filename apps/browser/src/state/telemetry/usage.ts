@@ -187,8 +187,7 @@ export const notePopoverClosed = (by: "press" | "escape") => void counts[by === 
 export const noteSiteControls = (event: "autoplayBlock" | "autoplayAllow" | "autoplayPlaysBlocked" | "siteSettings" | "manageExtensions" | "sidebarField", times = 1, consent?: ConsentToken | null) => bump(consent, { [(({ autoplayBlock: "siteAutoplayBlocks", autoplayAllow: "siteAutoplayAllows", autoplayPlaysBlocked: "autoplayPlaysBlocked", siteSettings: "siteSettingsOpens", manageExtensions: "siteManageExtensionsOpens", sidebarField: "sidebarFieldSiteControlsOpens" }) as const)[event]]: times });
 
 export const noteCleanUp = (event: "suggestionShown" | "suggestionOnce" | "suggestionDaily" | "suggestionNotNow" | "suggestionNeverAgain" | "undone") => void counts[(({ suggestionShown: "cleanUpSuggestionShows", suggestionOnce: "cleanUpSuggestionOnce", suggestionDaily: "cleanUpSuggestionDaily", suggestionNotNow: "cleanUpSuggestionNotNow", suggestionNeverAgain: "cleanUpSuggestionNeverAgain", undone: "cleanUpUndos" }) as const)[event]]++;
-
-export const noteSpacesTip = (event: "shown" | "dismissed" | "menu") => void counts[(({ shown: "spacesTipShows", dismissed: "spacesTipDismissals", menu: "spacesTipMenuOpens" }) as const)[event]]++;
+export const noteSpacesTip = (event: "shown" | "dismissed" | "menu", consent?: ConsentToken | null) => bump(consent, { [(({ shown: "spacesTipShows", dismissed: "spacesTipDismissals", menu: "spacesTipMenuOpens" }) as const)[event]]: 1 });
 export const noteUpdateChannelSwitch = (outcome: "offered" | "upToDate" | "failed" | null, consent?: ConsentToken | null) => bump(consent, { updateChannelSwitches: 1, ...(outcome && { [outcome === "offered" ? "updateChannelSwitchOffers" : outcome === "upToDate" ? "updateChannelSwitchUpToDate" : "updateChannelSwitchCheckFailures"]: 1 }) });
 
 export const noteTabSwitcherOpened = (closedLeftOut: number, unseenLast: number) =>

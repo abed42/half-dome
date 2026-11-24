@@ -41,7 +41,7 @@ test("the warning asks only on Windows, with the setting on, and never on a hidd
 
 test("the warning uses the Mac's words and its don't-ask-again", () => {
   const mac = readFileSync(new URL("../../../../../packages/shell/ios/QuitFlow.swift", import.meta.url), "utf8");
-  assert.match(mac, /Are you sure you want to quit \\\(ProcessInfo\.processInfo\.processName\)\?/);
+  assert.match(mac, /Are you sure you want to quit \\\(AppUpdater\.applicationDisplayName\)\?/);
   assert.equal(QUIT_WARNING.title, "Are you sure you want to quit Half Dome?");
   assert.ok(mac.includes(`"${QUIT_WARNING.message}"`));
   assert.ok(mac.includes(`addButton(withTitle: "${QUIT_WARNING.confirmTitle}")`));

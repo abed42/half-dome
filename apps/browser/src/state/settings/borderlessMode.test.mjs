@@ -56,7 +56,8 @@ test("sync carries the mode without replacing the saved frame thickness", () => 
 });
 
 test("new windows place their traffic lights on the borderless toolbar immediately", () => {
-  useBrowser.getState().hydrate({ settings: { pageFrame: 9, borderlessMode: true, addressBar: "toolbar" } });
+  useBrowser.getState().hydrate({ settings: { pageFrame: 9, borderlessMode: true } });
+  useBrowser.getState().updateSettings({ addressBar: "toolbar" });
   const id = useBrowser.getState().createWindow();
   assert.deepEqual(openingLightsCenter(useBrowser.getState(), id), [25, 21]);
   useBrowser.getState().updateSettings({ borderlessMode: false });

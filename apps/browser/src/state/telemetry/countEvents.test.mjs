@@ -11,7 +11,7 @@ const DESCRIBED_BY = {
   password_import: ["Usage", "When you import passwords"],
   perf_omnibox: ["Speed", "command bar speed (a sample of keystrokes)"],
   perf_memory: ["Speed", "Memory use and the number of tabs, once an hour"],
-  telemetry_local_store: ["The local copy", "Every hour while sharing is on, how much Ardia wrote to the local copy"],
+  telemetry_local_store: ["The local copy", "Every hour while sharing is on, how much Half Dome wrote to the local copy"],
 };
 const KIND = { Usage: "usage counts", Speed: "speed", "The local copy": "local-copy" };
 

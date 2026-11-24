@@ -88,7 +88,7 @@ async function heldWhileOpen(held, settings) {
 }
 
 test("the floating sidebar stays out for what's anchored in it: its menus, rename, the icon pickers, the hover card, Downloads and the sidebar field's popover", async () => {
-  assert.deepEqual(await heldWhileOpen(({ w }) => peekHeld(w)), {
+  assert.deepEqual(await heldWhileOpen(({ w }) => peekHeld(w), { addressBar: "toolbar" }), {
     menuFromSidebar: true, menuFromToolbar: false, menuFromPage: false, menuElsewhere: false,
     rename: true, renameElsewhere: false, iconPicker: true, iconPickerElsewhere: false, deletedProfileIconPicker: false, profileIconPicker: true, hoverCard: true, resize: true, resizeElsewhere: false, downloads: true,
     popover: false, panel: false, find: false, historyMenu: false, extensionPopup: false,

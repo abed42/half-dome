@@ -13,6 +13,7 @@ import { SIDEBAR_FOOTER_DOWNLOADS } from "../sidebar/geometry";
 import { switcherCellWidth, switcherIcons, SwitcherMark } from "./ProfileIcons";
 import { openProfileItemMenu } from "./profileMenu";
 import { dismissSpacesTip } from "../../state/profiles/spacesTip";
+import { consentToken } from "../../state/telemetry/usageClient";
 import { profileSwitcherShown } from "../../state/profiles/switcherShown";
 import { switcherIconOf } from "../../state/profiles/switcherMark";
 import { profileSwitcher } from "./tokens";
@@ -99,7 +100,7 @@ function Dot({ id, windowId, icon, page, pos, offset, pan, lifted, reordering }:
       <TooltipAbove text={name} active={hovered && !pressed && !reordering} centerX={cell / 2} bottom={BAND / 2 + dotTooltipLift} />
       <ContextMenuArea
         onContextMenu={() => {
-          dismissSpacesTip("menu");
+          dismissSpacesTip("menu", consentToken());
           void openProfileItemMenu(id, "sidebar", windowId, mark.current);
         }}
       >

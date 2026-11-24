@@ -32,7 +32,8 @@ test("⌘T opens the command bar while it's on, and the saved New Tab choice com
 });
 
 test("a minimal window has no toolbar field, so ⌘L opens the command bar in the centre, and its page is flat", () => {
-  useBrowser.getState().hydrate({ settings: { addressBar: "toolbar", pageFrame: 9 } });
+  useBrowser.getState().hydrate({ settings: { pageFrame: 9 } });
+  useBrowser.getState().updateSettings({ addressBar: "toolbar" });
   const id = useBrowser.getState().createWindow();
   useBrowser.getState().newTab(id, { url: "https://example.com/" });
   assert.equal(addressFieldShown(useBrowser.getState(), id), true);

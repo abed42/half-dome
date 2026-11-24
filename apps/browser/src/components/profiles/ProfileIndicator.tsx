@@ -6,6 +6,7 @@ import { setMeasuredWidth, useMeasuredWidth } from "../../state/windows/measured
 import { ContextMenuArea, radius, Symbol, Text, useHover } from "../ui";
 import { openProfileItemMenu } from "./profileMenu";
 import { dismissSpacesTip } from "../../state/profiles/spacesTip";
+import { consentToken } from "../../state/telemetry/usageClient";
 import { openProfileMenu } from "../../state/browser/actions";
 import { WINDOW_CHROME } from "../../lib/windowChrome";
 import { CARD_INSET } from "../../lib/windowLayout";
@@ -64,7 +65,7 @@ export function ProfileIndicator({ room, profileShown = true }: { room: number; 
       <ContextMenuArea
         onContextMenu={() => {
           if (incognito) return;
-          dismissSpacesTip("menu");
+          dismissSpacesTip("menu", consentToken());
           void openProfileItemMenu(profileId, "sidebar", windowId, indicator.current);
         }}
       >

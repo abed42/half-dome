@@ -11,6 +11,7 @@ import {
   spacesTipOnboardingDone,
   useSpacesTip,
 } from "../../state/profiles/spacesTip";
+import { consentToken } from "../../state/telemetry/usageClient";
 import { useProfileDotsShown } from "./ProfileDots";
 
 export const SPACES_TIP_COPY = {
@@ -41,9 +42,10 @@ function TipCard({ windowId, bottom, width }: { windowId: string; bottom: number
 
   useEffect(() => {
     let cancelled = false;
+    const consent = consentToken();
     const timer = setTimeout(() => {
       if (cancelled) return;
-      markSpacesTipShown();
+      markSpacesTipShown(consent);
       Animated.spring(appear, { toValue: 1, ...springs.smooth, useNativeDriver: true }).start();
     }, APPEAR_DELAY_MS);
     return () => {
@@ -73,12 +75,12 @@ function TipCard({ windowId, bottom, width }: { windowId: string; bottom: number
           <Text size="small" weight="semibold" style={FILL}>
             {SPACES_TIP_COPY.title}
           </Text>
-          <Button variant="close" look="panel" tooltip="Dismiss" onPress={() => dismissSpacesTip("gotIt")} style={CLOSE} />
+          <Button variant="close" look="panel" tooltip="Dismiss" onPress={() => dismissSpacesTip("gotIt", consentToken())} style={CLOSE} />
         </View>
         <Text size="caption" tone="textSecondary" style={BODY}>
           {SPACES_TIP_COPY.body}
         </Text>
-        <Button variant="pill" tone="prompt" title={SPACES_TIP_COPY.action} onPress={() => dismissSpacesTip("gotIt")} />
+        <Button variant="pill" tone="prompt" title={SPACES_TIP_COPY.action} onPress={() => dismissSpacesTip("gotIt", consentToken())} />
       </Panel>
     </Animated.View>
   );

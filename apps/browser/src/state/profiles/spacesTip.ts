@@ -4,6 +4,7 @@ import { parseSaved, unchanged, versionedJson, type Migrations } from "../../lib
 import { onboardingCompletedAt } from "../onboarding/onboardingDocument";
 import { useTour } from "../onboarding/tour";
 import { noteSpacesTip } from "../telemetry/usage";
+import type { ConsentToken } from "../telemetry/usageClient";
 
 const DOC = "spaces-tip.json";
 const DOC_VERSION = 1;
@@ -43,18 +44,18 @@ export type SpacesTipVisibility = {
 export const spacesTipDue = ({ dismissed, onboardingDone, switcherShown, tourActive }: SpacesTipVisibility) =>
   !dismissed && onboardingDone && switcherShown && !tourActive;
 
-export function markSpacesTipShown() {
+export function markSpacesTipShown(consent: ConsentToken | null) {
   if (useSpacesTip.getState().shown) return;
   useSpacesTip.setState({ shown: true });
-  noteSpacesTip("shown");
+  noteSpacesTip("shown", consent);
 }
 
-export function dismissSpacesTip(via: "gotIt" | "menu") {
+export function dismissSpacesTip(via: "gotIt" | "menu", consent: ConsentToken | null) {
   if (useSpacesTip.getState().dismissedAt !== null) return;
   const dismissedAt = Date.now();
   writeSaved({ dismissedAt });
   useSpacesTip.setState({ dismissedAt });
-  noteSpacesTip(via === "menu" ? "menu" : "dismissed");
+  noteSpacesTip(via === "menu" ? "menu" : "dismissed", consent);
 }
 
 export function spacesTipOnboardingDone() {
