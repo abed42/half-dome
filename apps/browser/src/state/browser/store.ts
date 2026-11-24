@@ -1,4 +1,5 @@
 import { create, type StateCreator, type StoreApi, type UseBoundStore } from "zustand";
+import { withAddressBarOnLeft } from "../settings/addressBarDefault";
 import { withToolbarKeptWhileScrolling } from "../settings/toolbarScrollDefault";
 import { setHeldReportsTransaction } from "../../platform/nativeEvents";
 import { createBookmarksSlice, ensureRoots, type BookmarksSlice } from "../bookmarks/bookmarks";
@@ -126,7 +127,8 @@ const createdBrowser = create<BrowserState>()(actionsApart(transactions.middlewa
       ...(data.profileOrder ?? []).filter((id) => profiles[id]),
       ...Object.keys(profiles).filter((id) => !data.profileOrder?.includes(id)),
     ];
-    const kept = withToolbarKeptWhileScrolling(data.settings, parseSettingsMeta(data.settingsMeta));
+    const scrolled = withToolbarKeptWhileScrolling(data.settings, parseSettingsMeta(data.settingsMeta));
+    const kept = withAddressBarOnLeft(scrolled.settings, scrolled.settingsMeta);
     const settings = parseSettings(kept.settings);
     if (!profiles[settings.defaultProfileId]) settings.defaultProfileId = profileOrder[0]!;
 

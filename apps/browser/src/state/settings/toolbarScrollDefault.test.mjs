@@ -50,7 +50,8 @@ test("a saved on the user never touched turns off and stays unchosen, so sync do
 
 test("an on from before Ardia tracked choices (every key chosen and inferred) turns off", () => {
   assert.deepEqual(load(doc(SESSION_VERSION, { ...DEFAULT_SETTINGS, [KEY]: true }, { chosen: [KEY, "tabLayout"], inferred: [KEY, "tabLayout"] })), { on: false, chosen: false, inferred: false });
-  assert.deepEqual(S().settingsMeta, { chosen: ["tabLayout"], inferred: ["tabLayout", APPLIED] });
+  assert.ok(S().settingsMeta.chosen.includes("tabLayout") && !S().settingsMeta.chosen.includes(KEY));
+  assert.ok(S().settingsMeta.inferred.includes("tabLayout") && S().settingsMeta.inferred.includes(APPLIED));
   assert.equal(load(doc(6, { ...DEFAULT_SETTINGS, [KEY]: true })).on, false);
 });
 
