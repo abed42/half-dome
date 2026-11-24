@@ -13,7 +13,7 @@ final class BrowserWindow: NSWindow {
     )
     titlebarAppearsTransparent = true
     titleVisibility = .hidden
-    title = "Ardia"
+    title = "Half Dome"
     ArdiaChromeWindowHost.setInterfaceMinSize(NSSize(width: 720, height: 460), of: self)
     isReleasedWhenClosed = false
     backgroundColor = NSColor(name: nil) { appearance in

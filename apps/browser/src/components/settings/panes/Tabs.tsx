@@ -18,7 +18,7 @@ import { keyText } from "../../../state/commands/keyText";
 import { PLATFORM_TERMS } from "../../../lib/platformTerms";
 import type { SettingsPlace } from "../../../state/settings/settingsWindows";
 
-const APP = "Ardia";
+const APP = "Half Dome";
 
 const SIDEBAR_SIDES: SegmentOption<Settings["sidebarSide"]>[] = [
   { value: "left", title: "Left" },
@@ -61,7 +61,7 @@ const OTHER_SITE_LINKS: Option<OtherSiteLinks>[] = [
 const NEW_TAB_LINKS: Option<Settings["newTabLinksOpenIn"]>[] = [
   { value: "tab", title: "New tab" },
   { value: "peek", title: "Peek" },
-  { value: "littleArdia", title: "Little Ardia" },
+  { value: "littleArdia", title: "Little Half Dome" },
 ];
 
 const PEEK_BUTTONS: Option<Settings["peekButtons"]>[] = [
@@ -250,7 +250,7 @@ function LinksSection() {
           anchor="tabs.openLinksInLittleArdia"
           description={
             littleArdia
-              ? `A link from ${PLATFORM_TERMS.linkSourceExamples} opens in Little Ardia, a small window of its own. ${keyText("⌘O")} moves it into ${APP}; closing it throws it away.`
+              ? `A link from ${PLATFORM_TERMS.linkSourceExamples} opens in Little Half Dome, a small window of its own. ${keyText("⌘O")} moves it into ${APP}; closing it throws it away.`
               : `A link from ${PLATFORM_TERMS.linkSourceExamples} opens as a new tab in the ${APP} window you used last.`
           }
         />

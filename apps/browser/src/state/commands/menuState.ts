@@ -137,7 +137,7 @@ export function menuState(s: BrowserState, liveOfTab = (id: string) => shownLive
     titles.bookmarkPage = "Edit Bookmark…";
   }
 
-  if (!s.settings.openLinksInLittleArdia) titles.toggleOpenLinksInLittleArdia = "Open Links from Other Apps in Little Ardia";
+  if (!s.settings.openLinksInLittleArdia) titles.toggleOpenLinksInLittleArdia = "Open Links from Other Apps in Little Half Dome";
   if (!page || !canHideElements(s, page.id)) disabled.push("hideElement", "showHiddenElements");
 
   const sidebar = sidebarMenuState(s, windowId);
@@ -149,7 +149,7 @@ export function menuState(s: BrowserState, liveOfTab = (id: string) => shownLive
   }
   if (w?.kind === "small") {
     disabled.push(...LITTLE_ARDIA_DISABLED_COMMANDS);
-    titles.openFile = "Open in Ardia";
+    titles.openFile = "Open in Half Dome";
   }
 
   const closed = newestClosed(recentlyClosedIn(s, w)).map((c) => ({ id: c.id, title: c.kind === "tab" ? c.tab.title || tabLabel(c.tab) : closedWindowTitle(c) }));

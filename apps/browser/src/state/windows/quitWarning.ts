@@ -7,7 +7,7 @@ import { isUtilityWindowId } from "../settings/settingsWindows";
 import { isWindowClosing } from "./closingWindows";
 
 export const QUIT_WARNING = {
-  title: "Are you sure you want to quit Ardia?",
+  title: "Are you sure you want to quit Half Dome?",
   message: "Your windows and tabs will be restored the next time you open it.",
   confirmTitle: "Quit",
   suppression: "Don’t ask again",

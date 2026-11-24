@@ -26,7 +26,7 @@ const ICON = require("../../../assets/app-icon.png");
 
 
 const LINK_CHOICES: ChoiceOption<boolean>[] = [
-  { value: true, preview: "links-little", title: "Little Ardia", subtitle: "A small window that's gone when you're done" },
+  { value: true, preview: "links-little", title: "Little Half Dome", subtitle: "A small window that's gone when you're done" },
   { value: false, preview: "links-tab", title: "A new tab", subtitle: "Right in your main window" },
 ];
 
@@ -57,7 +57,7 @@ function DefaultBrowserQuestion() {
     try {
       if (!system.isDefault && (setDefault || trial) && (await setAsDefaultBrowser())) {
         if (!setDefault) recordDefaultBrowserTrial();
-        picked.push(setDefault ? "Ardia is your default browser" : "A week as your default browser");
+        picked.push(setDefault ? "Half Dome is your default browser" : "A week as your default browser");
       }
       if (login !== system.loginEnabled) await setLaunchAtLogin(login).catch(() => {});
       if (dock && system.dockAvailable && !system.inDock) await addToDock();
@@ -72,7 +72,7 @@ function DefaultBrowserQuestion() {
   return (
     <StepLayout
       pageKey="default"
-      title="Make Ardia your default?"
+      title="Make Half Dome your default?"
       subtitle="Links from everywhere open here."
       actions={
         <StepActions
@@ -88,8 +88,8 @@ function DefaultBrowserQuestion() {
         <OptionCard
           control="check"
           icon="globe"
-          title="Set Ardia as default browser"
-          subtitle={system?.isDefault ? "Ardia is already your default browser" : PLATFORM_FEATURES.setsDefaultBrowser ? "Open links and web pages in Ardia" : `Continue opens ${PLATFORM_TERMS.os} Settings, where you choose Ardia`}
+          title="Set Half Dome as default browser"
+          subtitle={system?.isDefault ? "Half Dome is already your default browser" : PLATFORM_FEATURES.setsDefaultBrowser ? "Open links and web pages in Half Dome" : `Continue opens ${PLATFORM_TERMS.os} Settings, where you choose Half Dome`}
           selected={!!defaultOn}
           disabled={!system || system.isDefault}
           onPress={() => setExtras(defaultOn ? { setDefault: false, trial: !redo } : { setDefault: true })}
@@ -98,9 +98,9 @@ function DefaultBrowserQuestion() {
           <OptionCard control="check" icon="calendar" title="Try it for seven days" subtitle="We'll check in to make sure you love it." selected={trial} onPress={() => setExtras({ trial: !trial })} />
         ) : null}
         {system && system.dockAvailable && !system.inDock ? (
-          <OptionCard control="check" icon="dock.rectangle" title="Add Ardia to Dock" subtitle="Quick access whenever you need it" selected={dock} onPress={() => setExtras({ dock: !dock })} />
+          <OptionCard control="check" icon="dock.rectangle" title="Add Half Dome to Dock" subtitle="Quick access whenever you need it" selected={dock} onPress={() => setExtras({ dock: !dock })} />
         ) : null}
-        <OptionCard control="check" icon="power" title="Open Ardia at login" subtitle="Ready when you sign in" selected={login} onPress={() => setExtras({ login: !login })} />
+        <OptionCard control="check" icon="power" title="Open Half Dome at login" subtitle="Ready when you sign in" selected={login} onPress={() => setExtras({ login: !login })} />
       </View>
     </StepLayout>
   );
@@ -118,7 +118,7 @@ function LinksQuestion() {
       actions={
         <StepActions
           onContinue={() =>
-            confirmAnswer("links", { openLinksInLittleArdia: little }, [little ? "Links from other apps open in Little Ardia" : "Links from other apps open in a tab"])
+            confirmAnswer("links", { openLinksInLittleArdia: little }, [little ? "Links from other apps open in Little Half Dome" : "Links from other apps open in a tab"])
           }
           onSkip={() => skipStep()}
         />

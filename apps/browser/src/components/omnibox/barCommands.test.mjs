@@ -74,7 +74,7 @@ const ENTRIES = [
   },
   {
     id: "newLittleArdia",
-    title: "New Little Ardia Window",
+    title: "New Little Half Dome Window",
     keywords: ["little arc", "mini window"],
     ran: ({ w }) => assert.equal(Object.values(S().windows).filter((x) => x.kind === "small" && x.id !== w).length, 1),
   },

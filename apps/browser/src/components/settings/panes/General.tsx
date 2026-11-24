@@ -29,7 +29,7 @@ import { SyncSection } from "./SyncSection";
 import { UpdatesSection } from "./UpdatesSection";
 import { homeRelative } from "../../../lib/homePath";
 
-const APP = "Ardia";
+const APP = "Half Dome";
 
 export function GeneralPane({ detail }: SettingsPlace) {
   if (detail === SETTINGS_DETAIL.filterLists) return <FilterListsPage />;

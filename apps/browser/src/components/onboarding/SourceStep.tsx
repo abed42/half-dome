@@ -77,7 +77,7 @@ export function SourceStep() {
   return (
     <StepLayout
       title="Where are you coming from?"
-      subtitle="Ardia sets itself up the way you're used to."
+      subtitle="Half Dome sets itself up the way you're used to."
       actions={
         <>
           <StepActions

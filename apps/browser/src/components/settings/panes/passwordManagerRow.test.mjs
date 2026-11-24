@@ -17,7 +17,7 @@ test("a stored plugin that is off shows as its own option, so picking Ardia is a
   assert.deepEqual(
     popUp.options.map((o) => [o.value, o.title]),
     [
-      ["ardia", "Ardia"],
+      ["ardia", "Half Dome"],
       ["plugin:password-manager", "Test Passwords (off)"],
       ["none", "None (an extension handles logins)"],
     ],

@@ -1,6 +1,6 @@
 import type { IntroMusicCues } from "../../state/onboarding/onboarding";
 
-export const WORDMARK = "Ardia";
+export const WORDMARK = "Half Dome";
 export const LETTER = 0.52;
 export const TAGLINE = 0.6;
 export const EXIT = 0.65;

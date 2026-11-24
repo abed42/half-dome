@@ -8,7 +8,7 @@ import { IMPORT_KINDS } from "../../state/import/flow";
 
 export type { BrowserSource, ImportKind, SpaceSummary };
 
-export const APP = "Ardia";
+export const APP = "Half Dome";
 
 const KIND_LOOK: Record<ImportKind, { title: string; icon: string }> = {
   bookmarks: { title: "Bookmarks", icon: "bookmark" },

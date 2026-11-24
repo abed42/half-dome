@@ -42,7 +42,7 @@ export function SetupCodeStep({ onBack }: { onBack: () => void }) {
       <StepLayout
         pageKey="setupCodeApplied"
         title="You're set up"
-        subtitle="Ardia now looks the way you made it on ardia.dev. Search and privacy are still yours to choose, so those come next."
+        subtitle="Half Dome now looks the way you made it on ardia.dev. Search and privacy are still yours to choose, so those come next."
         actions={
           <>
             <PrimaryButton title="Continue" icon="arrow.right" onPress={() => goToStep("searchPrivacy")} />

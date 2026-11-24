@@ -69,8 +69,8 @@ const TAB_CHOICES: ChoiceOption<Settings["tabLayout"]>[] = [
   { value: "top", preview: "tabs-top", title: "Along the top", subtitle: "Classic tabs above the page" },
 ];
 const ADDRESS_CHOICES: ChoiceOption<Settings["addressBar"]>[] = [
-  { value: "toolbar", preview: "address-toolbar", title: "In the toolbar", subtitle: "Above the page, as in Dia" },
-  { value: "sidebar", preview: "address-sidebar", title: "In the sidebar", subtitle: "On top of your tabs, as in Arc" },
+  { value: "toolbar", preview: "address-toolbar", title: "Top", subtitle: "Above the page, as in Dia" },
+  { value: "sidebar", preview: "address-sidebar", title: "Left", subtitle: "In the sidebar above your tabs, as in Arc" },
 ];
 const CMDL_CHOICES: ChoiceOption<Settings["commandBarPlacement"]>[] = [
   { value: "field", preview: "cmdl-field", title: "Under the address", subtitle: "Drops down from the field, as in Dia" },
@@ -101,7 +101,7 @@ export function LayoutStep() {
         subtitle="Your window changes as you pick."
         tag={tag}
         patch={{ addressBar: values.addressBar }}
-        picked={[values.addressBar === "sidebar" ? "Address in the sidebar" : "Address in the toolbar"]}
+        picked={[values.addressBar === "sidebar" ? "Address on the left" : "Address on top"]}
         preview={preview}
       >
         <ChoiceList options={ADDRESS_CHOICES} value={values.addressBar} onChange={(addressBar) => change({ addressBar }, true)} mock={focus} />
@@ -229,9 +229,9 @@ export function TabsStep() {
       <Page
         id={id}
         title="When you quit and come back?"
-        subtitle="What Ardia opens to."
+        subtitle="What Half Dome opens to."
         patch={{ restoreSession: values.restoreSession }}
-        picked={values.restoreSession ? [] : ["Ardia starts fresh each launch"]}
+        picked={values.restoreSession ? [] : ["Half Dome starts fresh each launch"]}
         preview={preview}
       >
         <ChoiceList options={QUIT_CHOICES} value={values.restoreSession} onChange={(restoreSession) => change({ restoreSession })} mock={focus} />

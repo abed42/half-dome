@@ -12,7 +12,7 @@ import { UI_LOCALE } from "../../../lib/uiLocale";
 import { Group, Row, SectionHeader } from "../Form";
 import { setting } from "../settingsIndex";
 
-const APP = "Ardia";
+const APP = "Half Dome";
 const REPOSITORY = "https://github.com/ardia-browser/ardia";
 
 export function UpdatesSection() {

@@ -4,7 +4,7 @@ export type SettingsEnv = { top: boolean; glass?: boolean; syncOn?: boolean; cal
 export type SettingRow = { title: string; description?: string; explained?: boolean; keywords?: string[]; shown?: (settings: Settings, env: SettingsEnv) => boolean; needs?: string };
 export type SettingSection = { section: string; rows: Record<string, SettingRow> };
 
-export const APP = "Ardia";
+export const APP = "Half Dome";
 
 export const WEBKIT_LIMITS_KEYWORDS = ["webkit limitations", "limitations", "not supported", "unsupported", "passkeys", "security keys", "picture in picture", "client hints", "midi", "casting", "chromecast", "chrome.debugger", "webrequest", "removeparam", "about engines", "how automatic works"];
 

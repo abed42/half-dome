@@ -160,18 +160,18 @@ export const tabRows = {
       section: "Links",
       rows: {
         openLinksInLittleArdia: {
-          title: "Open links from other apps in Little Ardia",
+          title: "Open links from other apps in Little Half Dome",
           keywords: ["little ardia", "little arc", "arc", "little window", "small window", "mini window", "external links", "links from other apps", "open links", "discord", "slack", "mail", "messages"],
         },
         littleArdiaOpensNewTabLinks: {
-          title: "Keep new-tab links inside a Little Ardia window",
+          title: "Keep new-tab links inside a Little Half Dome window",
           explained: true,
           description: `New-tab links load in place. ${keyText("⌘")}-click still opens behind.`,
           keywords: ["target blank", "new tab", "links", "inside", "little ardia", "load right there", "behind", "command click"],
           shown: () => PLATFORM_FEATURES.keepsNewTabLinksInLittleArdia,
         },
         littleArdiaShortcutFromAnyApp: {
-          title: "Shortcut opens Little Ardia from other apps",
+          title: "Shortcut opens Little Half Dome from other apps",
           explained: true,
           description: "Its shortcut works while another app is in front.",
           shown: () => PLATFORM_FEATURES.littleArdiaShortcutFromAnyApp,

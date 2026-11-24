@@ -12,7 +12,7 @@ export function managerPopUp(plugins: readonly ManagerPlugin[], stored: Password
   return {
     value: offPlugin ?? effective,
     options: [
-      { value: "ardia", title: "Ardia" },
+      { value: "ardia", title: "Half Dome" },
       ...plugins.map((p) => ({ value: `plugin:${p.name}` as PasswordManagerChoice, title: p.title })),
       ...(offPlugin ? [{ value: offPlugin, title: `${storedPlugin?.title ?? choicePlugin(offPlugin)} (${storedPlugin?.installed === false ? "not installed" : "off"})` }] : []),
       { value: "none", title: "None (an extension handles logins)", separatorBefore: true },

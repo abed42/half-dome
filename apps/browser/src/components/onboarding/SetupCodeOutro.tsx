@@ -32,7 +32,7 @@ export function SetupCodeOutro() {
   return (
     <StepLayout
       title="Your setup code"
-      subtitle="Paste it into Ardia after you download it, on its first screen or in Settings › General. Ardia sets itself up just like this."
+      subtitle="Paste it into Half Dome after you download it, on its first screen or in Settings › General. Half Dome sets itself up just like this."
       actions={
         <>
           <StepActions icon="arrow.right" continueTitle="Done" onContinue={() => finishOnboarding()} />
@@ -47,7 +47,7 @@ export function SetupCodeOutro() {
         </Text>
       </ChoiceCard>
       <Text size="small" color={colors.rowSubtitle} style={{ lineHeight: proseLineHeight.small }}>
-        It holds your layout, look and pinned apps. Search and privacy you pick in Ardia itself.
+        It holds your layout, look and pinned apps. Search and privacy you pick in Half Dome itself.
       </Text>
     </StepLayout>
   );
