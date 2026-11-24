@@ -3,6 +3,7 @@ import { Text as Span, View } from "react-native";
 import { useDefaultBrowserCheckIn } from "../../state/onboarding/defaultBrowserCheckIn";
 import { useWindow } from "../../state/browser/hooks";
 import { dismissAsk, setSharing, useTelemetry, type AskPlacement } from "../../state/telemetry/client";
+import { logsReady } from "../../state/telemetry/config";
 import { space } from "../ui/tokens";
 import type { Frame } from "./NewTabExtras";
 import { SHARING_COPY } from "../../state/telemetry/copy";
@@ -34,7 +35,7 @@ export function TelemetryAsk({ windowId, size, bar }: { windowId: string; size: 
   const [existing] = useState(() => onboardingCompletedAt() !== null);
   const [leaving, retire] = useCardRetire();
   const [height, setHeight] = useState<number>(FRAME.estimatedHeight);
-  const asking = due && existing && !incognito && !onboarding && !checkIn && !releaseNotes;
+  const asking = logsReady() && due && existing && !incognito && !onboarding && !checkIn && !releaseNotes;
   const room = clearOfBar(size, bar, height);
   const shown = !!leaving || (asking && room);
   useEffect(() => {

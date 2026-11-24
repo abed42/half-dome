@@ -2,7 +2,7 @@ import { systemInfo, type SystemInfo } from "../../platform/app";
 import { devTestValue } from "../../platform/launchConfig";
 import { PLATFORM_IDS, PLATFORM_TERMS } from "../../lib/platformTerms";
 import { APP_INGEST_KEY, INGEST_KEY_HEADER } from "@ardia/core";
-import { DEV_SEND_TEST_KEY, LOGS_URL } from "./config";
+import { DEV_SEND_TEST_KEY, logsReady, logsUrl } from "./config";
 import { logRequest, type RequestLogEntry } from "./requestLog";
 import { consentToken, counted } from "./choice";
 
@@ -12,7 +12,7 @@ export const appInfo = () => (app ??= systemInfo());
 const devSendAllowed = () => devTestValue(DEV_SEND_TEST_KEY) === "1";
 
 export const mayPost = (kind: RequestLogEntry["kind"]) =>
-  kind === "daily" ? devSendAllowed() || (!__DEV__ && appInfo().isolatedInstance === false) : !__DEV__ || devSendAllowed();
+  logsReady() && (kind === "daily" ? devSendAllowed() || (!__DEV__ && appInfo().isolatedInstance === false) : !__DEV__ || devSendAllowed());
 
 type TelemetrySend = (body: string, signal?: AbortSignal) => Promise<number>;
 type TelemetryHost = { os: string; osType: string; send: TelemetrySend | null };
@@ -36,14 +36,15 @@ export const resetPostStats = () => void takePostStats();
 const POST_HEADERS: Readonly<Record<string, string>> = { "Content-Type": "application/json", [INGEST_KEY_HEADER]: APP_INGEST_KEY };
 
 export async function post(kind: RequestLogEntry["kind"], body: string, count: number, signal?: AbortSignal): Promise<number> {
-  const entry: RequestLogEntry = { at: new Date().toISOString(), kind, url: LOGS_URL, count, bytes: body.length, status: null };
+  const url = logsUrl();
+  const entry: RequestLogEntry = { at: new Date().toISOString(), kind, url, count, bytes: body.length, status: null };
   const consent = consentToken();
   if (!mayPost(kind)) {
     logRequest({ ...entry, dryRun: true }, body);
     return 200;
   }
   try {
-    entry.status = host.send ? await host.send(body, signal) : (await fetch(LOGS_URL, { method: "POST", headers: POST_HEADERS, body, signal })).status;
+    entry.status = host.send ? await host.send(body, signal) : (await fetch(url, { method: "POST", headers: POST_HEADERS, body, signal })).status;
   } catch {
     entry.status = 0;
   }

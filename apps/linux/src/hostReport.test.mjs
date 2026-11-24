@@ -5,12 +5,15 @@ import { useBrowser } from "../../browser/src/state/browser/store.ts";
 import { useReportSheet } from "../../browser/src/state/report/store.ts";
 import { cancelUploads, fileSize, recordsReports, removeReportFile } from "../../browser/src/platform/report.ts";
 import { canRecord, ensureDraftDir, startRecording } from "../../browser/src/state/report/recording.ts";
+import { setServiceEndpointsForTests } from "../../browser/src/lib/endpoints.ts";
 import { FEEDBACK_URL, reportFiles, resetReport, sendCurrentReport, setDescription, setTitle } from "../../browser/src/state/report/actions.ts";
 import { initialHostSession } from "./hostSession.ts";
 import { resolveHostModule } from "./hostModules.ts";
 import { LOCAL_EVENTS_FILE, REPORT_EXPORT_FOLDER_KEY, hostReportExport, hostReportPost, servesReportSheet } from "./hostReport.ts";
 import { createTelemetryLocal } from "./hostTelemetryLocal.ts";
 import { adoptHostReports, openReport, sendsFromSheet } from "./reportProblem.ts";
+
+setServiceEndpointsForTests({ feedback: "https://feedback.example.test/api/feedback" });
 
 const S = () => useBrowser.getState();
 const tick = () => new Promise(setImmediate);

@@ -1,4 +1,5 @@
 import { APP_INGEST_KEY, INGEST_KEY_HEADER } from "@ardia/core";
+import { FEEDBACK_URL as CONFIGURED_FEEDBACK_URL, feedbackReady } from "../../lib/endpoints";
 import { cancelUploads, fileSize, onReportEvent, postReportJson, removeReportFile, sendsReportFiles, uploadFile } from "../../platform/report";
 import { feedbackURLOverride } from "../../platform/launchConfig";
 import { confirm } from "../../platform/dialogs";
@@ -30,10 +31,14 @@ import { SAVED_DRAFT_DOC, restoredDraft, savedDraftJson, savedDraftOf } from "./
 import { currentReport, initialReportState, patchDraft, patchReport, useReportSheet, type ReportSheetState } from "./store";
 import { isBusy, restartReason, sendReport, type RestartReason, type UploadDeps, type UploadState } from "./upload";
 
-export const FEEDBACK_URL = "https://ardia.dev/api/feedback";
+export { FEEDBACK_URL } from "../../lib/endpoints";
 const POST_TIMEOUT_MS = 30_000;
 
-const feedbackEndpoint = () => feedbackURLOverride() ?? FEEDBACK_URL;
+const feedbackEndpoint = () => {
+  const override = feedbackURLOverride();
+  if (override) return override;
+  return feedbackReady() ? CONFIGURED_FEEDBACK_URL : "";
+};
 export const canAttachFiles = sendsReportFiles;
 
 let identity: ReportIdentity | null = null;
@@ -212,7 +217,28 @@ export async function sendCurrentReport() {
   let files = reportFiles(s);
   let restartedFor: RestartReason | null = failed ? restartReason(failed, files) : null;
   let resume = failed && !restartedFor ? failed.created : null;
-  const endpoint = { url: feedbackEndpoint(), key: APP_INGEST_KEY, keyHeader: INGEST_KEY_HEADER };
+  const url = feedbackEndpoint();
+  if (!url) {
+    patchReport({ upload: { phase: "failed", stage: "create", message: "Feedback isn't set up for this build.", created: null, errorClass: "rejected", status: 0, attempts: 1 } });
+    capture(
+      "report_failed",
+      {
+        stage: "create",
+        kind: s.draft.kind,
+        error_class: "rejected",
+        status: 0,
+        attempts: 1,
+        resumed: false,
+        restarted: false,
+        restart_reason: "none",
+        attachments: files.length,
+        sends_files: sendsReportFiles(),
+      },
+      consent,
+    );
+    return;
+  }
+  const endpoint = { url, key: APP_INGEST_KEY, keyHeader: INGEST_KEY_HEADER };
   const onState = (upload: UploadState) => !cancelled && patchReport({ upload });
   const attempt = async () => {
     const shown = resume && identity ? identity : reportIdentity(s.draft.watch && !sharing);

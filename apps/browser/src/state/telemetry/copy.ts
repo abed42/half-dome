@@ -5,7 +5,7 @@ export const SHARING_COPY = {
   summary: "Crashes and anonymous usage stats. Never sites, searches, or tabs.",
   whatsSent: "What's Sent",
   footnote:
-    "Sent to ardia.dev with a random ID made on this Mac, and kept on our own servers. No third parties. Turning this off stops it at once and deletes anything waiting to be sent. This setting doesn't sync.",
+    "Sent with a random ID made on this Mac, and kept on our own servers when sharing is set up. No third parties. Turning this off stops it at once and deletes anything waiting to be sent. This setting doesn't sync.",
   keptOnThisMac: "Kept on this Mac",
   ask: {
     title: "Help fix Half Dome?",
@@ -14,17 +14,17 @@ export const SHARING_COPY = {
     notNow: "Not now",
   },
   dailyCount:
-    "One anonymous “opened today” count a day: app version, update channel, macOS version, chip, and whether it's this copy's first day, week or month. No persistent ID.",
-  dailyCountShort: "Either way, Half Dome sends one anonymous “opened today” count a day, with its version and macOS version and no persistent ID.",
-  updateChecks: "ardia.dev counts update checks by version and day, and whether it's this copy's first. Nothing else.",
+    "One anonymous “opened today” count a day: app version, update channel, macOS version, chip, and whether it's this copy's first day, week or month. No persistent ID. Only when a telemetry endpoint is set up.",
+  dailyCountShort: "When a telemetry endpoint is set up, Half Dome can send one anonymous “opened today” count a day, with its version and macOS version and no persistent ID.",
+  updateChecks: "When updates are set up, update checks are counted by version and day, and whether it's this copy's first. Nothing else.",
   switchFile:
-    "While update checks are on, each launch also reads ardia.dev/switches.json: one small file, the same for everyone, that lets us turn off a speed-up that misbehaves. It sends no ID, no cookies and nothing about you.",
+    "While update checks are on and a switch file is configured, each launch also reads that file: one small file, the same for everyone, that lets a speed-up that misbehaves be turned off. It sends no ID, no cookies and nothing about you.",
   onboarding: {
     title: "Help us fix what breaks",
     row: "Crashes, errors, feature counts and speed. Never your sites, typing or tabs.",
-    note: "Off unless you turn it on. Either way, Half Dome sends one anonymous “opened today” count a day, with no ID.",
+    note: "Off unless you turn it on. Nothing is sent until Half Dome has its own telemetry endpoint.",
     subtitle:
-      "Off unless you turn it on; change it any time in Settings › Privacy & Security. Either way, Half Dome sends one anonymous “opened today” count a day, with its version and macOS version and no persistent ID.",
+      "Off unless you turn it on; change it any time in Settings › Privacy & Security. Nothing is sent until Half Dome has its own telemetry endpoint.",
   },
 } as const;
 

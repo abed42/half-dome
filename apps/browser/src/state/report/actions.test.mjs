@@ -25,6 +25,9 @@ globalThis.acTestNativeModules = {
 
 const declaredSizes = new Map();
 let nextId = 0;
+const TEST_FEEDBACK = "https://feedback.example.test/api/feedback";
+const { setServiceEndpointsForTests } = await import("../../lib/endpoints.ts");
+setServiceEndpointsForTests({ feedback: TEST_FEEDBACK });
 const { setReportPlatform } = await import("../../platform/report.ts");
 setReportPlatform({
   post: async (url, body) => {
@@ -35,7 +38,7 @@ setReportPlatform({
     const id = `FB-T${++nextId}`;
     const payload = JSON.parse(body);
     declaredSizes.set(id, Object.fromEntries(payload.attachments.map((a) => [a.name, a.bytes])));
-    const upload_urls = Object.fromEntries(payload.attachments.map((a) => [a.name, `https://ardia.dev/api/feedback/${id}/files/${a.name}`]));
+    const upload_urls = Object.fromEntries(payload.attachments.map((a) => [a.name, `${TEST_FEEDBACK}/${id}/files/${a.name}`]));
     return { status: 201, text: JSON.stringify({ id, name: "Brave Otter", upload_token: "tok", upload_urls }) };
   },
 });
@@ -46,7 +49,7 @@ test("a restart after a refused resume declares the local events as they are on 
   sizes.set(LOCAL, 100);
   patchDraft({ title: "Tabs vanish", description: "After a restart" });
   patchReport({ windowId: "w1", local: { path: LOCAL, bytes: 100, lines: 5 } });
-  const created = { id: "FB-OLD", name: "Brave Otter", token: "tok", uploadUrls: { "local-events.jsonl.gz": "https://ardia.dev/api/feedback/FB-OLD/files/local-events.jsonl.gz" }, uploaded: [], declared: { "local-events.jsonl.gz": 100 } };
+  const created = { id: "FB-OLD", name: "Brave Otter", token: "tok", uploadUrls: { "local-events.jsonl.gz": `${TEST_FEEDBACK}/FB-OLD/files/local-events.jsonl.gz` }, uploaded: [], declared: { "local-events.jsonl.gz": 100 } };
   declaredSizes.set("FB-OLD", { "local-events.jsonl.gz": 100 });
   patchReport({ upload: { phase: "failed", stage: "upload", message: "x", created, errorClass: "server", status: 502, attempts: 3 } });
   refusePut = () => puts.length === 1;

@@ -52,6 +52,27 @@ Half Dome defaults to Arc’s layout: vertical tabs and the address bar on the *
 
 Needs vertical tabs (`tabLayout: sidebar`). With tabs across the top, the address bar stays in the toolbar.
 
+## Servers
+
+Half Dome has no servers of its own yet. Every outbound service URL is empty by
+default, and each feature stays off until its URL is set:
+
+| Service | Where | Empty means |
+| --- | --- | --- |
+| Telemetry / daily ping | `apps/browser/src/lib/endpoints.ts` → `LOGS_URL` | No posts; New Tab “Help fix Half Dome?” card stays hidden |
+| Feedback / Report a Problem | same file → `FEEDBACK_URL` | Send fails locally; no network |
+| Kill switches | same file → `SWITCHES_URL` | `refreshSwitches` skips the fetch |
+| Sparkle update feed + Ed key | `apps/browser/macos/Ardia-macOS/Info.plist` (`SUFeedURL`, `SUPublicEDKey`) | Removed; Updates says “Updates aren't set up for this build” |
+| Release notes menu | same plist → `ACReleaseNotesURL` | Release Notes menu item hidden |
+| Feedback issues link | same plist → `ACFeedbackURL` | Empty (no Ardia issues link) |
+
+Background instances no longer fall back to Ardia's GitHub appcast
+(`packages/shell/ios/AppUpdater.swift`).
+
+To turn a service on later: put an `https://` URL in `endpoints.ts` (and for
+updates, restore `SUFeedURL` + `SUPublicEDKey` for Half Dome's own feed and key).
+Do not point any of them at `ardia.dev` or `ardia-browser` hosts.
+
 ## Build
 
 Same as Ardia. Prebuilt engine download works until you change `engine/`.

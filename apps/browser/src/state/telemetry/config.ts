@@ -1,4 +1,4 @@
-export const LOGS_URL = "https://ardia.dev/otel/v1/logs";
+export { logsReady, logsUrl } from "../../lib/endpoints";
 
 export const MAX_BODY_BYTES = 500_000;
 

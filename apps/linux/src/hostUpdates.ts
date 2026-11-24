@@ -17,6 +17,7 @@ import {
   noteUpdateRestart,
   type UpdateInstallKind,
 } from "../../browser/src/state/telemetry/updateCounts.ts";
+import { switchesReady, switchesUrl } from "../../browser/src/lib/endpoints";
 import { consentToken, type ConsentToken } from "../../browser/src/state/telemetry/consentPeriod";
 
 export const UPDATE_METHODS = ["updaterState", "checkForUpdates", "setAutomaticUpdateChecks", "setAutomaticUpdateDownloads", "setUpdateChannel"] as const;
@@ -393,7 +394,7 @@ export const killSwitchesAvailable = (host: ArdiaHost) => hostSupports(KILL_SWIT
 export function linuxSwitchesFetch(host: ArdiaHost, original: typeof fetch): typeof fetch {
   return async (input, init) => {
     const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
-    if (url !== "https://ardia.dev/switches.json") return original(input, init);
+    if (!switchesReady() || url !== switchesUrl()) return original(input, init);
     if (init?.signal?.aborted) throw new DOMException("The operation was aborted.", "AbortError");
     const fetched = await invokeHost<Fetched>(KILL_SWITCHES_METHOD, { args: [] }, host);
     if (!fetched || !fetched.status || typeof fetched.body !== "string") throw new TypeError("Failed to fetch");

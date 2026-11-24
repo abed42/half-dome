@@ -1,3 +1,4 @@
+import { switchesReady, switchesUrl } from "../lib/endpoints";
 import { readDocument, writeDocument } from "./documents";
 import { switchOverride } from "./launchConfig";
 
@@ -100,7 +101,6 @@ type SwitchName = keyof typeof SWITCHES;
 type ExperimentName = keyof typeof EXPERIMENTS;
 
 const CACHE_DOC = "switches-cache.json";
-const SWITCHES_URL = "https://ardia.dev/switches.json";
 const FETCH_TIMEOUT_MS = 5000;
 const MAX_BYTES = 4096;
 
@@ -149,11 +149,12 @@ type RefreshResult = "updated" | "failed" | "already";
 export async function refreshSwitches(fetchFn: typeof fetch = fetch): Promise<RefreshResult> {
   if (fetchedThisLaunch) return "already";
   fetchedThisLaunch = true;
+  if (!switchesReady()) return "failed";
   if (!loaded) load();
   const abort = new AbortController();
   const timer = setTimeout(() => abort.abort(), FETCH_TIMEOUT_MS);
   try {
-    const response = await fetchFn(SWITCHES_URL, { method: "GET", credentials: "omit", cache: "no-store", signal: abort.signal });
+    const response = await fetchFn(switchesUrl(), { method: "GET", credentials: "omit", cache: "no-store", signal: abort.signal });
     if (!response.ok) return "failed";
     const text = await response.text();
     if (text.length > MAX_BYTES) return "failed";

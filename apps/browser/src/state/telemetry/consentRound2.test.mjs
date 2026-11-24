@@ -5,6 +5,8 @@ globalThis.__DEV__ = false;
 globalThis.requestAnimationFrame ??= (callback) => setTimeout(() => callback(Date.now()), 0);
 const stub = await import("../../test-native/index.ts");
 globalThis.fetch = async () => ({ status: 503 });
+const { setServiceEndpointsForTests } = await import("../../lib/endpoints.ts");
+setServiceEndpointsForTests({ logs: "https://telemetry.example.test/otel/v1/logs" });
 
 const client = await import("./client.ts");
 const choice = await import("./choice.ts");

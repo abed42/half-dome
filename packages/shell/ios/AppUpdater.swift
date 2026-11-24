@@ -7,8 +7,7 @@ public final class AppUpdater: NSObject {
 
   static var feedOverride: String? {
     let config = LaunchConfig.shared
-    if let feed = config.instance("updateFeed") ?? UserDefaults.standard.string(forKey: "ACUpdateFeedURL") { return feed }
-    return config.background ? "https://github.com/ardia-browser/ardia/releases/latest/download/appcast.xml" : nil
+    return config.instance("updateFeed") ?? UserDefaults.standard.string(forKey: "ACUpdateFeedURL")
   }
 
   static let channelDefaultsKey = "ACUpdateChannel"

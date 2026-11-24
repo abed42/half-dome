@@ -216,20 +216,25 @@ test("turning automatic checks off or switching channel in the Settings window r
 });
 
 test("the kill-switch file comes through the native host and every other fetch is left alone", async () => {
+  const { setServiceEndpointsForTests } = await import("../../browser/src/lib/endpoints.ts");
+  const switches = "https://switches.example.test/switches.json";
+  setServiceEndpointsForTests({ switches });
   const calls = [];
   const host = { bootstrap: { capabilities: ["ArdiaShell.fetchKillSwitches"] }, invoke: async (method) => (calls.push(method), { status: 200, body: "{\"version\":1,\"switches\":{}}" }) };
   const original = async (input) => new Response(`original ${input}`);
   const fetchFn = linuxSwitchesFetch(host, original);
-  assert.equal(await (await fetchFn("https://ardia.dev/switches.json")).text(), "{\"version\":1,\"switches\":{}}");
+  assert.equal(await (await fetchFn(switches)).text(), "{\"version\":1,\"switches\":{}}");
   assert.equal(await (await fetchFn("https://example.com/")).text(), "original https://example.com/");
   assert.deepEqual(calls, ["ArdiaShell.fetchKillSwitches"]);
   const refused = linuxSwitchesFetch({ ...host, invoke: async () => ({ status: 0, body: "" }) }, original);
-  await assert.rejects(refused("https://ardia.dev/switches.json"), TypeError);
+  await assert.rejects(refused(switches), TypeError);
 });
 
 test("the switch refresh through the native host updates the cached switches", async () => {
   globalThis.__DEV__ = false;
   await import("../../browser/src/test-native/index.ts");
+  const { setServiceEndpointsForTests } = await import("../../browser/src/lib/endpoints.ts");
+  setServiceEndpointsForTests({ switches: "https://switches.example.test/switches.json" });
   const { refreshSwitches, resetRefreshForTests } = await import("../../browser/src/platform/killSwitches.ts");
   resetRefreshForTests();
   const host = { bootstrap: { capabilities: [] }, invoke: async () => ({ status: 200, body: JSON.stringify({ version: 1, switches: { newTabPrewarm: false } }) }) };

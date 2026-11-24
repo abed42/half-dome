@@ -4,6 +4,9 @@ import { test } from "node:test";
 globalThis.__DEV__ = false;
 const stub = await import("../../test-native/index.ts");
 Object.assign(stub.appInfo, { appVersion: "0.3.0", osVersion: "26.1", arch: "arm64", isolatedInstance: false });
+const { setServiceEndpointsForTests } = await import("../../lib/endpoints.ts");
+const TEST_LOGS = "https://telemetry.example.test/otel/v1/logs";
+setServiceEndpointsForTests({ logs: TEST_LOGS });
 const daily = await import("./daily.ts");
 const { appInfo } = await import("./transport.ts");
 
@@ -54,7 +57,7 @@ test("one anonymous ping a day, marked only after a 2xx", async () => {
   assert.equal(await daily.sendDailyPing(at("2026-10-25")), "already");
   assert.equal(posts.length, 1);
   const sent = attributes(posts[0]);
-  assert.equal(posts[0].url, "https://ardia.dev/otel/v1/logs");
+  assert.equal(posts[0].url, TEST_LOGS);
   assert.equal(sent.event, "daily_active");
   assert.equal(sent.uuid, sent.distinct_id);
   assert.match(sent.uuid, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);

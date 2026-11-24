@@ -211,7 +211,7 @@ function ProgramsRows() {
             </Text>
             {registryUnreadable ? (
               <Text selectable size="caption" tone="destructive" style={NOTE()}>
-                Half Dome's list of program names kept for its built-in plugins is missing or damaged, so no program goes on PATH. Reinstall Half Dome from ardia.dev.
+                Half Dome's list of program names kept for its built-in plugins is missing or damaged, so no program goes on PATH. Reinstall Half Dome from wherever you got it.
               </Text>
             ) : null}
           </View>

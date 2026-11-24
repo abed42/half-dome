@@ -4,6 +4,9 @@ import { test } from "node:test";
 
 globalThis.__DEV__ = false;
 const { docs, launch } = await import("../test-native/index.ts");
+const { setServiceEndpointsForTests } = await import("../lib/endpoints.ts");
+const TEST_SWITCHES = "https://switches.example.test/switches.json";
+setServiceEndpointsForTests({ switches: TEST_SWITCHES });
 const ks = await import("./killSwitches.ts");
 const { reloadLaunchConfigForTests } = await import("./launchConfig.ts");
 
@@ -87,7 +90,7 @@ test("a fetch asks for the plain URL (no cookies, no query), saves the answer, a
     return answer(file({ sidebarSlide: false, lazySidebarRows: false }))();
   };
   assert.equal(await ks.refreshSwitches(fetchFn), "updated");
-  assert.equal(asked.url, "https://ardia.dev/switches.json");
+  assert.equal(asked.url, TEST_SWITCHES);
   assert.equal(asked.init.credentials, "omit");
   assert.equal(asked.init.headers, undefined);
   assert.ok(!asked.url.includes("?"));
