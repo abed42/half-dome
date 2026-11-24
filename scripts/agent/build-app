@@ -197,9 +197,21 @@ print(path)
     "CODE_SIGN_ENTITLEMENTS=$entitlements")
 fi
 
+product_app() {
+  local dir="$1" found="" candidate
+  [[ -d "$dir" ]] || return 1
+  for candidate in "$dir"/*.app; do
+    [[ -d "$candidate" ]] || continue
+    [[ -z "$found" ]] || return 1
+    found=$candidate
+  done
+  [[ -n "$found" ]] || return 1
+  printf '%s\n' "$found"
+}
+
 if [[ $mode == auto ]]; then
   mode=slot
-  [[ -d "$dd/Build/Products/$config/Ardia.app" ]] && mode=plain
+  product_app "$dd/Build/Products/$config" >/dev/null && mode=plain
 fi
 
 slot="" built_stamp=$stamp
@@ -218,7 +230,7 @@ if [[ $mode == plain ]]; then
         ${settings[@]+"${settings[@]}"} build
   ) >>"$log" 2>&1
   status=$?
-  app="$dd/Build/Products/$config/Ardia.app"
+  app=$(product_app "$dd/Build/Products/$config") || app=""
   if [[ $status -eq 0 && -n "$built_stamp" && "$(stamp_now --require-receipt)" != "$built_stamp" ]]; then
     echo "build-app: not recorded: the native files or the Rust toolchain changed during the build"
     built_stamp=""
@@ -267,7 +279,7 @@ else
   done
   [[ -n "$reserved" && $status -eq 75 ]] && rm -f "$reserved/reserved.json"
   (nohup "$cache_tool" slot-evict --protect "$slot" >/dev/null 2>&1 &)
-  app="$prebuilt_out/Ardia.app"
+  app=$(product_app "$prebuilt_out") || app=""
   built_stamp=$(sed -n 's/^build-cache: stamp \([0-9a-f]\{32\}\).*/\1/p' "$log" | tail -1)
   grep -q '^build-cache: not cached' "$log" && echo "$(grep -m1 '^build-cache: not cached' "$log" | sed 's/^build-cache: //')"
   if grep -q '^build-cache: not recorded' "$log"; then

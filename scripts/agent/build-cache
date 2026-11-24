@@ -325,7 +325,10 @@ function slotRun() {
   const status = sh("xcodebuild", passthrough, { cwd: join(tree, "apps/browser") });
   lib.settleGroup(slot);
   if (status !== 0) process.exit(status);
-  const product = join(lib.slotDerivedData(slot), "Build/Products", flags.config, "Ardia.app");
+  const products = join(lib.slotDerivedData(slot), "Build/Products", flags.config);
+  const built = fs.readdirSync(products).filter((name) => name.endsWith(".app"));
+  if (built.length !== 1) throw new Error(`${products} has ${built.length} .app products, need exactly one`);
+  const product = join(products, built[0]);
   clearStale(resolve(flags.out));
   const app = prepare(product, resolve(flags.out), {
     config: flags.config,

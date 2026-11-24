@@ -49,7 +49,7 @@ These are repo settings the workflow cannot change:
 | --- | --- | --- |
 | Display name | Ardia | Half Dome |
 | Bundle id | `com.ardia.browser` | `app.halfdome.browser` |
-| App product | `Ardia.app` | `HalfDome.app` |
+| App product | `Ardia.app` | `Half Dome.app` (executable `HalfDome`) |
 | Dev data dir | `~/Library/Application Support/Ardia Dev` | `~/Library/Application Support/Half Dome Dev` |
 | Release data | bundle-id folder | `app.halfdome.browser` (separate from Ardia) |
 

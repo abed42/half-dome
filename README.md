@@ -26,7 +26,7 @@ Half Dome is a macOS browser with Arc’s sidebar layout and Dia’s polish, run
 - **Pinned tiles, tab groups, splits, PiP** and the rest of the Ardia/Dia sidebar browser.
 - **Chrome Web Store extensions**, built-in uBlock Origin, and iCloud sync (end-to-end encrypted in your own Drive).
 
-Identity is separate from Ardia (`HalfDome.app`, `app.halfdome.browser`, its own data dirs). Details: [HALFDOME.md](HALFDOME.md).
+Identity is separate from Ardia (`Half Dome.app`, `app.halfdome.browser`, its own data dirs). Details: [HALFDOME.md](HALFDOME.md).
 
 ## Build for personal use
 
