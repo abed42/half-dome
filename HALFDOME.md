@@ -62,7 +62,7 @@ Half Dome defaults to Arc’s layout: vertical tabs and the address bar on the *
 | Default | Value |
 | --- | --- |
 | Address bar (`addressBar`) | `sidebar` (left) |
-| ⌘T (`newTabOpens`) | `commandBar` (centred command bar; no New Tab row) |
+| ⌘T (`newTabOpens`) | `page` (New Tab page: Half Dome mark and search card) |
 | New Tab button (`newTabButtonPosition`) | `top` of the unpinned list |
 | New tabs (`newTabPosition`) | `top` of the unpinned list |
 | ⌘L / command bar (`commandBarPlacement`) | `centred` |

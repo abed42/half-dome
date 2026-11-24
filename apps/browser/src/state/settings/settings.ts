@@ -72,7 +72,7 @@ export const SETTING_SPECS = {
   newTabPosition: oneOf(["top", "bottom", "nextToCurrent"], "top", SYNCED),
   newTabButtonPosition: oneOf(["top", "bottom"], "top", SYNCED),
   appLinksFirst: flag(false, SYNCED),
-  newTabOpens: oneOf(["page", "commandBar"], "commandBar", SYNCED),
+  newTabOpens: oneOf(["page", "commandBar"], "page", SYNCED),
   newTabUrl: text("", SYNCED),
   warnBeforeClosingLastTab: flag(true, SYNCED),
   afterClosingTab: oneOf(["previouslyActive", "tabAbove"], "previouslyActive", SYNCED),

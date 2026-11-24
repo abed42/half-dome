@@ -25,7 +25,6 @@ const loaded = () => {
   const markers = new Set([
     "hideToolbarWhileScrolling:offByDefault",
     "addressBar:sidebarByDefault",
-    "newTabOpens:commandBarByDefault",
     "newTabPosition:topByDefault",
     "newTabButtonPosition:topByDefault",
     "commandBarPlacement:centredByDefault",
@@ -64,8 +63,8 @@ test("settings and their bookkeeping save apart, read back the same, and a chang
   const saved = JSON.parse(stub.docs.get("session.json"));
   assert.ok(saved.version >= 8);
   assert.equal("chosen" in saved.settings || "inferred" in saved.settings, false);
-  assert.deepEqual(saved.settingsMeta, { chosen: ["tabLayout", "appearance"], inferred: ["hideToolbarWhileScrolling:offByDefault", "addressBar:sidebarByDefault", "newTabOpens:commandBarByDefault", "newTabPosition:topByDefault", "newTabButtonPosition:topByDefault", "commandBarPlacement:centredByDefault"] });
+  assert.deepEqual(saved.settingsMeta, { chosen: ["tabLayout", "appearance"], inferred: ["hideToolbarWhileScrolling:offByDefault", "addressBar:sidebarByDefault", "newTabPosition:topByDefault", "newTabButtonPosition:topByDefault", "commandBarPlacement:centredByDefault"] });
   S().hydrate(loadSession());
-  assert.deepEqual(S().settingsMeta, { chosen: ["tabLayout", "appearance"], inferred: ["hideToolbarWhileScrolling:offByDefault", "addressBar:sidebarByDefault", "newTabOpens:commandBarByDefault", "newTabPosition:topByDefault", "newTabButtonPosition:topByDefault", "commandBarPlacement:centredByDefault"] });
+  assert.deepEqual(S().settingsMeta, { chosen: ["tabLayout", "appearance"], inferred: ["hideToolbarWhileScrolling:offByDefault", "addressBar:sidebarByDefault", "newTabPosition:topByDefault", "newTabButtonPosition:topByDefault", "commandBarPlacement:centredByDefault"] });
   assert.equal(S().settings.appearance, "light");
 });

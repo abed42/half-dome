@@ -17,7 +17,6 @@ const stub = await import("../../test-native/index.ts");
 const S = () => useBrowser.getState();
 const PROFILE = { id: "default", name: "Personal", color: "plum", icon: null, createdAt: 0 };
 const FLIPS = [
-  { key: "newTabOpens", oldDefault: "page", next: "commandBar", applied: NEW_TAB_OPENS_DEFAULT_APPLIED },
   { key: "newTabPosition", oldDefault: "bottom", next: "top", applied: NEW_TAB_POSITION_DEFAULT_APPLIED },
   { key: "newTabButtonPosition", oldDefault: "bottom", next: "top", applied: NEW_TAB_BUTTON_POSITION_DEFAULT_APPLIED },
   { key: "commandBarPlacement", oldDefault: "field", next: "centred", applied: COMMAND_BAR_PLACEMENT_DEFAULT_APPLIED },
@@ -113,6 +112,29 @@ for (const flip of FLIPS) {
     assert.equal(S().settings[flip.key], flip.oldDefault);
   });
 }
+
+test("a new tab opens the page, and the command-bar default is not applied again", () => {
+  assert.equal(DEFAULT_SETTINGS.newTabOpens, "page");
+  stub.docs.clear();
+  S().hydrate({});
+  assert.equal(S().settings.newTabOpens, "page");
+  assert.equal(S().settingsMeta.inferred.includes(NEW_TAB_OPENS_DEFAULT_APPLIED), false);
+  assert.equal(S().settingsMeta.chosen.includes("newTabOpens"), false);
+});
+
+test("an unchosen command bar left by the Arc default opens the New Tab page again and stays unchosen", () => {
+  load(doc(SESSION_VERSION, { ...DEFAULT_SETTINGS, newTabOpens: "commandBar" }, { chosen: [], inferred: [NEW_TAB_OPENS_DEFAULT_APPLIED] }));
+  assert.deepEqual(placeOf("newTabOpens"), { place: "page", chosen: false, inferred: false });
+  assert.ok(S().settingsMeta.inferred.includes(NEW_TAB_OPENS_DEFAULT_APPLIED));
+  assert.equal(pushed("newTabOpens"), false);
+  assert.equal(reload("newTabOpens"), "page");
+});
+
+test("a command bar the user chose stays after the New Tab page comes back", () => {
+  load(doc(SESSION_VERSION, { ...DEFAULT_SETTINGS, newTabOpens: "commandBar" }, { chosen: ["newTabOpens"], inferred: [NEW_TAB_OPENS_DEFAULT_APPLIED] }));
+  assert.deepEqual(placeOf("newTabOpens"), { place: "commandBar", chosen: true, inferred: false });
+  assert.equal(reload("newTabOpens"), "commandBar");
+});
 
 test("a saved newTabPosition of top still fills an absent newTabButtonPosition as top, and Arc's flip leaves both alone", () => {
   load(doc(7, { newTabPosition: "top", chosen: ["newTabPosition"], inferred: [] }));
