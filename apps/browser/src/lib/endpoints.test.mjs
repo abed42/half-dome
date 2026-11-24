@@ -38,14 +38,18 @@ const reset = () => {
   patchReport({ windowId: null, upload: { phase: "idle" }, sent: null });
 };
 
-test("defaults leave every Half Dome service endpoint empty", () => {
+test("defaults leave every Half Dome service endpoint empty, except the source repo", () => {
   reset();
   assert.equal(endpoints.LOGS_URL, "");
   assert.equal(endpoints.FEEDBACK_URL, "");
   assert.equal(endpoints.SWITCHES_URL, "");
+  assert.equal(endpoints.SOURCE_URL, "https://github.com/abed42/half-dome");
   assert.equal(endpoints.logsReady(), false);
   assert.equal(endpoints.feedbackReady(), false);
   assert.equal(endpoints.switchesReady(), false);
+  assert.equal(endpoints.sourceReady(), true);
+  assert.equal(endpoints.releasesPageUrl(), "https://github.com/abed42/half-dome/releases");
+  assert.equal(endpoints.reportIssueUrl(), "https://github.com/abed42/half-dome/issues/new?body=%s");
 });
 
 test("with the defaults nothing is posted to ardia.dev or an ardia-browser host", async () => {
@@ -87,14 +91,23 @@ test("a configured switches URL is fetched once; empty skips the network", async
   assert.equal(endpoints.isArdiaServiceUrl(asked[0].url), false);
 });
 
-test("the Mac Info.plist keeps feedback and release-notes empty and carries no Sparkle feed or key", () => {
+test("the Mac Info.plist keeps feedback and release-notes empty, points source at half-dome, and carries no Sparkle feed or key", () => {
   const plist = readFileSync(fileURLToPath(new URL("../../macos/Ardia-macOS/Info.plist", import.meta.url)), "utf8");
   assert.match(plist, /<key>ACFeedbackURL<\/key>\s*<string><\/string>/);
   assert.match(plist, /<key>ACReleaseNotesURL<\/key>\s*<string><\/string>/);
+  assert.match(plist, /<key>ACRepositoryURL<\/key>\s*<string>https:\/\/github\.com\/abed42\/half-dome<\/string>/);
   assert.doesNotMatch(plist, /SUFeedURL/);
   assert.doesNotMatch(plist, /SUPublicEDKey/);
   assert.doesNotMatch(plist, /ardia\.dev/);
   assert.doesNotMatch(plist, /ardia-browser/);
+});
+
+test("an empty source URL keeps releases and report links off", () => {
+  reset();
+  endpoints.setServiceEndpointsForTests({ source: "" });
+  assert.equal(endpoints.sourceReady(), false);
+  assert.equal(endpoints.releasesPageUrl(), "");
+  assert.equal(endpoints.reportIssueUrl(), "");
 });
 
 test("isArdiaServiceUrl names Ardia's site and GitHub org", () => {

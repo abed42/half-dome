@@ -62,9 +62,10 @@ default, and each feature stays off until its URL is set:
 | Telemetry / daily ping | `apps/browser/src/lib/endpoints.ts` → `LOGS_URL` | No posts; New Tab “Help fix Half Dome?” card stays hidden |
 | Feedback / Report a Problem | same file → `FEEDBACK_URL` | Send fails locally; no network |
 | Kill switches | same file → `SWITCHES_URL` | `refreshSwitches` skips the fetch |
+| Source / releases / issue page | same file → `SOURCE_URL` (default `https://github.com/abed42/half-dome`); Mac plist `ACRepositoryURL` | Source, releases and GitHub issue links stay off; never falls back to ardia-browser |
 | Sparkle update feed + Ed key | `apps/browser/macos/Ardia-macOS/Info.plist` (`SUFeedURL`, `SUPublicEDKey`) | Removed; Updates says “Updates aren't set up for this build” |
 | Release notes menu | same plist → `ACReleaseNotesURL` | Release Notes menu item hidden |
-| Feedback issues link | same plist → `ACFeedbackURL` | Empty (no Ardia issues link) |
+| Feedback issues link | same plist → `ACFeedbackURL` | Empty (Linux Report a Problem uses `SOURCE_URL` instead) |
 
 Background instances no longer fall back to Ardia's GitHub appcast
 (`packages/shell/ios/AppUpdater.swift`).

@@ -1,11 +1,17 @@
 import type { UpdateChannel } from "../../../packages/shell/src/updater";
+import { sourceReady, sourceUrl } from "../../browser/src/lib/endpoints";
 
 export type Release = { version: string; url: string; prerelease: boolean };
 
 const VERSION = /^(\d+)\.(\d+)\.(\d+)(?:-(nightly)\.(\d+))?$/;
 const TAG = /^v?(\d+\.\d+\.\d+(?:-nightly\.\d+)?)$/;
 const LINUX_ASSET = /-linux-x64\.(?:tar\.xz|deb|AppImage)$/;
-const RELEASE_PAGE = /^https:\/\/github\.com\/ardia-browser\/ardia\/releases\/tag\/[\w.-]+$/;
+
+const releasePageOk = (url: string): boolean => {
+  if (!sourceReady()) return false;
+  const base = sourceUrl();
+  return url.startsWith(`${base}/releases/tag/`) && /^https:\/\/[^/]+\/[^/]+\/[^/]+\/releases\/tag\/[\w.-]+$/.test(url);
+};
 
 export const isAppVersion = (version: unknown): version is string => typeof version === "string" && VERSION.test(version);
 
@@ -31,7 +37,7 @@ export function linuxReleases(body: string): Release[] {
   return parsed.flatMap((entry): Release[] => {
     if (!entry || typeof entry !== "object" || entry.draft === true) return [];
     const tag = typeof entry.tag_name === "string" ? TAG.exec(entry.tag_name) : null;
-    const url = typeof entry.html_url === "string" && RELEASE_PAGE.test(entry.html_url) ? entry.html_url : null;
+    const url = typeof entry.html_url === "string" && releasePageOk(entry.html_url) ? entry.html_url : null;
     const assets: unknown[] = Array.isArray(entry.assets) ? entry.assets : [];
     const linux = assets.some((asset) => !!asset && typeof (asset as { name?: unknown }).name === "string" && LINUX_ASSET.test((asset as { name: string }).name));
     if (!tag || !url || !linux) return [];

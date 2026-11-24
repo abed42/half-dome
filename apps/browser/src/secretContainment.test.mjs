@@ -85,6 +85,9 @@ const { devtoolsEndpointLine } = await import("./state/automation/socketDevtools
 const { Clock } = await import("../../../packages/sync/src/hlc.ts");
 const { syncScope } = await import("../../../packages/sync/src/scope.ts");
 const { emptyScope } = await import("../../../packages/sync/src/scopeState.ts");
+const { setServiceEndpointsForTests, resetServiceEndpointsForTests } = await import("./lib/endpoints.ts");
+
+const TEST_LOGS_URL = "https://telemetry.example.test/otel/v1/logs";
 
 client.startClient();
 watchSecretDrops();
@@ -92,6 +95,7 @@ installErrorReporting();
 after(() => {
   client.setSharing(false, "settings");
   local.flushLocal();
+  resetServiceEndpointsForTests();
 });
 
 const PROFILE = "Default";
@@ -214,10 +218,12 @@ const SINKS = {
     client.capture(`containment_${mark}`, { value: secret }, client.consentNow());
     posted.length = 0;
     acceptTelemetry = true;
+    setServiceEndpointsForTests({ logs: TEST_LOGS_URL });
     try {
       await client.flush();
     } finally {
       acceptTelemetry = false;
+      setServiceEndpointsForTests({ logs: "" });
     }
     return posted.filter((p) => p.url.includes("otel") && p.body.includes(`containment_${mark}`)).map((p) => p.body).join("\n");
   },

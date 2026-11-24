@@ -157,7 +157,9 @@ public final class AppUpdater: NSObject {
 
   private static var aboutCredits: NSAttributedString {
     let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
-    let repository = "https://github.com/ardia-browser/ardia"
+    let repository = (Bundle.main.object(forInfoDictionaryKey: "ACRepositoryURL") as? String ?? "")
+      .trimmingCharacters(in: .whitespacesAndNewlines)
+      .trimmingCharacters(in: CharacterSet(charactersIn: "/"))
     let centered = NSMutableParagraphStyle()
     centered.alignment = .center
     let plain: [NSAttributedString.Key: Any] = [
@@ -165,7 +167,7 @@ public final class AppUpdater: NSObject {
       .foregroundColor: NSColor.secondaryLabelColor,
       .paragraphStyle: centered,
     ]
-    let links = [
+    let links: [(String, String)] = repository.isEmpty ? [] : [
       ("Source code", "\(repository)/tree/v\(version)"),
       ("License", "\(repository)/blob/v\(version)/LICENSE"),
       ("Credits", "\(repository)/blob/v\(version)/NOTICE"),

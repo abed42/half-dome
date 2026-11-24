@@ -8,6 +8,8 @@
 	<string></string>
 	<key>ACReleaseNotesURL</key>
 	<string></string>
+	<key>ACRepositoryURL</key>
+	<string>https://github.com/abed42/half-dome</string>
 	<key>ACUpdateChannel</key>
 	<string>$(AC_UPDATE_CHANNEL)</string>
 	<key>ACVideoTourURL</key>

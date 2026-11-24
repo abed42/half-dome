@@ -17,7 +17,7 @@ import {
   noteUpdateRestart,
   type UpdateInstallKind,
 } from "../../browser/src/state/telemetry/updateCounts.ts";
-import { switchesReady, switchesUrl } from "../../browser/src/lib/endpoints";
+import { releasesPageUrl, switchesReady, switchesUrl } from "../../browser/src/lib/endpoints";
 import { consentToken, type ConsentToken } from "../../browser/src/state/telemetry/consentPeriod";
 
 export const UPDATE_METHODS = ["updaterState", "checkForUpdates", "setAutomaticUpdateChecks", "setAutomaticUpdateDownloads", "setUpdateChannel"] as const;
@@ -25,7 +25,6 @@ const RELEASES_METHOD = "ArdiaUpdates.releases";
 export const [, UPDATE_METHOD, STATUS_METHOD, CLAIM_METHOD, RESTART_METHOD] = SELF_UPDATE_METHODS;
 const KILL_SWITCHES_METHOD = "ArdiaShell.fetchKillSwitches";
 export const UPDATE_PREFERENCES = "linux-updates.json";
-const RELEASES_PAGE = "https://github.com/ardia-browser/ardia/releases";
 export const FIRST_CHECK_AFTER_MS = 30_000;
 export const CHECK_EVERY_MS = 6 * 60 * 60 * 1000;
 export const WATCH_EVERY_MS = 30_000;
@@ -88,7 +87,7 @@ function readEngineStatus(answer: unknown): EngineStatus | null {
 const knownKinds = new WeakMap<ArdiaHost, InstallKind>();
 export const installsUpdates = (host: ArdiaHost | undefined) => !!host && installs(knownKinds.get(host));
 const selfUpdateAvailable = (host: ArdiaHost) => SELF_UPDATE_METHODS.every((method) => hostSupports(method, host));
-const releasePage = (version: string): Release => ({ version, url: `${RELEASES_PAGE}/tag/v${version}`, prerelease: channelOf(version) === "nightly" });
+const releasePage = (version: string): Release => ({ version, url: `${releasesPageUrl()}/tag/v${version}`, prerelease: channelOf(version) === "nightly" });
 
 function readPreferences(read: UpdateDeps["read"]): Preferences {
   try {
@@ -282,7 +281,10 @@ export function linuxUpdater(deps: UpdateDeps) {
         noteUpdateCheck(asked, "failed", consent);
         switchCheck = { phase: "failed", channel: wanted };
         console.info(`[ardia linux] the update check failed: ${String(error)}`);
-        if (asked) await deps.tell("Ardia couldn't check for updates", `Try again later, or see ${RELEASES_PAGE}.`);
+        if (asked) {
+          const releases = releasesPageUrl();
+          await deps.tell("Ardia couldn't check for updates", releases ? `Try again later, or see ${releases}.` : "Try again later.");
+        }
         return;
       }
       const newer = !!release && compareVersions(release.version, current) > 0;
@@ -344,7 +346,7 @@ export function linuxUpdater(deps: UpdateDeps) {
         automaticDownloads: selfUpdates && saved.automaticDownloads,
         canCheck: !checking && !busy,
         sessionInProgress: checking || busy,
-        feedURL: RELEASES_PAGE,
+        feedURL: releasesPageUrl(),
         lastCheck: saved.lastCheck,
         version: current ?? deps.appVersion() ?? "",
         channel: wanted,

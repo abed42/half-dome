@@ -8,7 +8,7 @@ import { setConsentPeriod } from "../../browser/src/state/telemetry/consentPerio
 
 setConsentPeriod(true, "host-updates-test");
 
-const page = (tag) => `https://github.com/ardia-browser/ardia/releases/tag/${tag}`;
+const page = (tag) => `https://github.com/abed42/half-dome/releases/tag/${tag}`;
 const release = (tag, { prerelease = false, draft = false, assets = [`Ardia-${tag.replace(/^v/, "")}-linux-x64.tar.xz`] } = {}) =>
   ({ tag_name: tag, html_url: page(tag), prerelease, draft, assets: assets.map((name) => ({ name })) });
 const LIST = [

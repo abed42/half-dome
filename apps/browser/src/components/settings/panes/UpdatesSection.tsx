@@ -9,11 +9,11 @@ import { engineVersion, followUpdater, setUpdaterPrefs, updater } from "../../..
 import { checkNowControl, switchCheckLine, updaterBusy } from "../../../state/settings/updateStatus";
 import { useResource } from "../../../state/settings/resources";
 import { UI_LOCALE } from "../../../lib/uiLocale";
+import { sourceReady, sourceUrl } from "../../../lib/endpoints";
 import { Group, Row, SectionHeader } from "../Form";
 import { setting } from "../settingsIndex";
 
 const APP = "Half Dome";
-const REPOSITORY = "https://github.com/ardia-browser/ardia";
 
 export function UpdatesSection() {
   const [state, reload] = useResource(updater);
@@ -87,7 +87,7 @@ function VersionDetails({ status }: { status: string | null }) {
         {engines}
       </Text>
       <View style={LINKS}>
-        <Button variant="text" look="link" pad="none" title="Source code" onPress={() => openUrls([`${REPOSITORY}/tree/v${systemInfo().appVersion}`])} />
+        {sourceReady() ? <Button variant="text" look="link" pad="none" title="Source code" onPress={() => openUrls([`${sourceUrl()}/tree/v${systemInfo().appVersion}`])} /> : null}
         <Button variant="text" look="link" pad="none" title="Licenses" onPress={() => openUrls(["chrome://credits"])} />
       </View>
     </View>

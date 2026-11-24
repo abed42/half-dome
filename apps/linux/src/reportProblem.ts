@@ -5,10 +5,10 @@ import { useBrowser } from "../../browser/src/state/browser/store";
 import { capture, consentNow } from "../../browser/src/state/telemetry/client";
 import { openReport as openReportSheet } from "../../browser/src/state/report/actions";
 import { setReportPlatform } from "../../browser/src/platform/report";
+import { reportIssueUrl } from "../../browser/src/lib/endpoints";
 import { ardiaHost, type ArdiaHost } from "./host.ts";
 import { hostReportPost, servesReportSheet } from "./hostReport.ts";
 
-const LINUX_REPORT_URL = "https://github.com/ardia-browser/ardia/issues/new?body=%s";
 export const LINUX_REPORT_TEMPLATE = "What happened?\n\n\nWhat did you expect?\n\n\n---\n";
 
 type ReportSource = "menu" | "check_in";
@@ -18,7 +18,7 @@ const configuredPage = () => {
   return configured && /^https:\/\//i.test(configured) && configured.includes("%s") ? configured : null;
 };
 
-const reportPage = () => configuredPage() ?? LINUX_REPORT_URL;
+const reportPage = () => configuredPage() ?? (reportIssueUrl() || null);
 
 export const sendsFromSheet = (host: ArdiaHost | undefined = ardiaHost) => servesReportSheet(host) && !configuredPage();
 
@@ -29,9 +29,11 @@ export function adoptHostReports(host: ArdiaHost | undefined = ardiaHost) {
 
 adoptHostReports();
 
-async function reportPageURL(): Promise<string> {
+async function reportPageURL(): Promise<string | null> {
+  const page = reportPage();
+  if (!page) return null;
   const body = `${LINUX_REPORT_TEMPLATE}${await diagnostics()}`;
-  return reportPage().replace("%s", encodeURIComponent(body));
+  return page.replace("%s", encodeURIComponent(body));
 }
 
 export function openReport(windowId: string | null, source: ReportSource = "menu", host: ArdiaHost | undefined = ardiaHost): Promise<void> {
@@ -41,6 +43,10 @@ export function openReport(windowId: string | null, source: ReportSource = "menu
     openReportSheet(target, source);
     return Promise.resolve();
   }
-  capture("report_sheet_opened", { source, form: "issue_page" }, consentNow());
-  return reportPageURL().then((url) => openUrls([url], target));
+  const consent = consentNow();
+  return reportPageURL().then((url) => {
+    if (!url) return;
+    capture("report_sheet_opened", { source, form: "issue_page" }, consent);
+    return openUrls([url], target);
+  });
 }

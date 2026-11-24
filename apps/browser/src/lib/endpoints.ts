@@ -1,11 +1,14 @@
-export type ServiceName = "logs" | "feedback" | "switches";
+export type ServiceName = "logs" | "feedback" | "switches" | "source";
 
 export let LOGS_URL = "";
 export let FEEDBACK_URL = "";
 export let SWITCHES_URL = "";
+export let SOURCE_URL = "https://github.com/abed42/half-dome";
+
+const DEFAULT_SOURCE_URL = "https://github.com/abed42/half-dome";
 
 const urlOf = (name: ServiceName): string => {
-  const raw = name === "logs" ? LOGS_URL : name === "feedback" ? FEEDBACK_URL : SWITCHES_URL;
+  const raw = name === "logs" ? LOGS_URL : name === "feedback" ? FEEDBACK_URL : name === "switches" ? SWITCHES_URL : SOURCE_URL;
   return raw.trim();
 };
 
@@ -25,21 +28,28 @@ export function serviceReady(name: ServiceName): boolean {
 export const logsUrl = (): string => urlOf("logs");
 export const feedbackUrl = (): string => urlOf("feedback");
 export const switchesUrl = (): string => urlOf("switches");
+export const sourceUrl = (): string => urlOf("source").replace(/\/$/, "");
 
 export const logsReady = (): boolean => serviceReady("logs");
 export const feedbackReady = (): boolean => serviceReady("feedback");
 export const switchesReady = (): boolean => serviceReady("switches");
+export const sourceReady = (): boolean => serviceReady("source");
+
+export const releasesPageUrl = (): string => (sourceReady() ? `${sourceUrl()}/releases` : "");
+export const reportIssueUrl = (): string => (sourceReady() ? `${sourceUrl()}/issues/new?body=%s` : "");
 
 export function setServiceEndpointsForTests(next: Partial<Record<ServiceName, string>>) {
   if (next.logs !== undefined) LOGS_URL = next.logs;
   if (next.feedback !== undefined) FEEDBACK_URL = next.feedback;
   if (next.switches !== undefined) SWITCHES_URL = next.switches;
+  if (next.source !== undefined) SOURCE_URL = next.source;
 }
 
 export function resetServiceEndpointsForTests() {
   LOGS_URL = "";
   FEEDBACK_URL = "";
   SWITCHES_URL = "";
+  SOURCE_URL = DEFAULT_SOURCE_URL;
 }
 
 export function isArdiaServiceUrl(url: string): boolean {
