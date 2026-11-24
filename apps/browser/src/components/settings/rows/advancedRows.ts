@@ -34,7 +34,7 @@ export const advancedRows = {
         memorySaver: {
           title: "Memory Saver",
           explained: true,
-          description: "How hard Ardia works to free memory.",
+          description: "How hard Half Dome works to free memory.",
           keywords: ["sleep", "sleeping tabs", "tab sleeping", "discard", "hibernate", "memory", "ram", "inactive tabs", "unload", "suspend", "performance", "moderate", "balanced", "maximum", "memory savings", "profiles", "launch", "extensions", "lazy", "defer", "load profiles when opened", "idle", "inactive", "timeout", "unload inactive profiles"],
         },
         keepActiveSites: {
@@ -79,7 +79,7 @@ export const advancedRows = {
         offerWebKitForProtectedVideo: {
           title: "Offer WebKit when a video won't play",
           explained: true,
-          description: "When a Chromium page can't play protected video, Ardia offers to open it in WebKit.",
+          description: "When a Chromium page can't play protected video, Half Dome offers to open it in WebKit.",
           keywords: ["drm", "protected video", "prompt", "open in webkit", "fairplay", "streaming", "stay on page", "drm prompt"],
           shown: automaticEngine,
           needs: NEEDS_AUTOMATIC,
@@ -137,7 +137,7 @@ export const advancedRows = {
       section: "Command line and automation",
       rows: {
         programControl: {
-          title: "Let programs control Ardia",
+          title: "Let programs control Half Dome",
           explained: true,
           description: "Programs like the ardia command can act in your signed-in pages.",
           keywords: ["control", "cli", "automation", "agent", "stop", "turn control back on", "devtools", "remote debugging", "control pill", "let the ardia command control ardia", "programs you run", "open", "read", "logins", "ardia command"],
@@ -146,7 +146,7 @@ export const advancedRows = {
         allowedPrograms: {
           title: "Programs you let in",
           explained: true,
-          description: "A program that isn't part of Ardia asks before it can control Ardia. The ones you allowed for 30 minutes or always are listed here.",
+          description: "A program that isn't part of Half Dome asks before it can control Half Dome. The ones you allowed for 30 minutes or always are listed here.",
           keywords: ["control", "socket", "allow", "always allow", "doorbell", "revoke", "programs", "agent", "script", "python", "cli", "permission"],
           shown: () => PLATFORM_FEATURES.controlDoorbell,
         },
@@ -163,7 +163,7 @@ export const advancedRows = {
         compactCliPill: {
           title: "Show the control pill as an icon and Stop",
           explained: true,
-          description: "While a program drives Ardia, the pill shows just an icon and Stop.",
+          description: "While a program drives Half Dome, the pill shows just an icon and Stop.",
           keywords: ["cli", "control pill", "is controlling", "agent", "claude code", "codex", "hide", "smaller", "compact", "minimize", "indicator", "stop"],
           shown: () => PLATFORM_FEATURES.ardiaCommand,
         },

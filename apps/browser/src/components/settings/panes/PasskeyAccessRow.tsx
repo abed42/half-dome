@@ -5,10 +5,10 @@ import { Button } from "../../ui";
 import { Row } from "../Form";
 
 const PASSKEY_STATUS: Record<Exclude<PasskeyAccessStatus, "entitlementRequired">, string> = {
-  deviceNotConfigured: "Passkeys aren't set up on this Mac. Set up iCloud Keychain or another passkey app in System Settings, then reopen Ardia.",
-  notDetermined: "Allow Ardia to use the passkeys saved on this Mac, from the Passwords app and other passkey apps, in WebKit and Chromium pages.",
+  deviceNotConfigured: "Passkeys aren't set up on this Mac. Set up iCloud Keychain or another passkey app in System Settings, then reopen Half Dome.",
+  notDetermined: "Allow Half Dome to use the passkeys saved on this Mac, from the Passwords app and other passkey apps, in WebKit and Chromium pages.",
   authorized: "Websites can use the passkeys saved on this Mac, in WebKit and Chromium pages.",
-  denied: "Off. Turn Ardia on in System Settings › Privacy & Security › Passkeys Access for Web Browsers.",
+  denied: "Off. Turn Half Dome on in System Settings › Privacy & Security › Passkeys Access for Web Browsers.",
 };
 
 export function PasskeyAccessRow({ waiting, title = "Passkeys" }: { waiting: string; title?: string }) {

@@ -32,7 +32,7 @@ enum DockTile {
       "tile-type": "file-tile",
       "tile-data": [
         "bundle-identifier": Bundle.main.bundleIdentifier ?? "",
-        "file-label": ProcessInfo.processInfo.processName,
+        "file-label": AppUpdater.applicationDisplayName,
         "file-type": 41,
         "file-data": ["_CFURLString": Bundle.main.bundleURL.absoluteString, "_CFURLStringType": 15],
       ] as [String: Any],

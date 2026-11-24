@@ -47,7 +47,7 @@ function OfferedCalendarSection() {
               : connected
                 ? `Connected · ${calendars.length === 1 ? "1 calendar" : `${calendars.length} calendars`}`
                 : blocked
-                  ? (requestError ?? "Ardia isn't allowed to read your calendars. Allow it in System Settings › Privacy & Security › Calendars.")
+                  ? (requestError ?? "Half Dome isn't allowed to read your calendars. Allow it in System Settings › Privacy & Security › Calendars.")
                   : (requestError ?? "Not connected")
           }
         >

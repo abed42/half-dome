@@ -89,7 +89,7 @@ export function OtherEnginesPage({ profileId }: { profileId: string }) {
 
       {fromExtensions.length > 0 && (
         <>
-          <SectionHeader title="From extensions" description="Some extensions can add search engines to Ardia." />
+          <SectionHeader title="From extensions" description="Some extensions can add search engines to Half Dome." />
           <Group>
             {fromExtensions.map((e) => (
               <EngineRow key={e.id} engine={e} selected={selectedId === e.id} locked={locked} />

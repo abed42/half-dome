@@ -7,8 +7,8 @@ enum MainMenu {
   static var profiles = NSMenu(title: "Profiles")
   private static var profilesItem = NSMenuItem(title: "Profiles", action: nil, keyEquivalent: "")
   private static var profilesSeparator = NSMenuItem.separator()
-  private static var littleArdiaInProfile = NSMenu(title: "New Little Ardia Window in Profile")
-  private static var littleArdiaInProfileItem = NSMenuItem(title: "New Little Ardia Window in Profile", action: nil, keyEquivalent: "")
+  private static var littleArdiaInProfile = NSMenu(title: "New Little Half Dome Window in Profile")
+  private static var littleArdiaInProfileItem = NSMenuItem(title: "New Little Half Dome Window in Profile", action: nil, keyEquivalent: "")
   private static var bookmarks = NSMenu(title: "Bookmarks")
   private static var bookmarksFixedCount = 0
   private static var bookmarkItems: [NSMenuItem] = []
@@ -34,13 +34,13 @@ enum MainMenu {
 
   static func build() -> NSMenu {
     ArdiaWebView.setAppWideKeys { MainMenu.performAppWideKey($0) }
-    let appName = ProcessInfo.processInfo.processName
+    let appName = AppUpdater.applicationDisplayName
     let main = NSMenu()
     moveToProfile = NSMenu(title: "Move to Profile")
     moveToWindow = NSMenu(title: "Move to Window")
     profiles = NSMenu(title: "Profiles")
     profilesSeparator = NSMenuItem.separator()
-    littleArdiaInProfile = NSMenu(title: "New Little Ardia Window in Profile")
+    littleArdiaInProfile = NSMenu(title: "New Little Half Dome Window in Profile")
 
     func std(_ title: String, _ action: Selector) -> StandardItem { StandardItem(title, action) }
     func sub(_ title: String, _ items: [NSMenuItem], menu: NSMenu? = nil) -> NSMenuItem {
@@ -92,7 +92,7 @@ enum MainMenu {
       quit,
     ])
 
-    littleArdiaInProfileItem = sub("New Little Ardia Window in Profile", [], menu: littleArdiaInProfile)
+    littleArdiaInProfileItem = sub("New Little Half Dome Window in Profile", [], menu: littleArdiaInProfile)
     _ = top("File", [
       cmd(.newTab),
       cmd(.newTabInGroup),
@@ -478,11 +478,11 @@ enum MainMenu {
     let incognito = CommandItem("New Incognito Window", "newIncognitoWindow")
     incognito.windowless = true
     menu.addItem(incognito)
-    let small = CommandItem("New Little Ardia Window", "newLittleArdia")
+    let small = CommandItem("New Little Half Dome Window", "newLittleArdia")
     small.windowless = true
     menu.addItem(small)
     if state.profiles.count > 1 {
-      let inProfile = NSMenu(title: "New Little Ardia Window in Profile")
+      let inProfile = NSMenu(title: "New Little Half Dome Window in Profile")
       for p in state.profiles {
         let item = CommandItem(p.title, "newLittleArdia", arg: p.id)
         item.windowless = true

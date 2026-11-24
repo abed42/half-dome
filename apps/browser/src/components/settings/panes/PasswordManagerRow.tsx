@@ -35,8 +35,8 @@ function useStoredPlugin(stored: PasswordManagerChoice | undefined): StoredPlugi
 
 export function unavailableNote(stored: PasswordManagerChoice | undefined, effective: PasswordManagerChoice, storedPlugin: StoredPlugin): string | null {
   if (!stored || !choicePlugin(stored) || stored === effective || !storedPlugin) return null;
-  if (!storedPlugin.installed) return `${storedPlugin.title} isn't installed, so this profile uses Ardia. Pick another password manager, or install it again.`;
-  return `${storedPlugin.title} is off, so this profile uses Ardia until you turn it back on in Plugins or pick another password manager.`;
+  if (!storedPlugin.installed) return `${storedPlugin.title} isn't installed, so this profile uses Half Dome. Pick another password manager, or install it again.`;
+  return `${storedPlugin.title} is off, so this profile uses Half Dome until you turn it back on in Plugins or pick another password manager.`;
 }
 
 export function PasswordManagerRow({ profileId }: { profileId: string }) {
@@ -61,7 +61,7 @@ function PasswordManagerChoiceRow({ profileId }: { profileId: string }) {
 
 export function offerToSaveHandedOver(effective: PasswordManagerChoice, plugins: readonly ManagerPlugin[]): string | null {
   if (effective === "ardia") return null;
-  if (effective === "none") return "Your password manager extension handles logins in this profile, so Ardia doesn't offer to save them.";
+  if (effective === "none") return "Your password manager extension handles logins in this profile, so Half Dome doesn't offer to save them.";
   const plugin = plugins.find((p) => `plugin:${p.name}` === effective);
-  return `${plugin?.title ?? "Another password manager"} handles logins in this profile, so Ardia doesn't offer to save them. Logins already saved in Ardia still fill.`;
+  return `${plugin?.title ?? "Another password manager"} handles logins in this profile, so Half Dome doesn't offer to save them. Logins already saved in Half Dome still fill.`;
 }

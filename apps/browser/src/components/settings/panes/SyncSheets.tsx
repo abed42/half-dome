@@ -293,7 +293,7 @@ function ConnectDeviceSheet() {
   return (
     <Sheet size="l" onClose={closeSettingsSheet}>
       <DialogTitle
-        subtitle={`On your other ${PLATFORM_TERMS.syncedComputer}, open Ardia › Settings › Sync and choose the same sync folder. Then click Enter Recovery Phrase and enter the 24 words of your recovery phrase.`}
+        subtitle={`On your other ${PLATFORM_TERMS.syncedComputer}, open Half Dome › Settings › Sync and choose the same sync folder. Then click Enter Recovery Phrase and enter the 24 words of your recovery phrase.`}
       >
         Connect Another Device
       </DialogTitle>
@@ -301,7 +301,7 @@ function ConnectDeviceSheet() {
         <View style={syncCodeFrame(theme, qr !== null)}>{qr ? <Image source={{ uri: qr }} style={QR} /> : <Button title="Show Code" onPress={() => void recoveryQrCode().then(setQr)} />}</View>
         <Text size="small" tone="textSecondary" style={QR_NOTE()}>
           {PLATFORM_FEATURES.syncsWithPhone
-            ? "Click Show Code. On your iPhone, open Ardia, tap Sync With Mac, and scan the code. For another Mac, you can also scan it with your iPhone’s camera and paste the words there with Universal Clipboard."
+            ? "Click Show Code. On your iPhone, open Half Dome, tap Sync With Mac, and scan the code. For another Mac, you can also scan it with your iPhone’s camera and paste the words there with Universal Clipboard."
             : "Click Show Code, then scan it with your phone’s camera to copy the words and enter them on your other computer."}
         </Text>
       </Box>

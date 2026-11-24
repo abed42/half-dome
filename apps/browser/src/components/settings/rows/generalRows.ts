@@ -27,13 +27,13 @@ export const generalRows = {
           keywords: ["startup", "launch", "login items", "boot"],
         },
         windowsAndTabs: {
-          title: "When Ardia quits",
+          title: `When ${APP} quits`,
           description: `What you see the next time you open it. ${PLATFORM_FEATURES.menuBar ? "Closed windows stay in History › Recently Closed." : `${keyText("⇧⌘T")} reopens closed windows too.`}`,
           keywords: ["restore", "session", "reopen", "preserve tabs", "start fresh", "windows and tabs"],
         },
         askBefore: {
           title: "Ask before",
-          description: "Ardia asks before doing any of these.",
+          description: `${APP} asks before doing any of these.`,
           keywords: ["quit", "confirm", "cmd q", "last window", "exit", "warn before quitting", "close window", "warn before closing a window with multiple tabs", "close tab", "warn before closing last tab in a profile", "close group", "folder", "accidentally", "warn before closing a tab group", "warn before moving tabs between profiles", "warn", "last tab", "move tab"],
         },
       },

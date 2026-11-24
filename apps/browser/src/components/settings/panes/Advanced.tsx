@@ -190,7 +190,7 @@ function ProgramControlRow() {
           : null;
   return (
     <Row anchor="advanced.programControl" description={note ?? undefined}>
-      <Toggle value={on} accessibilityLabel="Let programs control Ardia" onChange={setControlFromSettings} />
+      <Toggle value={on} accessibilityLabel="Let programs control Half Dome" onChange={setControlFromSettings} />
     </Row>
   );
 }
@@ -211,7 +211,7 @@ function ProgramsRows() {
             </Text>
             {registryUnreadable ? (
               <Text selectable size="caption" tone="destructive" style={NOTE()}>
-                Ardia's list of program names kept for its built-in plugins is missing or damaged, so no program goes on PATH. Reinstall Ardia from ardia.dev.
+                Half Dome's list of program names kept for its built-in plugins is missing or damaged, so no program goes on PATH. Reinstall Half Dome from ardia.dev.
               </Text>
             ) : null}
           </View>

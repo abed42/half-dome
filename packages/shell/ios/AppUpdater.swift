@@ -141,8 +141,19 @@ public final class AppUpdater: NSObject {
 
   static let aboutNotice = "© 2026 Mantra Patel. Half Dome is free software under the GNU General Public License v3, with ABSOLUTELY NO WARRANTY. Its source is at the link below. It's built on Chromium and uBlock Origin, each under its own license."
 
+  static var applicationDisplayName: String {
+    let display = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
+    let name = Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String
+    return [display, name].compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }.first { !$0.isEmpty }
+      ?? ProcessInfo.processInfo.processName
+  }
+
   @objc public func showAbout(_ sender: Any?) {
-    NSApp.orderFrontStandardAboutPanel(options: [.applicationVersion: Self.displayVersion, .credits: Self.aboutCredits])
+    NSApp.orderFrontStandardAboutPanel(options: [
+      .applicationName: Self.applicationDisplayName,
+      .applicationVersion: Self.displayVersion,
+      .credits: Self.aboutCredits,
+    ])
   }
 
   private static var aboutCredits: NSAttributedString {
@@ -263,7 +274,7 @@ public final class AppUpdater: NSObject {
 
   private func showNotSetUp() {
     let alert = NSAlert()
-    let name = ProcessInfo.processInfo.processName
+    let name = Self.applicationDisplayName
     alert.messageText = "Updates aren't set up for this build"
     alert.informativeText = "This copy of \(name) doesn't have an update feed, so it can't check for new versions. Get newer versions from wherever you got this one."
     alert.addButton(withTitle: "OK")

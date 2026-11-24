@@ -133,7 +133,7 @@ function RuleSheet({ site, engine: initial }: { site?: string; engine?: PageEngi
   );
 }
 
-const PASSKEYS_WAITING = "WebKit pages can't use passkeys until Apple grants Ardia its browser passkey entitlement. Sign in with a passkey in Chromium meanwhile.";
+const PASSKEYS_WAITING = "WebKit pages can't use passkeys until Apple grants Half Dome its browser passkey entitlement. Sign in with a passkey in Chromium meanwhile.";
 
 function EnginesDifferSheet() {
   return (

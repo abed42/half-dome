@@ -22,7 +22,7 @@ final class QuitFlow {
   func confirm() {
     if MenuState.current.warnBeforeQuitting {
       let alert = NSAlert()
-      alert.messageText = "Are you sure you want to quit \(ProcessInfo.processInfo.processName)?"
+      alert.messageText = "Are you sure you want to quit \(AppUpdater.applicationDisplayName)?"
       alert.informativeText = "Your windows and tabs will be restored the next time you open it."
       alert.addButton(withTitle: "Quit")
       alert.addButton(withTitle: "Cancel")
@@ -62,7 +62,7 @@ final class QuitFlow {
 
   private func saveIsLate() {
     if isSaving { phase = .saving(wait: nil, lateAlert: nil) }
-    let message = "\(ProcessInfo.processInfo.processName) can't save your session right now."
+    let message = "\(AppUpdater.applicationDisplayName) can't save your session right now."
     if LaunchConfig.shared.background {
       NSLog("[shell] quit alert: \(message) (Wait / Quit Without Saving): Wait")
       return waitForSave()
@@ -89,7 +89,7 @@ final class QuitFlow {
     let count = MenuState.current.downloadsInProgress
     guard count > 0 else { return true }
     let alert = NSAlert()
-    alert.messageText = "Are you sure you want to quit \(ProcessInfo.processInfo.processName)?"
+    alert.messageText = "Are you sure you want to quit \(AppUpdater.applicationDisplayName)?"
     alert.informativeText = count == 1
       ? "You have 1 download in progress. If you quit now, this download will be cancelled."
       : "You have \(count) downloads in progress. If you quit now, these downloads will be cancelled."

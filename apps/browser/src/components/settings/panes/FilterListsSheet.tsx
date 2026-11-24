@@ -77,7 +77,7 @@ export async function writeBlocker(write: () => Promise<unknown>, refresh: () =>
 const LISTS = { maxHeight: 420, marginTop: space.m } as const;
 
 export const blockerVersionNote = (blocker: ContentBlockerState | null) =>
-  blocker?.version ? `Blocking by uBlock Origin ${blocker.version}, included with Ardia. Its lists update on their own.` : "";
+  blocker?.version ? `Blocking by uBlock Origin ${blocker.version}, included with Half Dome. Its lists update on their own.` : "";
 
 export function FilterLists({ blocker, refresh }: { blocker: ContentBlockerState | null; refresh: () => void }) {
   const toggle = async (l: FilterList, on: boolean) => {

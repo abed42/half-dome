@@ -130,7 +130,7 @@ function FallbackGroup({ profiles }: { profiles: RoutableProfile[] }) {
 function FallbackRow({ profiles }: { profiles: RoutableProfile[] }) {
   const { fallback } = useAirTrafficConfig();
   const options: Option<string>[] = [
-    { value: USUAL, title: "Ardia's usual routing" },
+    { value: USUAL, title: "Half Dome's usual routing" },
     ...profileOptions(profiles).map((o, i) => ({
       ...o,
       separatorBefore: i <= 1,
@@ -214,7 +214,7 @@ function caughtBy(preview: Extract<LinkPreview, { ok: true }>): {
   if (trace.by === "fallback") return { title: "Links no rule catches", detail: lands };
   return {
     title: "No rule catches it",
-    detail: `Ardia's usual routing. ${lands}`,
+    detail: `Half Dome's usual routing. ${lands}`,
   };
 }
 
@@ -235,7 +235,7 @@ function TestLink() {
       <Row icon={null} title={<TextField value={typed} onChangeText={setTyped} placeholder="Paste a link, like github.com/ardia" />} />
       <Row
         icon={<Symbol name={result ? "airplane" : "link"} size={13} color={theme.icon} style={RESULT_ICON} />}
-        title={result?.title ?? (preview ? "That isn't a link Ardia can open." : "Type a link to see where it lands.")}
+        title={result?.title ?? (preview ? "That isn't a link Half Dome can open." : "Type a link to see where it lands.")}
         description={result?.detail ?? null}
       />
     </Group>

@@ -7,7 +7,7 @@ import { useRecentSourceApps, useRoutableProfiles, useRouteGroups, type Routable
 import { closeSettingsSheet } from "../../../state/settings/sheet";
 import { Button, DialogActions, DialogTitle, PopUp, Sheet, space, Text, TextField, type Option } from "../../ui";
 
-export const OPEN_LABELS: Record<OpenAs, string> = { tab: "New tab", window: "New window", littleArdia: "Little Ardia" };
+export const OPEN_LABELS: Record<OpenAs, string> = { tab: "New tab", window: "New window", littleArdia: "Little Half Dome" };
 export const OPEN_OPTIONS: Option<OpenAs>[] = [
   { value: "tab", title: OPEN_LABELS.tab },
   { value: "window", title: OPEN_LABELS.window },
@@ -61,7 +61,7 @@ const KIND_OPTIONS: Option<LinkCondition["kind"]>[] = [
   { value: "equals", title: "Links to exactly" },
 ];
 
-const UNSAVED = "Ardia couldn't save the rule. Your changes are still here; try again.";
+const UNSAVED = "Half Dome couldn't save the rule. Your changes are still here; try again.";
 
 const conditionText = (when: LinkCondition | undefined) =>
   !when || when.kind === "any" ? "" : when.kind === "site" ? when.host : when.kind === "pattern" ? when.pattern : when.text;
@@ -118,7 +118,7 @@ export function RuleSheet({ rule }: { rule?: AirTrafficRule }) {
       if (!updateAirTrafficRule(rule.id, draft)) return setError(UNSAVED);
     } else {
       const added = tryAddAirTrafficRule(draft);
-      if ("refused" in added) return setError(added.refused === "full" ? "That's the most rules Ardia keeps. Remove one first." : UNSAVED);
+      if ("refused" in added) return setError(added.refused === "full" ? "That's the most rules Half Dome keeps. Remove one first." : UNSAVED);
     }
     closeSettingsSheet();
   };

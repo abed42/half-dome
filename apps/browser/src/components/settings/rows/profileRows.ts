@@ -110,7 +110,7 @@ export const profileRows = {
       rows: {
         passwordManager: {
           title: "Password manager",
-          description: "Ardia's own, a plugin, or none for an extension.",
+          description: "Half Dome's own, a plugin, or none for an extension.",
           keywords: ["password manager", "passwords app", "passkeys", "verification codes", "2fa", "one time code", "autofill passwords", "password manager plugin", "extension", "logins", "none"],
           shown: () => PLATFORM_FEATURES.systemPasswordManagers && PLATFORM_FEATURES.plugins,
         },
@@ -157,7 +157,7 @@ export const profileRows = {
         },
         webStore: {
           title: "Get extensions",
-          description: "Add to Ardia installs into this profile.",
+          description: "Add to Half Dome installs into this profile.",
           keywords: ["install extension", "chrome web store"],
         },
       },

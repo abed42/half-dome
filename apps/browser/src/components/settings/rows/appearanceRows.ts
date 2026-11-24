@@ -77,7 +77,7 @@ export const appearanceRows = {
         interfaceScale: {
           title: "Interface size",
           explained: true,
-          description: "Resizes Ardia, not web pages.",
+          description: "Resizes Half Dome, not web pages.",
           keywords: ["scale", "scaling", "ui scale", "ui size", "interface scale", "zoom", "zoom interface", "fractional scaling", "1440p", "4k", "high resolution", "retina", "bigger", "smaller", "larger", "display", "monitor", "density", "accessibility", "low vision"],
           shown: () => PLATFORM_FEATURES.interfaceSize && interfaceScaleAdjustable(),
         },
