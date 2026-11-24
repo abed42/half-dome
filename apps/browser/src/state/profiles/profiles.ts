@@ -6,6 +6,7 @@ import { handPagesOutOfProfile } from "../pins/pinShare";
 import { DEFAULT_PROFILE_ID, settingsWith } from "../settings/settings";
 import { activated, apply, removeTabs, withNewTab } from "../tabs/tabs";
 import type { Profile, ProfileColor } from "../browser/types";
+import { unusedProfileIcon } from "./profileSymbols";
 import { patchedProfile } from "./switcherMark";
 
 export type ProfilesSlice = {
@@ -54,7 +55,7 @@ export const createProfilesSlice: StateCreator<BrowserState, [], [], ProfilesSli
     profileOrder: [DEFAULT_PROFILE.id],
     orphanedProfileData: [],
 
-    createProfile({ name, color, icon = null, shareWith, shareTopApps }) {
+    createProfile({ name, color, icon, shareWith, shareTopApps }) {
       const s = get();
       const source = shareWith ? s.profiles[shareWith] : undefined;
       const chosen = color ?? unusedProfileColor(s.profiles);
@@ -62,7 +63,7 @@ export const createProfilesSlice: StateCreator<BrowserState, [], [], ProfilesSli
         id: newId("p"),
         name: name.trim() || `Profile ${s.profileOrder.length + 1}`,
         color: chosen,
-        icon,
+        icon: icon !== undefined ? icon : unusedProfileIcon(s.profiles),
         createdAt: Date.now(),
         presetThemes: {},
         seenTheme: null,

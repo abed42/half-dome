@@ -11,6 +11,7 @@ const sleep = (ms) => new Promise((done) => setTimeout(done, ms));
 
 function tabShowing(color) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://blue.example/one" });
   const tab = S().windows[w].tabIds[0];
   updateLive(tab, { themeColor: color });

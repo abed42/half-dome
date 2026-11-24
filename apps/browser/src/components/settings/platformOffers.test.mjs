@@ -23,6 +23,7 @@ const { canSwitchEngine, engineForUrl, tabEngine, typedNavigationEngine } = awai
 const { DATA_TYPES, SYNCED_KINDS, typeSyncedFor, defaultTypes } = await import("./src/state/sync/syncDoc.ts");
 const S = () => useBrowser.getState();
 S().hydrate({});
+S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
 const unshown = new Set(unshownSettings(S().settings, { top: false, syncOn: true, calendarAccess: true }).split("\\n"));
 const watched = ["general.sync", "automations.calendarAccess", "automations.meetingAlert", "advanced.pageEngine", "advanced.websiteEngines", "general.blockAds", "general.filterLists", "tabs.videoUpscaling"];
 function pageEngines() {

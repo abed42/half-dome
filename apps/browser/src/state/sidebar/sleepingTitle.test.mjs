@@ -14,6 +14,7 @@ const struck = (id) => titleStruck(S().settings.strikeSleepingTabs, isSleeping(i
 
 function session() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useLifecycle.setState({ discarded: {} });
   const w = S().createWindow({ url: "https://a.com/" });
   const awake = S().windows[w].tabIds[0];

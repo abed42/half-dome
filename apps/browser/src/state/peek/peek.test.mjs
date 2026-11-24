@@ -17,6 +17,7 @@ const PERSONAL = { id: "default", name: "Personal", color: "plum", icon: null, c
 
 function windowWithTabs() {
   S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.example/" });
   const a = S().windows[w].tabIds[0];
   const b = S().newTab(w, { url: "https://b.example/" });
@@ -227,6 +228,7 @@ test("a pinned tab keeps its peek across a tab switch and closing the pinned tab
 
 test("Little Ardia doesn't peek", () => {
   S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const small = S().createWindow({ kind: "small", url: "https://small.example/" });
   const tab = S().windows[small].tabIds[0];
   assert.equal(S().openPeek(tab, "https://peek.example/"), "");
@@ -260,6 +262,7 @@ test("Chrome's tab strip plan keeps the peek out of the order but makes it Chrom
 
 test("the Peek modifier setting: ⇧-click by default, ⌥-click or Off, synced, unknown values fall back", () => {
   S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   assert.equal(DEFAULT_SETTINGS.peekModifier, "shift");
   assert.equal(peekModifierOf(S().settings), "shift");
   S().updateSettings({ peekModifier: "alt" });
@@ -268,14 +271,17 @@ test("the Peek modifier setting: ⇧-click by default, ⌥-click or Off, synced,
   S().updateSettings({ peekModifier: "off" });
   assert.equal(peekModifierOf(S().settings), "off");
   S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"], settings: { peekModifier: "control" } });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   assert.equal(peekModifierOf(S().settings), "shift");
   assert.ok(SYNCED_SETTINGS.includes("peekModifier"));
   S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"], settings: { peekModifier: "alt" } });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   assert.equal(peekModifierOf(S().settings), "alt");
 });
 
 test("the split link setting: ⌥⇧-click by default or ⌥-click, synced, never on ⌥ together with Peek", () => {
   S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const keys = () => [peekModifierOf(S().settings), splitLinkModifierOf(S().settings)];
   assert.equal(DEFAULT_SETTINGS.splitLinkModifier, "altShift");
   assert.deepEqual(keys(), ["shift", "altShift"]);
@@ -295,10 +301,13 @@ test("the split link setting: ⌥⇧-click by default or ⌥-click, synced, neve
   S().updateSettings({ peekModifier: "alt", splitLinkModifier: "alt" }, { fromSync: true });
   assert.deepEqual(keys(), ["alt", "altShift"]);
   S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"], settings: { peekModifier: "alt", splitLinkModifier: "alt" } });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   assert.deepEqual(keys(), ["alt", "altShift"]);
   S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"], settings: { splitLinkModifier: "shift" } });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   assert.deepEqual(keys(), ["shift", "altShift"]);
   S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"], settings: { splitLinkModifier: "alt" } });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   assert.deepEqual(keys(), ["shift", "alt"]);
 });
 
@@ -325,6 +334,7 @@ test("links to other sites peek only in Top Apps, pinned rows and pinned groups,
 
 test("another window taking a shared pin's page closes the peek opened from it", () => {
   S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = S().createWindow({ url: "https://mail.example/" });
   const [mail] = S().windows[a].tabIds;
   S().pinTabs([mail], true);
@@ -354,6 +364,7 @@ test("a clicked new-tab link peeks from a pinned tab when its destination, unwra
   assert.ok(!leavesSite("https://example.com/a", "https://www.example.com/b"));
 
   S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://mail.example/" });
   const [pinned] = S().windows[w].tabIds;
   S().pinTabs([pinned], true);
@@ -383,6 +394,7 @@ test("out of the box a new-tab link peeks, a pinned tab's link to another site p
   const { newTabLinkRoute } = await import("./newTabLinkRoute.ts");
   const { PRESETS } = await import("../onboarding/presets.ts");
   S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"], settings: DEFAULT_SETTINGS });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://mail.example/" });
   const [pinned] = S().windows[w].tabIds;
   S().pinTabs([pinned], true);
@@ -417,6 +429,7 @@ test("a peek can adopt the page Chrome already opened for the link", () => {
 test("a private window's new-tab links stay tabs whatever the setting", async () => {
   const { newTabLinkRoute } = await import("./newTabLinkRoute.ts");
   S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ kind: "private", url: "https://mail.example/" });
   const [tab] = S().windows[w].tabIds;
   for (const choice of ["peek", "littleArdia"]) {
@@ -439,6 +452,7 @@ test("a peek from a pinned tab becomes a tab only when its first settled page pa
   };
   const open = (url) => {
     S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"] });
+    S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
     const w = S().createWindow({ url: "https://www.youtube.com/" });
     const [pinned] = S().windows[w].tabIds;
     S().pinTabs([pinned], true);
@@ -468,6 +482,7 @@ test("a redirector from a pinned tab that lands while you are on another tab sti
   startPeeks();
   const settle = () => new Promise((r) => setTimeout(r, 0));
   S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://www.youtube.com/" });
   const [pinned] = S().windows[w].tabIds;
   const other = S().newTab(w, { url: "https://other.example/", background: true });

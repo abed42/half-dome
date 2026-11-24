@@ -16,6 +16,7 @@ const S = () => useBrowser.getState();
 
 function pinnedInTwoWindows() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = S().createWindow({ url: "https://mail.com" });
   const [mail] = S().windows[a].tabIds;
   S().newTab(a, { url: "https://a.com" });
@@ -29,6 +30,7 @@ function pinnedInTwoWindows() {
 
 test("a live update writes nothing to the main store and wakes none of its subscribers", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.com" });
   const [tab] = S().windows[w].tabIds;
   const before = S();
@@ -79,6 +81,7 @@ test("useTabLive follows a tab and, for a frozen copy, its holder", () => {
 
 test("a closed tab's live state is forgotten; a tab Chrome moves between windows keeps it, one Ardia reloads elsewhere starts over", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w1 = S().createWindow({ url: "https://a.com" });
   const [a] = S().windows[w1].tabIds;
   const w2 = S().createWindow({ url: "https://b.com" });
@@ -104,6 +107,7 @@ test("a closed tab's live state is forgotten; a tab Chrome moves between windows
 
 test("one report's URL and loading reach store subscribers and live listeners together, held or not", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.com/" });
   const [tab] = S().windows[w].tabIds;
   const seen = [];
@@ -129,6 +133,7 @@ test("one report's URL and loading reach store subscribers and live listeners to
 
 function urlReportWith(t, duringPublication) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.com/" });
   const [tab] = S().windows[w].tabIds;
   const heard = [];
@@ -172,6 +177,7 @@ function failingOnFirst(t) {
 
 test("a live listener that throws doesn't stop the others, nor the tabs queued after it, and its error surfaces", (t) => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.com/" });
   const [a] = S().windows[w].tabIds;
   const b = S().newTab(w, { url: "https://b.com/", background: true });
@@ -186,6 +192,7 @@ test("a live listener that throws doesn't stop the others, nor the tabs queued a
 
 test("closing tabs while a live listener throws leaves no entry for any closed tab", (t) => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.com/" });
   const closing = ["b", "c", "d"].map((h) => S().newTab(w, { url: `https://${h}.com/`, background: true }));
   for (const id of closing) S().updateLive(id, { playingAudio: true, canGoBack: true });

@@ -21,6 +21,7 @@ const shown = (w) => host(activeTabId(S(), w));
 
 function windowWith(mode, ...hosts) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ cmdClickCreatesTabGroup: false, newTabPosition: "bottom", afterClosingTab: mode });
   const w = S().createWindow({ url: `https://${hosts[0]}.com/` });
   const ids = [S().windows[w].tabIds[0], ...hosts.slice(1).map((h) => S().newTab(w, { url: `https://${h}.com/`, background: true }))];
@@ -35,6 +36,7 @@ test("the setting defaults to the previously active tab, syncs, is in config.jso
   assert.equal(SETTING_SPECS.afterClosingTab.synced, true);
   assert.ok(isConfigSettingKey("afterClosingTab"));
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   assert.equal(S().settings.afterClosingTab, "previouslyActive");
   S().updateSettings({ afterClosingTab: "tabAbove" });
   const snapshot = settingsSnapshot(S().settings);
@@ -754,6 +756,7 @@ const { viewTabIds } = await import("../browser/model.ts");
 
 test("closing a shared pin also hands the other window, whose selected copy it unloads, the tab above", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ afterClosingTab: "tabAbove" });
   const a = S().createWindow({ url: "https://mail.com/" });
   const [mail] = S().windows[a].tabIds;

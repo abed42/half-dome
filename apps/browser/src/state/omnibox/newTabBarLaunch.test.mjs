@@ -26,6 +26,7 @@ async function usageCounts() {
 test("launch shows count the bars shown over each launch window's first card, also a window the launch itself opened, never a restored blank tab picked later", async () => {
   client.setSharing(true, "onboarding");
   S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"], windows: {}, tabs: {} });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ newTabOpens: "commandBar", openLinksInLittleArdia: false });
   const restored = S().createWindow({ url: "https://a.com/" });
   const page = model.activeTabId(S(), restored);
@@ -53,6 +54,7 @@ test("launch shows count the bars shown over each launch window's first card, al
 
 test("a link from another app over the launch bar fills the empty card instead of leaving it behind", async () => {
   S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"], windows: {}, tabs: {} });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ newTabOpens: "commandBar", openLinksInLittleArdia: false });
   const w = S().createWindow({});
   S().setFocusedWindow(w);

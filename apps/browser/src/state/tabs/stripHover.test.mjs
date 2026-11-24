@@ -10,6 +10,7 @@ const settle = () => new Promise((resolve) => setTimeout(resolve, STRIP_HOVER_DE
 
 function twoProfiles() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://example.com/start" });
   const work = S().createProfile({ name: "Work" });
   const mine = S().newTab(w, { url: "https://example.com/mine", profileId: S().windows[w].profileId, background: true });

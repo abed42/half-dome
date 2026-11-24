@@ -117,6 +117,7 @@ class Mac {
 const WORK = { id: "work", name: "Work", color: "blue", icon: null, createdAt: 1 };
 function freshMac(id, folder, legacy = false) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useBrowser.setState((s) => ({ profiles: { ...s.profiles, work: WORK }, profileOrder: [...s.profileOrder, "work"] }));
   const mac = new Mac(id, folder, S(), {}, legacy);
   mac.with(() => {
@@ -895,6 +896,7 @@ test("Top Apps shared by two profiles: an unpin synced into a profile whose pins
   const folder = new Folder();
   const sharing = (id, profileId) => {
     S().hydrate({});
+    S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
         useBrowser.setState((s) => ({ profiles: { ...s.profiles, default: { ...s.profiles.default, shareTopApps: true }, work: { ...WORK, dataId: "default", shareTopApps: true } }, profileOrder: [...s.profileOrder, "work"] }));
     S().createWindow({ profileId, url: `https://${id}-${profileId}.example/` });
     return new Mac(id, folder, S());
@@ -924,6 +926,7 @@ test("Top Apps shared by two profiles: a tile made a pinned row on one Mac stays
   const folder = new Folder();
   const sharing = (id, profileId) => {
     S().hydrate({});
+    S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
         useBrowser.setState((s) => ({ profiles: { ...s.profiles, default: { ...s.profiles.default, shareTopApps: true }, work: { ...WORK, dataId: "default", shareTopApps: true } }, profileOrder: [...s.profileOrder, "work"] }));
     S().createWindow({ profileId, url: `https://${id}-${profileId}.example/` });
     return new Mac(id, folder, S());
@@ -949,6 +952,7 @@ test("Top Apps shared by two profiles reach a profile the pinning Mac has never 
   const folder = new Folder();
   const sharing = (id, profileId) => {
     S().hydrate({});
+    S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
         useBrowser.setState((s) => ({ profiles: { ...s.profiles, default: { ...s.profiles.default, shareTopApps: true }, work: { ...WORK, dataId: "default", shareTopApps: true } }, profileOrder: [...s.profileOrder, "work"] }));
     S().createWindow({ profileId, url: `https://${id}-${profileId}.example/` });
     return new Mac(id, folder, S());

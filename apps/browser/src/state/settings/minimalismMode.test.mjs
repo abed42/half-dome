@@ -22,7 +22,7 @@ test("minimalism is off by default, and malformed values stay off", () => {
 
 test("⌘T opens the command bar while it's on, and the saved New Tab choice comes back when it's off", () => {
   useBrowser.getState().hydrate({ settings: { newTabOpens: "page" } });
-  useBrowser.getState().updateSettings({ minimalismMode: true });
+  useBrowser.getState().updateSettings({ newTabOpens: "page", minimalismMode: true });
   assert.equal(newTabOpensOf(useBrowser.getState().settings), "commandBar");
   assert.ok(newTabOpensBar(useBrowser.getState()));
   assert.equal(useBrowser.getState().settings.newTabOpens, "page");
@@ -32,8 +32,8 @@ test("⌘T opens the command bar while it's on, and the saved New Tab choice com
 });
 
 test("a minimal window has no toolbar field, so ⌘L opens the command bar in the centre, and its page is flat", () => {
-  useBrowser.getState().hydrate({ settings: { pageFrame: 9 } });
-  useBrowser.getState().updateSettings({ addressBar: "toolbar" });
+  useBrowser.getState().hydrate({ settings: { pageFrame: 9, commandBarPlacement: "field" } });
+  useBrowser.getState().updateSettings({ addressBar: "toolbar", commandBarPlacement: "field" });
   const id = useBrowser.getState().createWindow();
   useBrowser.getState().newTab(id, { url: "https://example.com/" });
   assert.equal(addressFieldShown(useBrowser.getState(), id), true);

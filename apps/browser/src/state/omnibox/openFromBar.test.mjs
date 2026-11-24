@@ -19,6 +19,7 @@ test("⌥↩ is split, ⌘↩ is a new tab, ⇧↩ is a new window", () => {
 
 test("openFromBar with split puts the URL in a right pane beside the tab", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.com/" });
   const a = S().windows[w].tabIds[0];
   openFromBar("https://b.com/", a, "split");
@@ -32,6 +33,7 @@ test("openFromBar with split puts the URL in a right pane beside the tab", () =>
 
 test("⌥↩ into a full split opens a background tab instead of dropping the URL", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.com/" });
   const a = S().windows[w].tabIds[0];
   const b = S().openSplitPane(w, { anchorTabId: a, url: "https://b.com/" }).tabId;
@@ -59,6 +61,7 @@ test("⌥↩ into a full split opens a background tab instead of dropping the UR
 
 test("⌥↩ asks the opening gate: a rewrite opens the new URL in the pane, a cancel opens nothing", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.com/" });
   const a = S().windows[w].tabIds[0];
   const asked = [];
@@ -86,6 +89,7 @@ test("⌥↩ asks the opening gate: a rewrite opens the new URL in the pane, a c
 
 test("⌥↩ splits only from a tab showing a page", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.com/" });
   const a = S().windows[w].tabIds[0];
   const blank = S().newTab(w, {});
@@ -96,6 +100,7 @@ test("⌥↩ splits only from a tab showing a page", () => {
 
 test("a Switch to Tab row switches on ↩ and opens its address in a new tab on ⌘↩, from any bar", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://mail.example.com/" });
   const mail = S().windows[w].tabIds[0];
   const bar = S().newTab(w, {});

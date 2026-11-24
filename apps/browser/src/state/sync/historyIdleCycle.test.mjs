@@ -46,6 +46,7 @@ test("an idle sync cycle reads none of the history list and lists no base keys, 
   const now = Date.now();
   const { list, reads } = countedList(3000, now);
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://open.example/" });
   for (let i = 0; i < 20; i++) S().newTab(w, { url: `https://open.example/${i}`, background: true });
   for (let i = 0; i < 50; i++) S().addBookmark({ profileId: "default", url: `https://mark.example/${i}`, title: `Mark ${i}` });
@@ -88,6 +89,7 @@ test("a visit the clock brings back inside the 90-day window publishes on the ne
     const edge = now - 90 * DAY - 2 * 60_000;
     const outside = { url: "https://outside.example/", title: "Outside", favicon: null, visits: 1, lastVisit: edge, visitTimes: [edge] };
     S().hydrate({});
+    S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
     useBrowser.setState({ history: { "": { list: [inside, outside], floor: -Infinity, ready: true } } });
     const clock = new Clock("A");
     useEditClock(clock);
@@ -106,6 +108,7 @@ test("a visit the clock brings back inside the 90-day window publishes on the ne
 
 test("the tokens a scope keeps for skipping hold neither the bookmark tree nor the history list", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useBrowser.setState({ history: { "": { list: [], floor: -Infinity, ready: true } }, bookmarksReady: { "": true } });
   const s = S();
   const held = new Set([s.bookmarks, s.bookmarks.nodes, s.history[""], s.history[""].list]);

@@ -127,6 +127,7 @@ for (const given of REFUSED) {
 
 function mainWindow(settings = {}) {
   S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"], windows: {}, tabs: {} });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const main = S().createWindow({ url: "https://main.example/" });
   S().setFocusedWindow(main);
   S().updateSettings({ openLinksInLittleArdia: false, allowJavaScriptFromAppleEvents: false, ...settings });

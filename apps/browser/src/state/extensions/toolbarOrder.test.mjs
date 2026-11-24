@@ -42,6 +42,7 @@ test("a move asks Chrome for the index of the button it lands on, which skips hi
 
 test("dropping reorders the toolbar at once and tells Chrome which extension moved", async () => {
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = useBrowser.getState().createWindow({ url: "a.com" });
   useExtensions.setState({ lists: { "": [ext("a", 0), ext("b", 1), ext("c", 2)] } });
   const asked = [];

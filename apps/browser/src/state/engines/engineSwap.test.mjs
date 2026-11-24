@@ -16,6 +16,7 @@ const tick = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function pageTab() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://video.example/watch/1" });
   return model.activeTabId(S(), w);
 }

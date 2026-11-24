@@ -28,6 +28,7 @@ const S = () => useBrowser.getState();
 
 test("adding a folder while the window switches profile binds nothing to either profile", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const windowId = S().createWindow({ url: "https://home.example/" });
   const before = S().windows[windowId].profileId;
   const other = S().createProfile({ name: "Other" });
@@ -43,6 +44,7 @@ test("adding a folder while the window switches profile binds nothing to either 
 
 test("a legacy binding whose folder is now refused is neither synced nor treated as a match", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const windowId = S().createWindow({ url: "https://home.example/" });
   const profileId = S().windows[windowId].profileId;
   const tab = S().newTab(windowId, { url: "https://a.example/", background: true });
@@ -63,6 +65,7 @@ test("a legacy binding whose folder is now refused is neither synced nor treated
 
 test("adding the same folder twice at once binds it once", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const windowId = S().createWindow({ url: "https://home.example/" });
   duringResolve = () => {};
   await Promise.all([addSharedFolder(windowId), addSharedFolder(windowId)]);

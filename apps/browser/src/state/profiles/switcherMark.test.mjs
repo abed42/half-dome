@@ -65,6 +65,7 @@ test("the old setting is gone from the store, so the next save drops it and a se
 
 test("a profile shows its icon once one is chosen, and a dot again once it is removed", () => {
   S().hydrate({ profiles: { work: profile("work", null), home: profile("home", null) }, profileOrder: ["work", "home"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   assert.equal(switcherIconOf(S().profiles.work), null);
   chooseIcon("work", "symbol:briefcase.fill");
   assert.equal(switcherIconOf(S().profiles.work), "symbol:briefcase.fill");
@@ -76,11 +77,13 @@ test("a profile shows its icon once one is chosen, and a dot again once it is re
 
 test("a kept dot gives way when the icon is chosen again, changed by sync or import, but not when only the name syncs", () => {
   S().hydrate({ profiles: { home: { ...profile("home", "🔥"), switcherDot: true } }, profileOrder: ["home"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateProfile("home", { name: "Home", icon: "🔥" });
   assert.equal(switcherIconOf(S().profiles.home), null);
   S().updateProfile("home", { icon: "🌊" });
   assert.equal(switcherIconOf(S().profiles.home), "🌊");
   S().hydrate({ profiles: { home: { ...profile("home", "🔥"), switcherDot: true } }, profileOrder: ["home"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   chooseIcon("home", "🔥");
   assert.equal(switcherIconOf(S().profiles.home), "🔥");
   assert.equal("switcherDot" in S().profiles.home && S().profiles.home.switcherDot !== undefined, false);

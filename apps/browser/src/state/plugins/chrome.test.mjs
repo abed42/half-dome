@@ -64,6 +64,7 @@ function countBrowserListeners() {
 
 test("with no plugin contributing chrome, no plugin surface mounts and a tab switch wakes nothing plugin-side", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   await only(COMMANDS_ONLY);
   const w = S().createWindow({ url: "https://a.example/" });
   S().newTab(w, { url: "https://b.example/" });
@@ -83,6 +84,7 @@ test("with no plugin contributing chrome, no plugin surface mounts and a tab swi
 
 test("a plugin's toolbar, sidebar views and side panels turn on only the chrome they need, and the watches end with them", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   await only(CHROME);
   const w = S().createWindow({ url: "https://a.example/" });
   const chrome = mount(() => usePluginChromeOf(w));

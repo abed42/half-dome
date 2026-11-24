@@ -10,6 +10,7 @@ after(() => client.setSharing(false, "settings"));
 const S = () => useBrowser.getState();
 const fresh = (settings = {}) => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useBrowser.setState({ settings: { ...DEFAULT_SETTINGS, ...settings }, settingsMeta: { chosen: [], inferred: [] } });
 };
 

@@ -55,6 +55,7 @@ test("on the Mac closing a window never shows the quit warning", async () => {
     return Promise.resolve({ confirmed: false, suppressed: false });
   };
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useBrowser.getState().updateSettings({ warnBeforeQuitting: true });
   const id = useBrowser.getState().createWindow({ url: "https://a.com" });
   assert.equal(quitWarningMayAsk(), false);
@@ -109,6 +110,7 @@ const { requestWindowClose } = await import("./src/state/windows/windowClose.ts"
 const { shellNativeModules, windows } = await import("./src/test-native/shell.ts");
 const settle = async () => { for (let turn = 0; turn < 8; turn++) await new Promise((resolve) => setTimeout(resolve, 0)); };
 useBrowser.getState().hydrate({});
+useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
 useBrowser.getState().updateSettings({ warnBeforeQuitting: true });
 let asked = 0;
 let answer = false;
@@ -138,6 +140,7 @@ const { cancelImport, importSignal } = await import("./src/state/import/flow.ts"
 const { shellNativeModules, windows } = await import("./src/test-native/shell.ts");
 const settle = async () => { for (let turn = 0; turn < 8; turn++) await new Promise((resolve) => setTimeout(resolve, 0)); };
 useBrowser.getState().hydrate({});
+useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
 useBrowser.getState().updateSettings({ warnBeforeQuitting: true });
 let asked = 0;
 let answer = false;
@@ -199,6 +202,7 @@ let answer = { confirmed: false, suppressed: false };
 shellNativeModules.ArdiaDialogs.confirm = (options) => { asked.push(options.title); return Promise.resolve(answer); };
 const fresh = (settings) => {
   S().hydrate({ profiles: { default: { id: "default", name: "Personal", color: "plum", icon: null, createdAt: 0 } }, profileOrder: ["default"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ warnBeforeQuitting: true, warnBeforeClosingWindow: true, warnBeforeClosingLastTab: true, ...settings });
   windows.open.clear();
   asked.length = 0;
@@ -261,6 +265,7 @@ shellNativeModules.ArdiaDialogs.confirm = (options) => {
 const seen = {};
 const race = async (quitAnswer) => {
   S().hydrate({ profiles: { default: { id: "default", name: "Personal", color: "plum", icon: null, createdAt: 0 } }, profileOrder: ["default"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ warnBeforeQuitting: true, warnBeforeClosingWindow: true, shareTabsAcrossWindows: false });
   windows.open.clear();
   asked.length = 0;

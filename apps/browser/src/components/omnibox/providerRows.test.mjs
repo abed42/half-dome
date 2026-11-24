@@ -18,6 +18,7 @@ const LINEAR = { keyword: "go", title: "Linear", url: "https://linear.app/team/i
 
 function setup(entries) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://start.example/" });
   S().updateSettings({ omniboxProviders: entries });
   useBrowser.setState((s) => ({

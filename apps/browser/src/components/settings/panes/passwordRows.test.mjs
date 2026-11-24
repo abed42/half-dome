@@ -35,6 +35,7 @@ function savedLogins(n) {
 
 async function openPasswords(n) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().createWindow({ url: "https://a.com/" });
   savedLogins(n);
   usePasswordUnlocks.setState({ unlocked: { "": true } });

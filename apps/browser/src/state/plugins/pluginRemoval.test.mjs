@@ -22,6 +22,7 @@ after(() => {
 
 test("plugins.remove re-checks control after unlinking programs and keeps the files once it's off", async () => {
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   startPlugins();
   host.removed.length = 0;
   host.folders = [{ name: "example", status: "ok", text: FIXTURE }];

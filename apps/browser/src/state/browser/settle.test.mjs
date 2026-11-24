@@ -76,6 +76,7 @@ function win(...hosts) {
 
 function pinnedPair() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const { w: a, ids } = win("m", "d", "x");
   S().pinTabs(ids.slice(0, 2), true);
   const { w: b } = win("b");
@@ -179,6 +180,7 @@ test("pin, share, split, peek and close: every state a listener hears is settled
 
 test("a step that never settles is named once the round limit is reached", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   let n = 0;
   const steps = [...SETTLE_STEPS, ["restless", (s) => ({ ...s, selection: { n: [String(++n)] } })]];
   assert.throws(() => settle(S(), S(), steps), (e) => e instanceof SettleDidNotConverge && e.steps.join() === "restless" && e.settled.selection.n[0] === String(n));

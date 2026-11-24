@@ -193,6 +193,7 @@ test("the context sample records the built-in page the active tab is on, and a n
   const { useBrowser } = await import("../browser/store.ts");
   const S = () => useBrowser.getState();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://private.example/inbox?token=secret" });
   const tab = S().windows[w].tabIds[0];
   assert.equal((await diagnostics.recordContext()).webui_page, null);
@@ -235,6 +236,7 @@ test("the built-in page comes from the focused window's tab, a Little Ardia wind
   const { useBrowser } = await import("../browser/store.ts");
   const S = () => useBrowser.getState();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().createWindow({ url: "chrome://history" });
   const small = S().createWindow({ kind: "small", url: "https://private.example/" });
   S().setFocusedWindow(small);
@@ -244,6 +246,7 @@ test("the built-in page comes from the focused window's tab, a Little Ardia wind
 test("a burst of built-in page samples keeps the samples from before it, so a crash read an hour later still finds its context", async () => {
   const { useBrowser } = await import("../browser/store.ts");
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useBrowser.getState().createWindow({ url: "chrome://settings/cookies" });
   const beforeBurst = await diagnostics.recordContext();
   await new Promise((resolve) => setTimeout(resolve, 5));
@@ -265,6 +268,7 @@ test("the saved context keeps the last 3 built-in pages, and a native crash send
   client.setSharing(false, "settings");
   client.setSharing(true, "settings");
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://private.example/" });
   const tab = S().windows[w].tabIds[0];
   const realNow = Date.now;
@@ -313,6 +317,7 @@ test("a sample that finishes after sharing was turned off keeps no built-in page
   client.setSharing(false, "settings");
   client.setSharing(true, "settings");
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://private.example/" });
   const tab = S().windows[w].tabIds[0];
   assert.equal((await diagnostics.recordContext()).webui_pages, null);
@@ -333,6 +338,7 @@ test("deleting a profile erases its built-in pages, including the one its window
   client.setSharing(false, "settings");
   client.setSharing(true, "settings");
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().createWindow({ url: "https://private.example/" });
   const work = S().createProfile({ name: "Work" });
   const w = S().createWindow({ profileId: work, url: "chrome://settings/cookies" });

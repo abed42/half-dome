@@ -30,6 +30,7 @@ const counted = (over) => ({ air_traffic_rule_links: 0, air_traffic_fallback_lin
 
 function fresh({ rules: list = [], fallback = null, hooks = [] } = {}) {
   S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const work = S().createProfile({ name: "Work" });
   resetApprovalsForTests();
   stub.configFolder.files.set("hooks.json", JSON.stringify({ hooks }));

@@ -9,6 +9,7 @@ const S = () => useBrowser.getState();
 
 function windowWith(...hosts) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: `https://${hosts[0]}.com/` });
   S().setFocusedWindow(w);
   const ids = [S().windows[w].tabIds[0]];

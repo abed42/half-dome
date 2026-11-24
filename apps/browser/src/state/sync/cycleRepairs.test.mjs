@@ -53,6 +53,7 @@ const reset = () => {
   shell.docs.clear();
   folder.clear();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useBrowser.setState({ bookmarksReady: { "": true } });
 };
 const settle = async (rounds = 20) => {

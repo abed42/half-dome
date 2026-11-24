@@ -53,6 +53,7 @@ const sub = (items, ...path) => render(child(items, ...path));
 
 function windowWith(...hosts) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: `https://${hosts[0]}.com/` });
   const ids = [S().windows[w].tabIds[0]];
   for (const h of hosts.slice(1)) ids.push(S().newTab(w, { url: `https://${h}.com/` }));
@@ -493,6 +494,7 @@ test("Open in Split View on a background tab pairs it with the tab in front when
 
 test("a Top App whose page runs in another window offers Unload here too while Keep Top Apps running is on, and Unload puts that page to sleep", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = S().createWindow({ url: "https://app.com/" });
   const [app] = S().windows[a].tabIds;
   S().newTab(a, { url: "https://x.com/" });

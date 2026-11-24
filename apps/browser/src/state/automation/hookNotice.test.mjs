@@ -14,6 +14,7 @@ const toastIn = (windowId) => useToasts.getState().toasts[windowId] ?? null;
 
 test("rules offered before the first window and by launchActions at launch are announced together once the window is up", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   resetApprovalsForTests();
   assert.equal(S().windowOrder.length, 0);
   stub.configFolder.files.set(

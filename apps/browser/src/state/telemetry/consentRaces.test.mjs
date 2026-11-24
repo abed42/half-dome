@@ -208,6 +208,7 @@ test("F4 a web notification received while sharing was off isn't reported as fai
   client.setSharing(false, "settings");
   const S = () => useBrowser.getState();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://site.example/" });
   const tabId = activeTabId(S(), w);
   const notifications = stub.shellNativeModules.ArdiaNotifications;

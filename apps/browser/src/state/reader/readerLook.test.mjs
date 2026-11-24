@@ -18,6 +18,7 @@ after(() => stop());
 let page = 0;
 function openPlanted(report) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useBrowser.setState({ settings: DEFAULT_SETTINGS, settingsMeta: { chosen: [], inferred: [] } });
   const w = S().createWindow({ url: `http://127.0.0.1:9/article-${++page}` });
   const tab = activeTabId(S(), w);

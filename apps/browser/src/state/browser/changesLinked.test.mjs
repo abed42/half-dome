@@ -143,6 +143,7 @@ test("the store's tab changes match the full scan through random actions, transa
   for (let seed = 1; seed <= 6; seed++) {
     const rand = random(1000 + seed);
     S().hydrate({});
+    S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
     const w = S().createWindow({ url: "https://a.com" });
     for (let i = 0; i < 30; i++) S().newTab(w, { url: `https://site${i}.com/${i}`, background: rand() < 0.6 });
     for (const [, stop] of watched) stop();
@@ -187,6 +188,7 @@ test("the everyday tab actions on a big profile never compare every tab, and are
   const { changeDetection, takeChangeDetectionCounts } = await import("./changes.ts");
   const S = () => useBrowser.getState();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.com" });
   const ids = Array.from({ length: 300 }, (_, i) => S().newTab(w, { url: `https://site${i}.com`, background: true }));
   const heard = [];
@@ -229,6 +231,7 @@ test("two copies of a pin that wake in one batch hand the page to the same copy 
   Date.now = () => 1000;
   try {
     S().hydrate({});
+    S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
     const a = S().createWindow({ url: "https://mail.com" });
     const [mail] = S().windows[a].tabIds;
     S().newTab(a, { url: "https://a.com" });

@@ -20,6 +20,7 @@ const { takeMemoryTrimCounts } = await import("../telemetry/memoryTrimCounts.ts"
 
 const S = () => useBrowser.getState();
 S().hydrate({});
+S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
 const w = S().createWindow({ url: "a.com" });
 startMemoryTrim();
 

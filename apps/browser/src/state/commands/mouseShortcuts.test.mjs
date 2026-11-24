@@ -55,6 +55,7 @@ test("a mouse binding only takes a mouse button, and never a fixed or unknown co
 
 test("the menu state carries mouse bindings apart from key equivalents, and none when unset", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().createWindow({ url: "https://a.com/" });
   assert.deepEqual(menuState(S()).mouseShortcuts, {});
   const keysBefore = JSON.stringify(menuState(S()).shortcuts);
@@ -71,6 +72,7 @@ test("the menu state carries mouse bindings apart from key equivalents, and none
 
 test("only the first of two commands on one button reaches the native table, and fn is never part of a button", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().createWindow({ url: "https://a.com/" });
   setMouseShortcut("newTab", { key: "mouse:middle", modifiers: [] });
   setMouseShortcut("closeTab", { key: "mouse:middle", modifiers: [] });

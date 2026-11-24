@@ -20,6 +20,7 @@ const anchorField = (windowId, view) => view.measureInWindow((left, top, width, 
 
 test("the address panel's anchor follows the sidebar field when the window buttons' row appears or goes, though the field's own layout never changes (#1973)", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ tabLayout: "sidebar", sidebarSide: "left", addressBar: "sidebar", autoHideTabs: false, minimalismMode: false, sidebarWidth: 190 });
   const id = S().createWindow({ url: "https://a.example/" });
   const field = sidebarField(id);
@@ -52,6 +53,7 @@ test("what is open and anchored in the sidebar closes when the window buttons' r
   const { useSidebarUi } = await import("../sidebar/sidebarUi.ts");
   const { useBookmarkDialog } = await import("../bookmarks/actions.ts");
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ tabLayout: "sidebar", sidebarSide: "left", addressBar: "sidebar", autoHideTabs: false, minimalismMode: false, sidebarWidth: 190 });
   const id = S().createWindow({ url: "https://a.example/" });
   const other = S().createWindow({ url: "https://b.example/" });

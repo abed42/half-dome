@@ -7,6 +7,7 @@ const S = () => useBrowser.getState();
 
 test("a window that exists keeps one pager; a missing window gets a throwaway that isn't kept", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.example/" });
   assert.equal(pagerFor(w), pagerFor(w));
   assert.notEqual(pagerFor("w-gone"), pagerFor("w-gone"));
@@ -22,6 +23,7 @@ after(() => telemetry.setSharing(false, "settings"));
 let sequence = 100;
 function threeProfiles() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.example/" });
   const b = S().createProfile({ name: "B" });
   const c = S().createProfile({ name: "C" });
@@ -75,6 +77,7 @@ test("a fast double swipe keeps holding the first profile and lands on the last 
 
 test("the page that slides out of a third quick swipe is kept warm while it moves", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.example/" });
   for (const name of ["B", "C", "D"]) S().createProfile({ name });
   const order = S().profileOrder;

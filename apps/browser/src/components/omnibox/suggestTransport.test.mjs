@@ -13,6 +13,7 @@ const remoteRows = (result) => result.items.filter((x) => x.kind === "search").m
 
 test("search suggestions go through the browser's own network stack, never the app's fetch", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://start.example/" });
   const asked = [];
   const appFetch = globalThis.fetch;
@@ -56,6 +57,7 @@ test("search suggestions go through the browser's own network stack, never the a
 
 test("a refused suggestion request shows no suggestions", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://start.example/" });
   globalThis.acTestSuggest = () => ({ status: 429 });
   try {
@@ -71,6 +73,7 @@ test("a refused suggestion request shows no suggestions", async () => {
 
 test("each profile asks its own engine profile, and a private window asks nothing", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://start.example/" });
   const work = S().createProfile({ name: "Work" });
   const asked = [];

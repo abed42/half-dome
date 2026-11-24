@@ -26,6 +26,7 @@ const until = async (ok, what) => {
 
 test("the view follows Chrome: a burst of visits, a retitle, a deletion, a clear, a relaunch", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.docs.clear();
   stub.historyDbs.clear();
   const stop = startHistory();
@@ -70,6 +71,7 @@ test("the view follows Chrome: a burst of visits, a retitle, a deletion, a clear
 
 test("a history of years, past 5,000 pages, is read whole, with its oldest page (an imported Arc history)", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.docs.clear();
   stub.historyDbs.clear();
   const total = 5_200;
@@ -86,6 +88,7 @@ test("a history of years, past 5,000 pages, is read whole, with its oldest page 
 
 test("deleting half of a long history reads the selection a few times over, not once per URL kept", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.docs.clear();
   stub.historyDbs.clear();
   const total = 2_000;
@@ -112,6 +115,7 @@ test("deleting half of a long history reads the selection a few times over, not 
 
 test("a change that lands while the view is being read joins the read, in order", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.historyDbs.clear();
   const stop = startHistory();
   const reading = reloadHistory();
@@ -128,6 +132,7 @@ const legacy = (urls, now) =>
 
 test("history.json: a quit before the first window leaves it untouched for the next launch", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.docs.clear();
   stub.historyDbs.clear();
   const now = Date.now();
@@ -144,6 +149,7 @@ test("history.json: a quit before the first window leaves it untouched for the n
 
 test("history.json: a quit right after the move keeps the file until Chrome has committed; moving again adds nothing twice", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.docs.clear();
   stub.historyDbs.clear();
   const now = Date.now();
@@ -155,6 +161,7 @@ test("history.json: a quit right after the move keeps the file until Chrome has 
   const visits = () => [...stub.chromeHistory("").values()].map((r) => r.visits.length);
   assert.deepEqual(visits(), [2, 2]);
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const stop2 = startHistory();
   await until(() => historyOf(S(), "default").length === 2, "shown after the second launch");
   assert.deepEqual(visits(), [2, 2], "no visit doubled");
@@ -167,6 +174,7 @@ test("history.json: a quit right after the move keeps the file until Chrome has 
 
 test("profiles that share data read one history and one tree in every state a listener hears, and each change is heard once", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.docs.clear();
   stub.historyDbs.clear();
   const stop = startHistory();
@@ -209,6 +217,7 @@ test("profiles that share data read one history and one tree in every state a li
 
 test("a history read still running when the owner is deleted lands for the profile that still shares its data", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.docs.clear();
   stub.historyDbs.clear();
   const stop = startHistory();
@@ -237,6 +246,7 @@ test("a history read still running when the owner is deleted lands for the profi
 
 test("a history read that lands after the last profile on its engine is deleted doesn't bring the view back", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.docs.clear();
   stub.historyDbs.clear();
   const stop = startHistory();
@@ -266,6 +276,7 @@ const away = { profile: "elsewhere", at: 5, visits: 1 };
 
 test("changes the list can't take are counted and reported once, with kinds and counts only", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.docs.clear();
   stub.historyDbs.clear();
   const stop = startHistory();
@@ -303,6 +314,7 @@ test("changes the list can't take are counted and reported once, with kinds and 
 
 test("changes replayed over a read are counted like the ones applied to a loaded list", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.docs.clear();
   stub.historyDbs.clear();
   const stop = startHistory();
@@ -325,6 +337,7 @@ test("changes replayed over a read are counted like the ones applied to a loaded
 
 test("visits stored with no title are counted but never start a report of their own", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.docs.clear();
   stub.historyDbs.clear();
   const stop = startHistory();
@@ -349,6 +362,7 @@ test("visits stored with no title are counted but never start a report of their 
 
 test("changes Chrome reports while a profile's old history is moving in are counted as moving", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.docs.clear();
   stub.historyDbs.clear();
   firstWindowCommitted();
@@ -373,6 +387,7 @@ test("changes Chrome reports while a profile's old history is moving in are coun
 
 test("a history read that fails says why: the error's code and message", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.docs.clear();
   stub.historyDbs.clear();
   const fake = stub.ardiaCoreNativeModules.ArdiaHistory;
@@ -396,6 +411,7 @@ test("a history read that fails says why: the error's code and message", async (
 
 test("a profile other than the default is never named by its id in a gap report or a failed read", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.docs.clear();
   stub.historyDbs.clear();
   const profile = S().createProfile({ name: "Work" });
@@ -431,6 +447,7 @@ test("a profile other than the default is never named by its id in a gap report 
 
 test("two profiles reporting in the same window can't take a session past ten", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.docs.clear();
   stub.historyDbs.clear();
   const warned = captureWarnings();
@@ -462,6 +479,7 @@ test("two profiles reporting in the same window can't take a session past ten", 
 
 test("reports stop after ten in a session and start over with the next one", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.docs.clear();
   stub.historyDbs.clear();
   const warned = captureWarnings();

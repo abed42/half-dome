@@ -31,6 +31,7 @@ test("setup", async () => {
   offer.OFFER_TO_SAVE_RETRY.firstMs = 30;
   offer.OFFER_TO_SAVE_RETRY.maxMs = 30;
   S().hydrate({ profiles: { default: { id: "default", name: "Personal", color: "plum", icon: null, createdAt: 0 } }, profileOrder: ["default"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().createWindow({ url: "https://a.example/", profileId: "default" });
   startPlugins();
   stub.pluginHost.folders = [folder("one-pm")];

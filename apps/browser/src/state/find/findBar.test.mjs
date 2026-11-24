@@ -22,6 +22,7 @@ test("find opens and steps are counted and reset once taken", () => {
 
 test("an open is counted when the bar goes from closed to open, whichever key opened it", () => {
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const windowId = useBrowser.getState().createWindow({ url: "https://a.com" });
   const tab = useBrowser.getState().windows[windowId].tabIds[0];
   takeFindCounts();

@@ -17,6 +17,7 @@ const AUTO = JSON.stringify({ manifest: 2, name: "auto", title: "Auto", alwaysOn
 
 setConsentPeriod(true, "test-epoch");
 S().hydrate({});
+S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
 host.links.length = 0;
 host.linkResult = { ok: true, linked: ["auto-tool"], refused: {}, binDir: "/home/.local/bin" };
 host.folders = [{ name: "auto", text: AUTO, status: "ok", folderId: `official-${"a".repeat(64)}`, official: true }];
@@ -41,6 +42,7 @@ test("you turn control off, Ardia restarts, and it stays off: no launch turns it
   assert.equal(S().settings.cliControl, false);
   const meta = S().settingsMeta;
   S().hydrate({ settings: { ...S().settings }, settingsMeta: meta });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   await lifecycle.rescanPlugins();
   lifecycle.reconcilePlugins();
   await settle();

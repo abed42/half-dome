@@ -12,6 +12,7 @@ const gone = (windowId) => !S().windows[windowId] || isWindowClosing(windowId);
 
 function windows(url) {
   S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"], windows: {}, tabs: {} });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const main = S().createWindow({ url: "https://main.example/" });
   const small = S().createWindow({ kind: "small", url });
   return { main, small, mainTab: S().windows[main].tabIds[0], smallTab: S().windows[small].tabIds[0] };

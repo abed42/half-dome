@@ -6,6 +6,7 @@ const S = () => useBrowser.getState();
 
 function twoWindows() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const from = S().createWindow({ url: "https://a.com/" });
   const moved = S().newTab(from, { url: "https://b.com/" });
   const to = S().createWindow({ url: "https://c.com/" });

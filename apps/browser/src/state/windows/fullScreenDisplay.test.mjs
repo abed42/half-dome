@@ -41,8 +41,9 @@ function start(native) {
 
 test("a window full screen on an external display reopens naming that display, not just its old frame", () => {
   stub.docs.clear();
-  S().hydrate({});
   const stop = startPersistence();
+  S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = S().createWindow({ url: "a.com" });
   const b = S().createWindow({ url: "b.com" });
   const before = fakePort();
@@ -67,6 +68,7 @@ test("a window full screen on an external display reopens naming that display, n
 test("a full screen window carried to another display keeps its place in line, and leaving full screen frees it", () => {
   stub.docs.clear();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = S().createWindow({ url: "a.com" });
   const native = fakePort();
   start(native);
@@ -84,6 +86,7 @@ test("a full screen window carried to another display keeps its place in line, a
 test("a full screen event without a display leaves the window opening exactly as before", () => {
   stub.docs.clear();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = S().createWindow({ url: "a.com" });
   const native = fakePort();
   start(native);

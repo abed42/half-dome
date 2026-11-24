@@ -18,6 +18,7 @@ for (const waits of [false, true]) {
   test(`a New Tab lingers only when the host can put it behind the first page frame (${waits})`, () => {
     PLATFORM_FEATURES.newTabWaitsForFirstFrame = waits;
     useBrowser.getState().hydrate({});
+    useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
     const windowId = useBrowser.getState().createWindow({ url: "https://example.com/" });
     const page = useBrowser.getState().windows[windowId].tabIds[0];
     const empty = useBrowser.getState().newTab(windowId);

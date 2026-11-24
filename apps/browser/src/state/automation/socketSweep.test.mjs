@@ -49,6 +49,7 @@ let bound = null;
 async function fixture() {
   if (bound) unbindFolder(...bound);
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useAirTraffic.setState((st) => ({ config: { ...st.config, rules: [] } }));
   useLive.setState({ folders: {}, folderOrder: [], items: {}, hidden: {}, unread: {}, completed: {}, status: {} });
   await controlOn();

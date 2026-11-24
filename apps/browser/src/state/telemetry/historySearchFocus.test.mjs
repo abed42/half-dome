@@ -21,6 +21,7 @@ test("⌘Y's requests for the History search field and the ones the field took a
   client.setSharing(true, "onboarding");
   const S = useBrowser.getState;
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.com/" });
   showHistory(w);
   showHistory(w);

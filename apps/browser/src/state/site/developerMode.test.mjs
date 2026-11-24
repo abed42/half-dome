@@ -47,6 +47,7 @@ test("the setting syncs, can be set from a config file, and drops malformed valu
 test("turning it on and off from Site Controls updates the setting and counts the toggles", () => {
   takeDeveloperModeCounts();
   useBrowser.getState().hydrate({ settings: { developerModeSites: {} } });
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   setDeveloperMode("http://localhost:5173/", false);
   assert.deepEqual(useBrowser.getState().settings.developerModeSites, {});
   setDeveloperMode("http://localhost:5173/", true);
@@ -73,6 +74,7 @@ test("Split View Options adds a pane on the side picked, and is disabled once th
   const { activeTabId } = await import("../browser/model.ts");
   const S = () => useBrowser.getState();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const windowId = S().createWindow({ url: "http://localhost:3000/" });
   const tabId = activeTabId(S(), windowId);
   const menus = shellNativeModules.ArdiaMenus;

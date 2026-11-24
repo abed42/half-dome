@@ -37,6 +37,7 @@ test("a failed first scan leaves the migration for the next scan that works", as
   usePlugins.setState({ records: { "apple-passwords": record }, listings: {}, order: [], scanned: false });
   stub.pluginHost.folders = [];
   S().hydrate({ profiles: { default: profile("default", "plugin:apple-passwords"), work: profile("work", undefined) }, profileOrder: ["default", "work"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.pluginHost.listFails = true;
   let lifecycle, consentToken;
   try {

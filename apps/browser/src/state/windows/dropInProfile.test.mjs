@@ -15,6 +15,7 @@ const drop = (zone, beforeId = null, extra = {}) => resolveDrop(S(), { kind: "ta
 
 function spaces() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.com/" });
   const id = { a: S().windows[w].tabIds[0] };
   for (const h of ["b", "c", "d"]) id[h] = S().newTab(w, { url: `https://${h}.com/`, background: true });
@@ -110,6 +111,7 @@ test("into another profile's group at a member; a tab already there is only plac
 
 test("a Top App shared with the other profile takes its copy there instead of making a second tile", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateProfile("default", { shareTopApps: true });
   const w = S().createWindow({ url: "https://mail.com/" });
   const [mail] = S().windows[w].tabIds;
@@ -130,6 +132,7 @@ test("a Top App shared with the other profile takes its copy there instead of ma
 
 test("a shared Top App dropped into another profile's pinned rows reports its copy as placed, though the copy is a row by then", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateProfile("default", { shareTopApps: true });
   const w = S().createWindow({ url: "https://mail.com/" });
   const [mail] = S().windows[w].tabIds;
@@ -150,6 +153,7 @@ test("a shared Top App dropped into another profile's pinned rows reports its co
 test("a shared Top App dropped on the icon of a profile this window hasn't shown takes that profile's own copy, and each keeps one tile", async () => {
   const { NO_DROP } = await import("../drag/drops.ts");
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateProfile("default", { shareTopApps: true });
   const w = S().createWindow({ url: "https://mail.com/" });
   const [mail] = S().windows[w].tabIds;

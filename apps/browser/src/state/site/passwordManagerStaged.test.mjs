@@ -16,6 +16,7 @@ const heldOff = (text) => (text ? JSON.parse(text).offerToSaveHeldOff : []);
 
 test("your Off replaces a hold-off save native still holds to retry, so that stale save can't land later and turn saving back on", async () => {
   S().hydrate({ profiles: { default: { id: "default", name: "Personal", color: "plum", icon: null, createdAt: 0 } }, profileOrder: ["default"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   startPlugins();
   stub.pluginHost.folders = [];
   await lifecycle.rescanPlugins(consentToken());

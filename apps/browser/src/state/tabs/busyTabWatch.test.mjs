@@ -97,6 +97,7 @@ test("readings and keep-active rules from outside are checked before they are us
 
 function windowWithHiddenTab(lastActiveAt, { kind } = {}) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ keepActiveSites: [] });
   const w = S().createWindow({ url: "https://front.example/", ...(kind ? { kind } : {}) });
   const hidden = S().newTab(w, { url: "https://miner.example/page", background: true });
@@ -321,6 +322,7 @@ test("after quitting starts, Keep Running and a pending kept-site check write no
 test("Sleep confirms only the tabs that really slept, and never covers a newer toast", async () => {
   const start = Date.now() + 5400 * MINUTE;
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ keepActiveSites: [] });
   const w = S().createWindow({ url: "https://front.example/" });
   const a = S().newTab(w, { url: "https://miner.example/a", background: true });
@@ -358,6 +360,7 @@ test("the watch has no timer while no loaded tab is hidden, wakes when a webview
   const timers = slowTimersForTests(() => Date.now());
   timers.clear();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://front.example/" });
   webviews.clear();
   for (const id of Object.keys(S().tabs)) webviews.set(id, {});
@@ -586,6 +589,7 @@ test("the site comes from the address's own host on the Mac's URL too: a query h
   }
   const start = Date.now() + 9000 * MINUTE;
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ keepActiveSites: [] });
   const w = S().createWindow({ url: "https://front.example/" });
   const tab = S().newTab(w, { url: "https://miner.example/?user=alice@other.example", background: true });
@@ -604,6 +608,7 @@ test("the site comes from the address's own host on the Mac's URL too: a query h
 test("a tab counts as hidden from the first tick that saw it hidden, so it never warns before two full minutes out of sight", async () => {
   const start = Date.now() + 9500 * MINUTE;
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ keepActiveSites: [] });
   const w = S().createWindow({ url: "https://front.example/" });
   const front = Object.keys(S().tabs)[0];
@@ -679,6 +684,7 @@ test("a task lookup that fails isn't remembered as a process holding no tabs: th
 test("a warning and its Keep Running cover the same host when one process holds tabs on several", async () => {
   const start = Date.now() + 11500 * MINUTE;
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ keepActiveSites: [] });
   const w = S().createWindow({ url: "https://front.example/" });
   const a = S().newTab(w, { url: "https://a.example/x", background: true });
@@ -701,6 +707,7 @@ test("a warning and its Keep Running cover the same host when one process holds 
 test("closing a tab the busy process held drops the cached owners, so the tab left behind is warned about without waiting out the cache", async () => {
   const start = Date.now() + 12000 * MINUTE;
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ keepActiveSites: [] });
   const w = S().createWindow({ url: "https://front.example/" });
   const hidden = S().newTab(w, { url: "https://miner.example/page", background: true });
@@ -747,6 +754,7 @@ test("a tab that leaves the warned site while Keep Running's site check is pendi
 
 function windowWithTwoHosts(start, pid) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ keepActiveSites: [] });
   const w = S().createWindow({ url: "https://front.example/" });
   const a = S().newTab(w, { url: "https://a.example/x", background: true });
@@ -797,6 +805,7 @@ test("R5-S2: Sleep never discards a page the tab moved to while Chrome was answe
 test("R5-S3: owners looked up while one of their tabs navigated aren't cached, so the hidden tab left behind is warned about next tick", async () => {
   const start = Date.now() + 14000 * MINUTE;
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ keepActiveSites: [] });
   const w = S().createWindow({ url: "https://front.example/" });
   const a = S().newTab(w, { url: "https://miner.example/a", background: true });
@@ -839,6 +848,7 @@ test("R5-S5: a saved IPv6 literal keeps that address", () => {
 
 test("R5-S6: with warnings off, store updates don't recompute which tabs are shown", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://front.example/" });
   const tab = S().newTab(w, { url: "https://other.example/", background: true });
   startBusyTabWatch();

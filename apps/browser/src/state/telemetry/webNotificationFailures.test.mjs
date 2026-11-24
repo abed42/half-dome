@@ -164,6 +164,7 @@ test("a website notification macOS refuses writes one record with lengths and no
   const before = (await failures()).length;
   const base = posted.length;
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const windowId = S().createWindow({ url: "https://chat.example/" });
   const tabId = model.activeTabId(S(), windowId);
   outcome = () => Promise.resolve({ icon: "none", errorDomain: "UNErrorDomain", errorCode: 1 });

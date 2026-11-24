@@ -27,6 +27,7 @@ test("tab.idle counts a tab brought back by Restore All as used when it came bac
 
 function playingSongShared(t) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = S().createWindow({ url: "https://a.example/" });
   const song = S().newTab(a, { url: "https://music.example/" });
   const quiet = S().newTab(a, { url: "https://quiet.example/" });

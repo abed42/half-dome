@@ -20,6 +20,7 @@ setLinkGate(() => {
 beforeEach(() => {
   for (const id of [...S().windowOrder]) S().closeWindow(id);
   S().hydrate({ profiles: { default: PERSONAL, work: WORK }, profileOrder: ["default", "work"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.discardedOffers.length = 0;
   stub.windows.focused = null;
   gateAsked = 0;

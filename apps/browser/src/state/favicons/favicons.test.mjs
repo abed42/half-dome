@@ -37,6 +37,7 @@ const waitFor = async (check) => {
 
 test("an empty lookup that started before an import doesn't wipe the imported icon", async () => {
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const page = "https://imported.test/";
   const lookups = [];
   globalThis.storedFavicons = [];
@@ -72,6 +73,7 @@ test("a tab's icon outlives its page only once the tab has left the icon's site"
 test("an icon remembers its page across an engine switch, so the new engine's view still drops it on another site", () => {
   const S = () => useBrowser.getState();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const netflix = "https://www.netflix.com/browse";
   const local = "http://localhost:4321/";
   const windowId = S().createWindow({ url: netflix });
@@ -92,6 +94,7 @@ test("an icon remembers its page across an engine switch, so the new engine's vi
 test("an icon stays when the tab finishes loading another page on the icon's site", () => {
   const S = () => useBrowser.getState();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const page = "https://www.netflix.com/browse";
   const windowId = S().createWindow({ url: page });
   const tabId = S().windows[windowId].tabIds[0];
@@ -109,6 +112,7 @@ const cached = (page) => useFavicons.getState().profiles[engineProfile(useBrowse
 
 test("a lookup that failed is asked again the next time the page is shown", async () => {
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const page = "https://retry.test/";
   const asked = [];
   globalThis.faviconsForTest = (profile, pages) => (asked.push(...pages), asked.length === 1 ? Promise.reject(new Error("engine busy")) : answering({ [page]: "data:image/png;base64,RETRY" })(profile, pages));
@@ -131,6 +135,7 @@ test("a lookup that failed is asked again the next time the page is shown", asyn
 
 test("a page Chrome has no icon for is answered once, and its own icon is fetched from the page's link", async () => {
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const page = "https://no-icon.test/";
   const asked = [];
   const fetched = [];
@@ -159,6 +164,7 @@ test("a page Chrome has no icon for is answered once, and its own icon is fetche
 
 test("pruning a profile's icons looks the pages still waiting on screen up again", async () => {
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const page = "https://pruned.test/";
   const asked = [];
   globalThis.faviconsForTest = (profile, pages) => (asked.push(...pages), empty());
@@ -175,6 +181,7 @@ test("pruning a profile's icons looks the pages still waiting on screen up again
 
 test("the cache starts over past 3000 pages with the newest icons, and a waiting row still sees its page answered", async () => {
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const known = Array.from({ length: 2990 }, (_, i) => ({ page: `https://cap${i}.test/`, icon: "i", png: `P${i}` }));
   adoptFavicons("default", known);
   assert.equal(cached("https://cap5.test/"), "data:image/png;base64,P5");
@@ -195,6 +202,7 @@ test("the cache starts over past 3000 pages with the newest icons, and a waiting
 
 test("a page the cache dropped when it started over is looked up again the next time it is shown", async () => {
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const page = "https://dropped.test/";
   const asked = [];
   globalThis.faviconsForTest = (profile, pages) => (asked.push(...pages), answering({ [page]: "data:image/png;base64,DROPPED" })(profile, pages));
@@ -217,6 +225,7 @@ test("a page the cache dropped when it started over is looked up again the next 
 test("a page that changes its icon right after the appearance flips keeps both, and shows the one for the appearance", async () => {
   const S = () => useBrowser.getState();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const setDark = (appDark) => useBrowser.setState((s) => ({ ui: { ...s.ui, appDark } }));
   setDark(false);
   const stop = startFavicons();
@@ -268,6 +277,7 @@ const pruneRaces = {
 for (const [n, [order, answersFor]] of Object.entries(pruneRaces).entries())
   test(`after a prune, the lookup a new row starts wins over the one from before the prune (${order})`, async () => {
     useBrowser.getState().hydrate({});
+    useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
     const page = `https://pruned-race-${n}.test/`;
     const held = heldLookups();
     try {
@@ -292,6 +302,7 @@ for (const [n, [order, answersFor]] of Object.entries(pruneRaces).entries())
 test("an icon the page reported during a lookup still wins after the cache starts over and drops it", async () => {
   const S = () => useBrowser.getState();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const page = "https://evicted-race.test/";
   const windowId = S().createWindow({ url: page });
   const tabId = S().windows[windowId].tabIds[0];
@@ -325,6 +336,7 @@ const privateWindow = (url) => {
 
 test("an icon a private tab reports after its window closed doesn't bring the page back into memory", async () => {
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const stop = startFavicons();
   const w = privateWindow("https://late-icon.test/");
   let answer;
@@ -344,6 +356,7 @@ test("an icon a private tab reports after its window closed doesn't bring the pa
 
 test("a private tab's icon leaves the theme and accent caches with its window, late answers included", async () => {
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const stop = startFavicons();
   const shown = "data:image/png;base64,PRIVATESHOWN";
   const pending = "data:image/png;base64,PRIVATEPENDING";
@@ -376,6 +389,7 @@ test("a private tab's icon leaves the theme and accent caches with its window, l
 
 test("a private icon that already left the cache still takes its theme and accent with it at close", async () => {
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const stop = startFavicons();
   const uri = "data:image/png;base64,PRIVATEEVICTED";
   const w = privateWindow("https://evicted-theme.test/");
@@ -402,6 +416,7 @@ test("a private icon that already left the cache still takes its theme and accen
 
 test("closing a private window cancels no other window's theme or accent request, and keeps no late private answer", async () => {
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const stop = startFavicons();
   const shared = "data:image/png;base64,SHAREDICON";
   const only = "data:image/png;base64,PRIVATEONLY";
@@ -447,6 +462,7 @@ test("closing a private window cancels no other window's theme or accent request
 
 test("a private window's close leaves a pending theme request alone, so a stale answer can't land over a newer one", async () => {
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const stop = startFavicons();
   const uri = "data:image/png;base64,STALETHEME";
   const w = privateWindow("https://stale-theme.test/");
@@ -477,6 +493,7 @@ test("a private window's close leaves a pending theme request alone, so a stale 
 
 test("a theme or accent asked for after its private window closed is never requested or kept", async () => {
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const stop = startFavicons();
   const uri = "data:image/png;base64,ASKEDTOOLATE";
   const w = privateWindow("https://asked-too-late.test/");
@@ -505,6 +522,7 @@ test("a theme or accent asked for after its private window closed is never reque
 
 test("a private icon's pending theme and accent requests go at close, so a regular window that gets the same icon asks afresh", async () => {
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const stop = startFavicons();
   const uri = "data:image/png;base64,HANDEDOVER";
   const s = () => useBrowser.getState();

@@ -17,6 +17,7 @@ const CLI = JSON.stringify({ manifest: 2, name: "cli", title: "Command Line", ve
 
 setConsentPeriod(true, "test-epoch");
 S().hydrate({});
+S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
 S().updateSettings({ cliControl: false });
 stub.shellNativeModules.ArdiaDocuments.writeDocument("plugins.json", JSON.stringify({ plugins: { cli: { enabled: true, approved: "a".repeat(64), values: {}, applied: {}, installed: true, controlGranted: true } }, version: 1 }));
 host.links.length = 0;

@@ -9,6 +9,7 @@ const host = (id) => new URL(S().tabs[id].url).hostname.replace(".example", "");
 
 function start(...names) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   for (const id of Object.keys(live().folders)) removeFolder(id);
   const w = S().createWindow({ url: "https://home.example/" });
   const ids = Object.fromEntries(names.map((n) => [n, S().newTab(w, { url: `https://${n}.example/`, background: true })]));

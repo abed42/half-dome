@@ -30,6 +30,7 @@ SOURCES.github.resolveGone = async (items) =>
   Object.fromEntries(items.flatMap((it) => (merged.has(it.id) ? [[it.id, "merged"]] : reviewed.has(it.id) ? [[it.id, "reviewed"]] : [])));
 
 S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"] });
+S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
 const w = S().createWindow({ url: "https://start.example/" });
 const start = S().windows[w].tabIds[0];
 startLiveEngine();

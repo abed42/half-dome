@@ -12,6 +12,7 @@ const settle = () => new Promise((resolve) => setTimeout(resolve, 20));
 
 test("a switch back to Ardia that couldn't reach its profile is finished after a relaunch, and a person's own off stays off", async () => {
   S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const work = S().createProfile({ name: "Work" });
   S().updateProfile(work, { passwordManager: "none" });
   startPlugins();

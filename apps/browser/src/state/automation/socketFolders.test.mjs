@@ -32,6 +32,7 @@ const code = async (method, params) => (await call(method, params)).error?.code;
 
 async function setup() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ cliControl: true });
   startAutomation();
   for (let i = 0; i < 5 && !stub.controlSocket.running; i++) await tick();

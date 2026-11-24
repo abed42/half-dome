@@ -21,6 +21,7 @@ function twoPinsOfOnePage(w, profileId) {
 
 test("closing a profile's last window parks both pins of one page, and both come back (#3149)", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = S().createWindow({ url: "https://a1.com" });
   const b = S().createWindow({ url: "https://b1.com" });
   const work = S().createProfile({ name: "Work" });
@@ -47,6 +48,7 @@ test("launching with Restore Session off keeps both pins of one page (#3149)", (
 
 test("adopting parked pins next to a pin of the same page keeps both; the same pin isn't added twice (#3149)", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a1.com" });
   const profileId = S().windows[w].profileId;
   const one = S().newTab(w, { url: PAGE, background: true });
@@ -59,6 +61,7 @@ test("adopting parked pins next to a pin of the same page keeps both; the same p
 
 test("reopening a closed copy of a pin whose pin is parked brings that pin back, not a second one (#3149)", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = S().createWindow({ url: "https://a1.com" });
   const profileId = S().windows[a].profileId;
   const pin = S().newTab(a, { url: "https://pin.com", background: true });
@@ -86,6 +89,7 @@ test("reopening a closed copy of a pin whose pin is parked brings that pin back,
 
 test("adopting a parked split whose pane the window already holds keeps the split (#3149)", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a1.com" });
   const profileId = S().windows[w].profileId;
   const one = S().newTab(w, { url: "https://one.com", background: true });

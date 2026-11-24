@@ -67,6 +67,7 @@ test("the window walk stops at 90 days on a newest-first list and answers ignore
     }
     const baseOf = (key) => base.get(key);
     useBrowser.getState().hydrate({});
+    useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
     useBrowser.setState({ history: { "": { list: view, floor, ready: true } } });
     const got = adapters.historyAdapter("default").extract(baseOf, () => false, now, () => true, () => undefined, () => undefined, (key) => (base.has(key) ? JSON.stringify(base.get(key)) : undefined));
     const want = referenceExtract(view, Date.now() - WINDOW, floor, baseOf);
@@ -81,6 +82,7 @@ test("an old local row is ignored before its synced JSON is read: a malformed on
   const old = now - 100 * DAY;
   const url = "https://old.example/";
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useBrowser.setState({ history: { "": { list: [{ url, title: "Old", favicon: null, visits: 1, lastVisit: old, visitTimes: [old] }], floor: -Infinity, ready: true } } });
   const cached = historyExtractsOf("default").parsed;
   const before = cached.size;

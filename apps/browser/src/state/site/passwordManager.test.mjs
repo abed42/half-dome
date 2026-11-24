@@ -51,6 +51,7 @@ let shared = "";
 
 test("before any password manager plugin is on, every profile keeps Ardia's manager and nothing is pushed for it", async () => {
   S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   work = S().createProfile({ name: "Work" });
   shared = S().createProfile({ name: "Shared", shareWith: work });
   S().createWindow({ url: "https://a.example/", profileId: "default" });

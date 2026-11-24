@@ -31,6 +31,7 @@ after(() => {
 
 async function fresh() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   await controlOn();
   takeCliCounts();
   stub.controlSocket.devtoolsEndpointAsks.length = 0;

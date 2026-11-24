@@ -8,6 +8,7 @@ const { activeTabId } = await import("../browser/model.ts");
 const { splitOf } = await import("./splits.ts");
 const S = () => useBrowser.getState();
 S().hydrate({});
+S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
 
 test("Focus Next and Previous Split Pane give the keyboard to the pane they activate", () => {
   const windowId = S().createWindow({ url: "https://a.example/" });

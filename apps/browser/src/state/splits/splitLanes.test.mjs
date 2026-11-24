@@ -17,6 +17,7 @@ const lane = (id) => (!S().tabs[id].pin ? "list" : S().tabs[id].pin.as);
 
 function windowWith(...hosts) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: `https://${hosts[0]}.com/` });
   const id = { [hosts[0]]: S().windows[w].tabIds[0] };
   for (const h of hosts.slice(1)) id[h] = S().newTab(w, { url: `https://${h}.com/`, background: true });

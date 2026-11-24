@@ -15,6 +15,7 @@ const S = () => useBrowser.getState();
 
 function twoProfilesOneFolderId() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://personal-a.example/" });
   const a = S().windows[w].tabIds[0];
   const b = S().newTab(w, { url: "https://personal-b.example/" });

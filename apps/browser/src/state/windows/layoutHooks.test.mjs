@@ -22,6 +22,7 @@ test("tab layout, sidebar side and full screen follow their window and the setti
   const { useSidebarSide, useTabLayout, useWindowFullScreen } = await import("../browser/hooks.ts");
   const S = () => useBrowser.getState();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.example/" });
   const hook = mount(() => ({ side: useSidebarSide(w), layout: useTabLayout(w), fullScreen: useWindowFullScreen(w), focusedSide: useSidebarSide() }));
   const renders = hook.renders;

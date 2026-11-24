@@ -43,6 +43,7 @@ const stub = await import("../../test-native/index.ts");
 const S = () => useBrowser.getState();
 const setup = () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.com/" });
   const a = S().windows[w].tabIds[0];
   return { w, a };
@@ -146,8 +147,9 @@ test("a sidebar row: created, renamed, re-iconed, pinned, flagged, badged, slept
 
 test("a row's tab and flags survive a relaunch: a row mounted on the restored session shows it", () => {
   stub.docs.clear();
-  S().hydrate({});
   const stop = startPersistence();
+  S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.com/" });
   const b = S().newTab(w, { url: "https://b.com/", background: true });
   S().updateTab(b, { title: "Before quit", pin: { as: "tile" } });
@@ -155,6 +157,7 @@ test("a row's tab and flags survive a relaunch: a row mounted on the restored se
   flushPersistence();
   stop();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().hydrate(loadSession());
   const r = row(b, w);
   assert.equal(r.value.title, "Before quit");
@@ -263,6 +266,7 @@ const icon = (url, src) =>
 
 test("an icon: arrives, changes, follows its page and its icon URL, its light/dark pair and theme, and goes", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useBrowser.setState((s) => ({ ui: { ...s.ui, appDark: false } }));
   useFavicons.setState({ profiles: {}, themes: {} });
   const page = "https://icons.example/a";

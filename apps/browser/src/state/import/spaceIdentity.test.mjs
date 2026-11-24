@@ -11,6 +11,7 @@ const BLUE = { stops: [{ x: 0.3, y: 0.6, color: { r: 0.2, g: 0.4, b: 0.7, a: 1 }
 
 test("taking an imported space's colour brings back that preset's edit instead of showing it plain", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const id = S().settings.defaultProfileId;
   S().setProfileLook(id, { presetThemes: { blue: BLUE } });
   assert.ok(adoptSpaceIdentity(id, { name: "Work", color: "#4691C3" }));

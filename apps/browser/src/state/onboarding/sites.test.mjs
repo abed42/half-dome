@@ -8,6 +8,7 @@ const pinnedCount = () => Object.values(S().tabs).filter((t) => !!t.pin).length;
 
 test("onboarding never pins a site the import already pinned at a deeper page or in a pinned folder", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://home.example/" });
   const gmail = S().newTab(w, { url: "https://mail.google.com/mail/u/0/#inbox" });
   S().pinTabs([gmail], true);
@@ -23,6 +24,7 @@ test("onboarding never pins a site the import already pinned at a deeper page or
 
 test("a pinned row counts by its pinned page, not the page it has wandered to", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://home.example/" });
   const row = S().newTab(w, { url: "https://github.com/" });
   S().pinTabs([row], true, true);

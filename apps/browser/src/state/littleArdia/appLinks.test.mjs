@@ -9,13 +9,14 @@ const PERSONAL = { id: "default", name: "Personal", color: "plum", icon: null, c
 
 function mainWindow(settings) {
   S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"], windows: {}, tabs: {} });
+  S().updateSettings({ openLinksInLittleArdia: false, newTabOpens: "page", newTabPosition: "bottom" });
   const main = S().createWindow({ url: "https://pinned.example/" });
   S().togglePin(S().windows[main].tabIds[0]);
   const b = S().newTab(main, { url: "https://b.example/", background: true });
   S().newTab(main, { url: "https://c.example/", background: true });
   S().activate(b);
   S().setFocusedWindow(main);
-  S().updateSettings({ openLinksInLittleArdia: false, ...settings });
+  S().updateSettings(settings);
   return main;
 }
 
@@ -37,7 +38,7 @@ for (const [start, setUp] of [
 ]) {
   test(`with it on and ${start}, several app links keep their order`, async () => {
     S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"], windows: {}, tabs: {} });
-    S().updateSettings({ openLinksInLittleArdia: false, appLinksFirst: true });
+    S().updateSettings({ openLinksInLittleArdia: false, appLinksFirst: true, newTabOpens: "page", newTabPosition: "bottom" });
     setUp();
     await opened(["https://one.example/", "https://two.example/", "https://three.example/"]);
     const [main] = Object.keys(S().windows);

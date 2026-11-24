@@ -26,6 +26,7 @@ let bound = null;
 async function fixture() {
   if (bound) unbindFolder(...bound);
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   await controlOn();
   const windowId = S().createWindow({ url: "https://home.example/" });
   const one = S().newTab(windowId, { url: "https://one.example/", background: true });
@@ -78,6 +79,7 @@ test("run closeTabGroup on a shared folder's group, or a group inside it, is ref
 test("closeGroup checks its guard after each await and writes nothing once it fails", async () => {
   const { closeGroup } = await import("../browser/actions.ts");
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const windowId = S().createWindow({ url: "https://home.example/" });
   const a = S().newTab(windowId, { url: "https://a.example/", background: true });
   const group = S().groupTabs([a], { name: "Plain" });

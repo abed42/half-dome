@@ -34,6 +34,7 @@ function fresh(settings = {}) {
   files.clear();
   warnings.length = 0;
   S().hydrate({ settings });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
 }
 
 test("at launch the file's settings apply through updateSettings, so they count as chosen and sync", () => {

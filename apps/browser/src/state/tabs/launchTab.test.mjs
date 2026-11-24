@@ -22,6 +22,7 @@ const PROFILES = {
 };
 const hydrate = (windows, tabs, extra = {}) =>
   S().hydrate({ profiles: PROFILES, windows: Object.fromEntries(windows.map((w) => [w.id, w])), tabs: Object.fromEntries(tabs.map((t) => [t.id, t])), ...extra });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
 
 test("the focused window's active web page, under its engine profile", () => {
   hydrate([win("w1", ["a", "b"], "b"), win("w2", ["c"], "c")], [tab("a", "w1", "https://a.com/"), tab("b", "w1", "https://b.com/x"), tab("c", "w2", "http://c.com/")], { focusedWindowId: "w1" });

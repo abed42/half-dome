@@ -46,6 +46,7 @@ async function install(text = FIXTURE, name = "example") {
 
 async function enabled() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   startPlugins();
   for (const name of Object.keys(P().records)) lifecycle.disablePlugin(name);
   resetHost();
@@ -76,6 +77,7 @@ beforeEach(() => takePluginCounts());
 
 test("an installed plugin stays off until its consent is accepted, then starts its helper sandboxed without network", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   startPlugins();
   resetHost();
   await install();
@@ -99,6 +101,7 @@ test("the consent sheet names every reach the plugin gets", () => {
 
 test("settings defaults apply on enable and go back on disable, unless changed since", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const before = S().settings.commandBarStart;
   await enabled();
   assert.deepEqual(S().settings.commandBarStart, { openTabs: { limit: 5 } });
@@ -305,6 +308,7 @@ test("the page is a tab at ardia://<name>; a command opens it beside the current
 
 test("two plugins setting the same setting: whichever leaves, the other's value or the original comes back", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   startPlugins();
   for (const name of Object.keys(P().records)) lifecycle.disablePlugin(name);
   const original = S().settings.commandBarStart;
@@ -364,6 +368,7 @@ test("a plugin folder replaced on disk needs a new approval, even with the same 
 
 test("two plugins setting the same value: turning the first off keeps it while the second is on", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   for (const name of Object.keys(P().records)) lifecycle.disablePlugin(name);
   const original = S().settings.commandBarStart;
   const twin = JSON.parse(FIXTURE);
@@ -452,6 +457,7 @@ test("a command named page doesn't collide with the page's own entry", async () 
 
 test("defaults unwind in the order they were applied, even when a later plugin sets the value from before", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   for (const name of Object.keys(P().records)) lifecycle.disablePlugin(name);
   const original = S().settings.commandBarStart;
   const dark = JSON.parse(FIXTURE);
@@ -495,6 +501,7 @@ test("two quick restarts start the helper once", async () => {
 
 test("when plugins.json can't be saved, turning a plugin on or off changes no settings", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   startPlugins();
   for (const name of Object.keys(P().records)) lifecycle.disablePlugin(name);
   const original = S().settings.commandBarStart;
@@ -528,6 +535,7 @@ test("when plugins.json can't be saved, turning a plugin on or off changes no se
 
 test("a plugin turned on after a failed save no longer shows the save failure", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   startPlugins();
   for (const name of Object.keys(P().records)) lifecycle.disablePlugin(name);
   await install();
@@ -550,6 +558,7 @@ test("a plugin turned on after a failed save no longer shows the save failure", 
 
 test("approving a plugin's changed manifest takes its old default out of the stack", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   for (const name of Object.keys(P().records)) lifecycle.disablePlugin(name);
   const original = S().settings.commandBarStart;
   const make = (name, limit) => {
@@ -573,6 +582,7 @@ test("approving a plugin's changed manifest takes its old default out of the sta
 
 test("a plugin named like an Object property gets its own record", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   for (const name of Object.keys(P().records)) lifecycle.disablePlugin(name);
   const doc = JSON.parse(FIXTURE);
   doc.name = "constructor";
@@ -586,6 +596,7 @@ test("a plugin named like an Object property gets its own record", async () => {
 
 test("a value you chose between two plugins comes back when both leave, in either order", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   for (const name of Object.keys(P().records)) lifecycle.disablePlugin(name);
   const make = (name, limit) => {
     const doc = JSON.parse(FIXTURE);
@@ -846,6 +857,7 @@ test("a removal's follow-up scan reports in the period the removal began in", as
 
 test("a rescan asked for while one runs reports with the token of the change that asked for it", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   startPlugins();
   await install();
   let release;

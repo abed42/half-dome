@@ -78,6 +78,7 @@ function chromiumPage(jar = { cookies: [], storage: {} }, readDelay = 0) {
 
 function setup({ kind, settings } = {}) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   if (settings) S().updateSettings(settings);
   stub.docs.delete("site-data-carry.json");
   resetSiteDataForTest();

@@ -10,7 +10,10 @@ const stub = await import("../../test-native/index.ts");
 const { Clock } = await import("@ardia/sync");
 const S = () => useBrowser.getState();
 const stamp = (wall) => new Clock("", null, () => wall).tick();
-const reset = () => S().hydrate({});
+const reset = () => {
+  S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
+};
 const url = (id) => S().tabs[id].pinnedUrl || S().tabs[id].url;
 const urls = (ids) => ids.map(url);
 const entries = (w) => {
@@ -216,8 +219,8 @@ test("rows are the profile's: a second window mirrors them, a change in one show
 
 test("rows park with the last window and come back as rows, and survive a relaunch", () => {
   stub.docs.clear();
-  reset();
   const stop = startPersistence();
+  reset();
   const { w, ids: [a, b] } = windowWith("a", "b", "c");
   S().pinTabs([a], true);
   S().pinTabs([b], true, true);
@@ -286,6 +289,7 @@ test("choices go with unpinned pins and deleted profiles, also after a relaunch,
   S().deleteProfile(work);
   assert.equal(S().pinChoices[work], undefined, "a deleted profile's choices go");
   S().hydrate({ ...S(), pinChoices: { default: { [a]: stamp(5), ghost: stamp(6) }, gone: { y: stamp(7) } } });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   assert.deepEqual(S().pinChoices, { default: { [a]: stamp(5) } }, "stale choices from disk are dropped");
   const first = (S().pinTabs([c], true), S().pinChoices.default?.[c]);
   assert.equal(first, undefined, "c closed with its window");
@@ -307,6 +311,7 @@ test("a session's pending choices raise the generation counter, so a later choic
   S().pinTabs([a], true);
   const ahead = stamp(Date.now() + 1e9);
   S().hydrate({ ...S(), pinChoices: { default: { [a]: ahead } } });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   assert.equal(S().pinChoices.default[a], ahead);
   S().pinTabs([a], false);
   S().pinTabs([a], true);
@@ -333,5 +338,6 @@ test("empty and deleted profiles' choice entries are dropped", () => {
   reset();
   windowWith("a");
   S().hydrate({ ...S(), pinChoices: { default: {}, gone: {} } });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   assert.deepEqual(S().pinChoices, {});
 });

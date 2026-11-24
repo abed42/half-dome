@@ -49,6 +49,7 @@ class Mac {
     this.links = { default: { syncId: "s1" } };
     this.paired = !joining;
     S().hydrate({});
+    S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
     this.browser = S();
     this.scope = emptyScope();
     this.scope.joined = !joining;

@@ -32,6 +32,7 @@ let bound = null;
 async function fixture() {
   if (bound) unbindFolder(...bound);
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useAirTraffic.setState((st) => ({ config: { ...st.config, rules: [] } }));
   await controlOn();
   const windowId = S().createWindow({ url: "https://home.example/" });

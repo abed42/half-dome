@@ -358,6 +358,7 @@ test("a row's split halves are not offered in the edge band", async () => {
 
 function sharedSpaces() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ warnBeforeMovingTabsToProfile: true });
   S().updateProfile("default", { shareTopApps: true });
   const w = S().createWindow({ url: "https://mail.com/" });

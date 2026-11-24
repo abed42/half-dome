@@ -236,6 +236,7 @@ test("only the windows the session restored can hold, even one created before th
 
 test("a window whose selected pin is a frozen copy (its page is in another window) has no load to wait for: the no-page path", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = S().createWindow({ url: "https://mail.com" });
   const [mail] = S().windows[a].tabIds;
   S().pinTabs([mail], true);

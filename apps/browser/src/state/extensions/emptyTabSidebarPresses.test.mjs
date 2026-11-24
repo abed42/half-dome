@@ -26,6 +26,7 @@ async function usageCounts() {
 test("an extension opened from the command bar or a shortcut on an empty tab is not counted as a sidebar button press", async () => {
   client.setSharing(true, "onboarding");
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ addressBar: "sidebar" });
   const w = S().createWindow({});
   const empty = model.activeTabId(S(), w);

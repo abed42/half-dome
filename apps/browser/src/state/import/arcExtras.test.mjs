@@ -95,6 +95,7 @@ const ROUTING = {
 function begin({ routing = ROUTING, archive, now = Date.now() } = {}) {
   useBrowser.setState({ bookmarks: { nodes: {} }, cleanedTabs: [] });
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   resetAirTrafficForTests(NO_AIR_TRAFFIC);
   requested.length = 0;
   reply = {

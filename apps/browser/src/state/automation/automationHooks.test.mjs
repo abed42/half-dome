@@ -52,6 +52,7 @@ function dl(d) {
 
 function fresh(hooks = []) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ cliControl: true });
   resetApprovalsForTests();
   setHooks(hooks);

@@ -46,6 +46,7 @@ test("telemetry flags never carry anything but booleans and the limit", () => {
 
 test("the setting round-trips through the store", () => {
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   assert.deepEqual(useBrowser.getState().settings.commandBarStart, {});
   useBrowser.getState().updateSettings({ commandBarStart: { openTabs: { hidePinned: true } } });
   assert.deepEqual(useBrowser.getState().settings.commandBarStart, { openTabs: { hidePinned: true } });

@@ -61,6 +61,7 @@ const source = {
 function begin(imported, target = "default") {
   useBrowser.setState({ bookmarks: { nodes: {} } });
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   spaces = imported;
   patchImport({ source, sourceProfiles: ["Default"], spaces: imported.map((s) => s.id), target, kinds: new Set(["spaces"]) });
 }

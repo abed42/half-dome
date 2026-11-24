@@ -12,6 +12,7 @@ const S = () => useBrowser.getState();
 
 test("clearing a window keeps the shared copy of a tab that plays sound in another window", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = S().createWindow({ url: "https://start.com/" });
   const song = S().newTab(a, { url: "https://music.com/" });
   S().newTab(a, { url: "https://other.com/" });

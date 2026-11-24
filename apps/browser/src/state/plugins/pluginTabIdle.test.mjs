@@ -30,6 +30,7 @@ after(() => {
 
 async function idleTabsAndPlugin() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ cliControl: true });
   startAutomation();
   startPlugins();

@@ -43,6 +43,7 @@ const home = () => ({
 
 function start() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   return S().createWindow({ url: "https://start.example/" });
 }
 

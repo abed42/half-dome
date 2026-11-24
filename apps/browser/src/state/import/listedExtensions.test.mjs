@@ -53,6 +53,7 @@ const step = () => useImportFlow.getState().step;
 async function importChrome(sourceProfiles = ["Default", "Profile 1"]) {
   useBrowser.setState({ bookmarks: { nodes: {} } });
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().createWindow({ url: "https://start.example/" });
   const profile = (pid) => ({ id: pid, name: pid === "Default" ? "Personal" : "Work", path: pid, isDefault: pid === "Default", available: ["bookmarks"] });
   useImportFlow.setState({

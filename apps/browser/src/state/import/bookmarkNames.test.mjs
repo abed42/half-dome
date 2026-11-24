@@ -44,6 +44,7 @@ const root = {
 
 test("an imported bookmark with an empty name keeps it empty, named ones, folders and order are unchanged, and the Bookmarks menu names it by its URL", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().createWindow({ url: "https://home.example/" });
   assert.equal(importBookmarks(P, root, "Helium"), 5);
   const roots = bookmarkRoots(S(), P);
@@ -75,6 +76,7 @@ test("the untitled count covers every empty-named link in the bar, its folders a
 
 test("a reader that sends no name at all still gets the URL as the name, and isn't counted as untitled", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().createWindow({ url: "https://home.example/" });
   const nameless = { type: "folder", title: "", children: [{ type: "folder", title: "Bar", role: "toolbar", children: [{ type: "url", url: "https://untitled.example/" }] }] };
   assert.equal(importBookmarks("second", nameless, "Safari"), 1);

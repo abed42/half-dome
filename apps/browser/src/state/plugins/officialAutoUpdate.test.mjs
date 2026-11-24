@@ -54,6 +54,7 @@ host.officialFetchResults = { cli: { ok: false, code: "offline", reason: "offlin
 host.folders = [];
 stub.docs.set("plugins.json", JSON.stringify({ version: 1, plugins: {} }));
 S().hydrate({ settings: { cliControl: true } });
+S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
 startPlugins();
 await settle();
 

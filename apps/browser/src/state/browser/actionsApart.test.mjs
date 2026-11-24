@@ -10,6 +10,7 @@ const functionFields = (s) => Object.keys(s).filter((k) => typeof s[k] === "func
 
 test("the state root carries data only, and every action still runs from it after merging, replacing and settling writes", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   assert.deepEqual(functionFields(S()), [], "no action is an own field of the root");
   assert.ok(Object.keys(S()).length < 40, `the root has ${Object.keys(S()).length} own fields`);
   const w = S().createWindow({ url: "https://a.com/" });

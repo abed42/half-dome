@@ -13,6 +13,7 @@ const pinnedGroups = () => Object.values(S().groups).filter((g) => g.pinned);
 function start() {
   useBrowser.setState({ bookmarks: { nodes: {} } });
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://home.example/" });
   S().addBookmark({ profileId: P, url: "https://seed.example/", title: "seed" });
   return { w, bar: bookmarkRoots(S(), P).bar };

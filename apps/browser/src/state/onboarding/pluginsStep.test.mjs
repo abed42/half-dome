@@ -48,6 +48,7 @@ async function fresh(entries) {
 const { setConsentPeriod } = await import("../telemetry/consentPeriod.ts");
 setConsentPeriod(true, "test-epoch");
 S().hydrate({});
+S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
 startPlugins();
 await settle();
 

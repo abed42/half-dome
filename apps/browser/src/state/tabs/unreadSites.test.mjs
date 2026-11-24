@@ -13,6 +13,7 @@ const unreadItem = (w, id) => (tabMenuItems(S(), w, S().tabs[id]).find((i) => i.
 
 const setup = ({ on = true } = {}) => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   if (on) S().updateSettings({ showUnreadCounts: true });
   const w = S().createWindow({ url: "https://mail.example/inbox" });
   const a = S().windows[w].tabIds[0];
@@ -118,6 +119,7 @@ test("a Top App's menu offers unread choices only while Top Apps show tab status
 
 test("a private window's tab menu doesn't offer it, so no private host is saved", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ kind: "private", url: "https://mail.example/" });
   const a = S().windows[w].tabIds[0];
   S().updateTab(a, { url: "https://mail.example/", title: "(5) Inbox" });

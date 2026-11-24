@@ -33,6 +33,7 @@ const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 function movedTab(url) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url });
   const tabId = model.activeTabId(S(), w);
   S().updateTab(tabId, { engine: "webkit", url });
@@ -79,6 +80,7 @@ test("Back across engines cancelled while the page is held keeps where Back goes
 
 test("a streaming site moves to WebKit quietly: the old page is held until the new one paints, and Move Back stays in the tab's engine", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ protectedVideoInWebKit: true });
   const w = S().createWindow({ url: "https://www.netflix.com/watch/1" });
   const tabId = model.activeTabId(S(), w);
@@ -98,6 +100,7 @@ test("a streaming site moves to WebKit quietly: the old page is held until the n
 
 test("the protected-video offer shows only while its setting is on, and a switch brings cookies along only while that one is", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const tabId = liveTab("https://films.example/watch/1", "chromium");
   S().updateSettings({ offerWebKitForProtectedVideo: false });
   offerWebKit(tabId, { keySystem: "com.widevine.alpha", main: true });
@@ -133,6 +136,7 @@ function liveTab(url, engine, unsaved = false) {
 
 test("WebKit only moves every open page there, holding each old page until the new one paints", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = liveTab("https://a.com/", "chromium");
   const b = liveTab("https://b.com/", "chromium");
   patchPage(a, { engineBack: { engine: "webkit", url: "https://z.com/" } });
@@ -154,6 +158,7 @@ test("WebKit only moves every open page there, holding each old page until the n
 
 test("a mode change asks once when a page has unsaved input, and Cancel leaves the mode and every tab alone", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = liveTab("https://a.com/", "chromium", true);
   assert.equal(await setEngineMode("webkit"), false);
   assert.equal(S().settings.engineMode, "automatic");
@@ -164,6 +169,7 @@ test("a mode change asks once when a page has unsaved input, and Cancel leaves t
 
 test("a second mode change while the first waits on its prompt is refused, and the first still lands", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = liveTab("https://a.com/", "chromium", true);
   let answer;
   shellNativeModules.ArdiaDialogs.confirm = () => new Promise((resolve) => (answer = resolve));
@@ -184,6 +190,7 @@ test("a second mode change while the first waits on its prompt is refused, and t
 
 test("Chromium only offers no WebKit move for protected video and refuses a move to WebKit, and Automatic puts the streaming site back", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = liveTab("https://www.netflix.com/watch/1", "webkit");
   assert.equal(await setEngineMode("chromium"), true);
   dropSwap(a);
@@ -201,6 +208,7 @@ test("Chromium only offers no WebKit move for protected video and refuses a move
 
 test("leaving WebKit only puts each reloaded tab on its own site's engine, even one opened from another tab", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ protectedVideoInWebKit: true });
   const opener = liveTab("https://search.example/?q=film", "chromium");
   const film = S().newTab(S().tabs[opener].windowId, { url: "https://www.netflix.com/watch/1", openerId: opener });
@@ -216,6 +224,7 @@ test("leaving WebKit only puts each reloaded tab on its own site's engine, even 
 
 test("a mode change names how many pages lose unsaved changes, once, on the window it came from", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   liveTab("https://a.com/", "chromium", true);
   liveTab("https://b.com/", "chromium", true);
   liveTab("https://c.com/", "chromium", false);
@@ -233,6 +242,7 @@ test("a mode change names how many pages lose unsaved changes, once, on the wind
 
 test("a second move of the same tab while the first is under way is refused, and the first keeps its held page", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const tabId = liveTab("https://a.com/", "chromium");
   const first = openPageIn(tabId, "webkit");
   assert.equal(await openPageIn(tabId, "webkit"), false);
@@ -244,6 +254,7 @@ test("a second move of the same tab while the first is under way is refused, and
 
 test("in Chromium only, a page whose protected video is refused gets one notice per site pointing at the Engine setting", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = liveTab("https://cinema.example/watch/1", "chromium");
   assert.equal(await setEngineMode("chromium"), true);
   const w = S().tabs[a].windowId;
@@ -263,6 +274,7 @@ test("in Chromium only, a page whose protected video is refused gets one notice 
 
 test("a move waiting on its unsaved-input prompt gives up when Chromium only lands first, and never touches WebKit", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const tabId = liveTab("https://a.com/", "chromium", true);
   let answer;
   shellNativeModules.ArdiaDialogs.confirm = () => new Promise((resolve) => (answer = resolve));
@@ -282,6 +294,7 @@ test("a move waiting on its unsaved-input prompt gives up when Chromium only lan
 
 test("in WebKit only, a link from a Chromium page to a website moves the tab to WebKit with Back to the page before", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ engineMode: "webkit" });
   const w = S().createWindow({ url: "chrome://extensions/" });
   const tabId = model.activeTabId(S(), w);
@@ -299,6 +312,7 @@ test("in WebKit only, a link from a Chromium page to a website moves the tab to 
 
 test("in WebKit only, a link from a website into the Web Store moves to Chromium, and the Web Store's own links stay there", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ engineMode: "webkit" });
   const w = S().createWindow({ url: "https://blog.example/" });
   const tabId = model.activeTabId(S(), w);
@@ -319,6 +333,7 @@ test("in WebKit only, a link from a website into the Web Store moves to Chromium
 
 test("in WebKit only, leaving the Web Store or its Google sign-in for another site moves the tab back to WebKit", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ engineMode: "webkit" });
   for (const previous of ["https://chromewebstore.google.com/detail/abc", "https://accounts.google.com/signin"]) {
     const w = S().createWindow({ url: "https://chromewebstore.google.com/detail/abc" });
@@ -349,6 +364,7 @@ function chromeMadeTab() {
 test("in WebKit only, a tab Chrome opened (CDP or an extension) wakes from sleep and comes back after relaunch in Chromium", () => {
   stub.docs.clear();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ engineMode: "webkit" });
   const stop = startPersistence();
   const tabId = chromeMadeTab();
@@ -366,6 +382,7 @@ test("in WebKit only, a tab Chrome opened (CDP or an extension) wakes from sleep
 
 test("a page opened by a Chrome-opened tab is marked too, and typing an address in either moves it to WebKit", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ engineMode: "webkit" });
   const opener = chromeMadeTab();
   const w = S().tabs[opener].windowId;
@@ -381,6 +398,7 @@ test("a page opened by a Chrome-opened tab is marked too, and typing an address 
 
 test("a tab the app opened is never marked as Chrome's", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://mine.example/" });
   const tabId = model.activeTabId(S(), w);
   persistEngine(tabId, "chromium");
@@ -392,6 +410,7 @@ test("a tab the app opened is never marked as Chrome's", () => {
 test("a WebKit tab arriving on a streaming site the list sent there is counted once per arrival, never for a website rule", () => {
   setConsentPeriod(true, "streaming-list-test");
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ protectedVideoInWebKit: true, websiteEngines: { "https://www.hulu.com": "webkit" } });
   const w = S().createWindow({ url: "https://www.netflix.com/browse" });
   const tabId = model.activeTabId(S(), w);

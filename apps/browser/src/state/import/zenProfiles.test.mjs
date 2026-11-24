@@ -59,6 +59,7 @@ const source = (profiles) => ({
 async function importZen(profiles, spaces) {
   useBrowser.setState({ bookmarks: { nodes: {} } });
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().createWindow({ url: "https://start.example/" });
   useImportFlow.setState({ source: source(profiles), sourceProfiles: profiles, spaces, target: "default", kinds: new Set(["tabs", "favorites"]), step: { name: "choose", error: null } });
   await runImport(new Set(["tabs", "favorites"]));

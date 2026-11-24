@@ -15,6 +15,7 @@ const runFrames = () => {
 };
 
 S().hydrate({ profiles: { default: { id: "default", name: "Personal", color: "plum", icon: null, createdAt: 0 } }, profileOrder: ["default"] });
+S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
 const w = S().createWindow({ url: "https://0.example/" });
 for (let i = 1; i < 60; i++) S().newTab(w, { url: `https://${i}.example/` });
 S().activate(S().windows[w].tabIds[0]);

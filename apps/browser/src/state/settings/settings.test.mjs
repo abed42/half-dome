@@ -34,6 +34,7 @@ test("turning on Zero in full screen also turns on Zero in full screen when tabs
 
 test("sync also turns on the dependent page-frame flag", () => {
   S().hydrate({ settings: {} });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   settingsAdapter.apply(new Map([["set:pageFrameZeroInFullScreen", { v: true }]]), ["set:pageFrameZeroInFullScreen"]);
   assert.equal(S().settings.pageFrameZeroInFullScreen, true);
   assert.equal(S().settings.pageFrameZeroWhenTabsHidden, true);
@@ -62,12 +63,14 @@ test("Peek and split view never both get ⌥-click from a saved file, and sync t
   const saved = parseSettings({ peekModifier: "alt", splitLinkModifier: "alt" });
   assert.deepEqual([saved.peekModifier, saved.splitLinkModifier], ["alt", "altShift"]);
   S().hydrate({ settings: { splitLinkModifier: "alt" }, settingsMeta: { chosen: ["splitLinkModifier"], inferred: [] } });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   settingsAdapter.apply(new Map([["set:peekModifier", { v: "alt" }]]), ["set:peekModifier"]);
   assert.deepEqual([S().settings.peekModifier, S().settings.splitLinkModifier], ["alt", "alt"], "moving one locally would make Macs that disagree flip it back and forth");
 });
 
 test("a synced value this version can't show is left out", () => {
   S().hydrate({ settings: {} });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   settingsAdapter.apply(
     new Map([
       ["set:selectedTabGlow", { v: "medium" }],

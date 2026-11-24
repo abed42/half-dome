@@ -29,6 +29,7 @@ function countingReads() {
 
 const fresh = () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useBrowser.setState((s) => ({ ui: { ...s.ui, appDark: false } }));
   useFavicons.setState({ profiles: {}, themes: {} });
 };

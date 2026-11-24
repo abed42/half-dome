@@ -27,6 +27,7 @@ const anchorLeft = (windowId) => useUrlAnchors.getState()[windowId].left;
 
 function setup(side) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ tabLayout: "sidebar", sidebarSide: side, addressBar: "sidebar", autoHideTabs: false, minimalismMode: false, sidebarWidth: SIDEBAR });
   const id = S().createWindow({ url: "https://a.example/" });
   setWindowRootSize(id, 1000, 700);

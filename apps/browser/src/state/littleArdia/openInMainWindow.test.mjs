@@ -10,6 +10,7 @@ const PERSONAL = { id: "default", name: "Personal", color: "plum", icon: null, c
 
 function mainWindowWithThreeTabs(newTabPosition) {
   S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"], windows: {}, tabs: {} });
+  S().updateSettings({ newTabPosition: "bottom", newTabOpens: "page" });
   const main = S().createWindow({ url: "https://a.example/" });
   const [a] = S().windows[main].tabIds;
   const b = S().newTab(main, { url: "https://b.example/", background: true });

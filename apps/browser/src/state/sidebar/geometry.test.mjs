@@ -62,6 +62,7 @@ test("lazySidebarRows on: a page first mounts the entries its window's saved fra
   assert.equal(n, entriesWithin(s, "w", "default", list, 800));
   assert.ok(n > 0 && n < list.length);
   S().hydrate({ ...s, windows: { w: { ...s.windows.w, frame: undefined } } });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   assert.equal(firstPaintEntries(S(), "w", "default", list, true), entriesWithin(S(), "w", "default", list, FIRST_PAINT_HEIGHT));
   assert.equal(startsOffScreen(true, false), true);
   assert.equal(startsOffScreen(true, true), false);

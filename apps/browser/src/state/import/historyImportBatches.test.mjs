@@ -28,6 +28,7 @@ const zenSizedHistory = (count, title = (i) => `Article ${i}: a page title about
 
 function freshImport() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useBrowser.setState({ history: { "": { list: [], floor: -Infinity, ready: true } } });
   stub.historyDbs.clear();
   stub.historyImportRequestBytes.length = 0;

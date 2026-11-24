@@ -63,6 +63,7 @@ test("the tracker hands the pill the selected tab only while its row is out of v
   const { useBrowser } = await import("../../state/browser/store.ts");
   const S = () => useBrowser.getState();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.com/" });
   const ids = [S().windows[w].tabIds[0]];
   for (let i = 0; i < 30; i++) ids.push(S().newTab(w, { url: `https://t${i}.com/` }));
@@ -93,6 +94,7 @@ test("a page's tracker keeps quiet while the window shows another profile, so a 
   const { useBrowser } = await import("../../state/browser/store.ts");
   const S = () => useBrowser.getState();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.com/" });
   const home = S().windows[w].profileId;
   S().activate(S().windows[w].tabIds[0]);
@@ -163,6 +165,7 @@ const pillWindow = async () => {
   const { useBrowser } = await import("../../state/browser/store.ts");
   const S = () => useBrowser.getState();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.com/" });
   const ids = [S().windows[w].tabIds[0]];
   for (let i = 0; i < 30; i++) ids.push(S().newTab(w, { url: `https://t${i}.com/` }));

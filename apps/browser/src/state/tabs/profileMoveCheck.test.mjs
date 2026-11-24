@@ -13,6 +13,7 @@ test("a page that never answers fails the moved-tab check with the tab, the step
   launch.test = { httpPages: "9353" };
   reloadLaunchConfigForTests();
   S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const url = "http://127.0.0.1:9353/a";
   const loaded = JSON.stringify({ href: url, storage: null, cookie: null });
   const page = { evaluate: (code) => (code.includes("setItem") ? new Promise(() => {}) : Promise.resolve(loaded)) };

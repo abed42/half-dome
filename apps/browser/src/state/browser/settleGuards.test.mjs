@@ -16,6 +16,7 @@ const S = () => useBrowser.getState();
 
 function session(second = true) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.com/" });
   const ids = [S().windows[w].tabIds[0]];
   for (let i = 0; i < 40; i++) ids.push(S().newTab(w, { url: `https://site${i}.com/`, background: true }));

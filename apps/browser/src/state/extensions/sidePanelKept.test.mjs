@@ -26,6 +26,7 @@ async function sentCounts() {
 test("the keep counter counts a tab coming back to its kept panel page, not one that has to load its page again", async () => {
   client.setSharing(true, "onboarding");
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "a.com" });
   const a = S().windows[w].tabIds[0];
   const b = S().newTab(w, { url: "b.com", background: true });

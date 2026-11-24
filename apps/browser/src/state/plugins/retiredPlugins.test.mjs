@@ -14,6 +14,7 @@ const P = () => usePlugins.getState();
 
 test("a plugin named like an object property is approved and removed like any other", async () => {
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   startPlugins();
   const text = FIXTURE.replace('"example"', '"constructor"');
   stub.pluginHost.folders = [{ name: "constructor", status: "ok", text, folderId: "5:5" }];

@@ -43,6 +43,7 @@ async function importFrom(profiles, failures) {
   failing = new Map(Object.entries(failures));
   useBrowser.setState({ bookmarks: { nodes: {} } });
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useBrowser.getState().createWindow({ url: "https://start.example/" });
   const profile = (id) => ({ id, name: id, path: `/zen/${id}`, isDefault: id === profiles[0], available: ["bookmarks", "cookies"] });
   useImportFlow.setState({

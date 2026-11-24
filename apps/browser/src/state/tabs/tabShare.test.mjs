@@ -6,7 +6,10 @@ const { splitTabIdsOf } = await import("../splits/splits.ts");
 const { pinKeyOf } = model;
 
 const S = () => useBrowser.getState();
-const reset = () => S().hydrate({});
+const reset = () => {
+  S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
+};
 const loaded = (id) => !!S().tabs[id]?.page.nav || !!S().tabs[id]?.page.adopt;
 const shown = (w) => model.activeTabId(S(), w);
 const list = (w) => model.viewTabIds(S(), w).filter((id) => !S().tabs[id].pin && S().tabs[id].url);

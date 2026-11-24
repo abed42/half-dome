@@ -32,6 +32,7 @@ const { useBrowser } = await import("./src/state/browser/store.ts");
 const { splitViewAvailable } = await import("./src/state/splits/splits.ts");
 const S = () => useBrowser.getState();
 S().hydrate({});
+S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
 const w = S().createWindow({ url: "https://a.example/" });
 const b = S().newTab(w, { url: "https://b.example/", background: true });
 const c = S().newTab(w, { url: "https://c.example/", background: true });
@@ -39,6 +40,7 @@ const a = S().windows[w].tabIds[0];
 const tabs = { ...S().tabs };
 const windows = { ...S().windows };
 S().hydrate({ tabs, windows, windowOrder: [w], splits: { v: { id: "v", windowId: w, orientation: "horizontal", slots: [{ size: 0.5, tabId: a }, { size: 0.5, tabId: b }] } } });
+S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
 const restored = { splits: Object.keys(S().splits).length, tabIds: S().windows[w].tabIds };
 const created = S().createSplit([a, b]);
 const opened = S().openSplitPane(w, { anchorTabId: a, tabId: c });
@@ -71,6 +73,7 @@ test("where Split View is off, a split in the saved session opens as its panes, 
 
 test("on the Mac the slice still makes splits", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.example/" });
   const b = S().newTab(w, { url: "https://b.example/", background: true });
   const a = S().windows[w].tabIds[0];

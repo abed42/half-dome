@@ -40,6 +40,7 @@ async function importDia(dia, { kinds = KINDS, answer = () => unreadable(kinds),
   reply = answer;
   useBrowser.setState({ bookmarks: { nodes: {} } });
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().createWindow({ url: "https://start.example/" });
   useImportFlow.setState({
     source: {

@@ -26,6 +26,7 @@ test("Little Ardia keeps its own dropdown", () => {
 const S = () => useBrowser.getState();
 const pageWindow = (settings) => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings(settings);
   return S().createWindow({ url: "https://example.com/" });
 };

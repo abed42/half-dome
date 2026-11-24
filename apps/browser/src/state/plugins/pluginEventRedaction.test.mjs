@@ -22,6 +22,7 @@ after(() => lifecycle.disablePlugin("example"));
 
 async function enabledWith(permissions) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   startPlugins();
   for (const name of Object.keys(P().records)) lifecycle.disablePlugin(name);
   for (const key of ["starts", "stops", "replies", "events", "removed"]) host[key].length = 0;

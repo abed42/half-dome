@@ -26,6 +26,7 @@ useBrowser.subscribeTo = (...args) => {
 };
 
 S().hydrate({ profiles: { default: { id: "default", name: "Personal", color: "plum", icon: null, createdAt: 0 } }, profileOrder: ["default"] });
+S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
 S().createWindow({ url: "https://a.example/", profileId: "default" });
 stub.pluginHost.folders = [];
 startPlugins();

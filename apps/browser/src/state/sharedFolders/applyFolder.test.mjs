@@ -15,6 +15,7 @@ const remote = (links, manifest = null) => ({ entries: links.map(([file, url]) =
 
 function sharedWindow() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://home.example/" });
   const a = S().newTab(w, { url: "https://one.example/", background: true });
   const b = S().newTab(w, { url: "https://two.example/", background: true });
@@ -96,6 +97,7 @@ test("a collaborator's rename renames the tab, and a subfolder becomes a nested 
 
 test("an added shared folder starts with an Empty Folder row that gives way to the first link", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://home.example/" });
   const [next, g] = withSharedGroup(S(), w, "Shared");
   useBrowser.setState(next);

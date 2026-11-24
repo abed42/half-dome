@@ -59,6 +59,7 @@ const { officialPlugins, installOfficialPlugin } = await import("./official.ts")
 const { pluginSocketMethod } = await import("./socketMethods.ts");
 setConsentPeriod(true, "test-epoch");
 S().hydrate({});
+S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
 host.folders = [{ name: "cli", text: CLI, ...BUILT_IN }, { name: "other", status: "ok", text: OTHER, folderId: "1:2" }];
 host.afterUpdateQuitStops = { consent: "test-epoch", exitedOnTerm: 2, killed: 1 };
 host.pinned = officialPinnedFromPin().filter((p) => p.name === "cli");

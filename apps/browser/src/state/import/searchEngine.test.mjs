@@ -51,6 +51,7 @@ const S = () => useBrowser.getState();
 const sent = () => (local.flushLocal(), stub.telemetryLocal.records().filter((r) => r.event === "search_engine_import"));
 const fresh = () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useOnboarding.setState({ windowId: null, leaving: false, redo: false });
 };
 const pick = (...keys) => Object.fromEntries(keys.map((k) => [k, sent().at(-1).properties[k]]));

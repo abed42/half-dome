@@ -75,6 +75,7 @@ const reset = () => {
   writeFailsAfter = Infinity;
   shell.docs.clear();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useBrowser.setState({ bookmarksReady: { "": true } });
 };
 const payloads = (folder, scope) => [...(chainOf(folder).get(OURS).get(scope)?.values() ?? [])].sort();

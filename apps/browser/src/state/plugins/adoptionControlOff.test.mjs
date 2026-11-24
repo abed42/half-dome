@@ -24,6 +24,7 @@ const BUILT_IN = { status: "ok", folderId: officialPinnedFromPin().find((p) => p
 
 setConsentPeriod(true, "test-epoch");
 S().hydrate({});
+S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
 S().updateSettings({ cliControl: false });
 host.legacyInstalled = ["cli"];
 host.links.length = 0;

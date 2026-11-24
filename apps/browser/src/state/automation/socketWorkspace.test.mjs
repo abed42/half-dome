@@ -37,6 +37,7 @@ const ok = async (method, params) => {
 
 async function setup() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   await controlOn();
   const windowId = S().createWindow({ url: "https://a.example/" });
   const a = S().windows[windowId].activeTabIds[S().windows[windowId].profileId];

@@ -38,6 +38,7 @@ async function setup() {
   cancelInstall();
   useExtensions.setState({ install: null, lists: {} });
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ cliControl: true });
   startAutomation();
   for (let i = 0; i < 5 && !stub.controlSocket.running; i++) await tick();

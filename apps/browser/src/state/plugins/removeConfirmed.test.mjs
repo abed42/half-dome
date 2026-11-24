@@ -24,6 +24,7 @@ after(() => {
 
 async function installedAndOn() {
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   startPlugins();
   host.removed.length = 0;
   host.folders = [{ name: "example", status: "ok", text: FIXTURE }];

@@ -124,6 +124,7 @@ test("copying an untitled tab as Markdown from the sidebar labels it with the cl
   reset();
   const S = () => useBrowser.getState();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://example.com/item?utm_source=mail" });
   const first = S().windows[w].tabIds[0];
   const second = S().newTab(w, { url: "https://shop.example/a?id=7&fbclid=1" });

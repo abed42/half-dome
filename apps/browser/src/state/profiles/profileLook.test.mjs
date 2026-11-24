@@ -13,6 +13,7 @@ const lookOf = (profile, appDark, settings) => ({ color: profile?.color, appDark
 
 test("a profile's look ignores tab switches, new tabs and profile switches, and follows appearance, its colour and the spaces setting", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.com/" });
   const work = S().createProfile({ name: "Work", color: "blue" });
   const b = S().newTab(w, { url: "https://b.com/", background: true });

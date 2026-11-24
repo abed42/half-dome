@@ -19,6 +19,7 @@ const download = (id, extra = {}) => ({
 
 function oneWindow() {
   S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.example/" });
   S().setFocusedWindow(w);
   setDownloadsOpen(w, false);

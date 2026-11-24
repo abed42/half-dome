@@ -32,6 +32,7 @@ const roots = (w) => sidebarEntries(S(), w).pinned.filter((e) => e.startsWith("g
 function start() {
   useBrowser.setState({ bookmarks: { nodes: {} } });
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://home.example/" });
   const bar = bookmarkRoots(S(), P)?.bar ?? (S().addBookmark({ profileId: P, url: "https://seed.example/", title: "seed" }), bookmarkRoots(S(), P).bar);
   return { w, bar };
@@ -201,6 +202,7 @@ test("a folder already a pinned group parked with a closed window isn't added ag
   const parked = S().parkedPins[P];
   assert.ok(parked?.groups.length, "the group is parked");
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w2 = S().createWindow({ url: "https://other.example/" });
   useBrowser.setState({ parkedPins: { [P]: parked } });
   const [, { made }] = withDraftGroups(S(), w2, P, [draft]);

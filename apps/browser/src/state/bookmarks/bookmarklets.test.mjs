@@ -19,6 +19,7 @@ function watch(tabId) {
 function seed(url) {
   useBrowser.setState({ bookmarks: { nodes: {} } });
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const windowId = S().createWindow({ url });
   const tabId = S().windows[windowId].tabIds[0];
   return { windowId, tabId, loads: watch(tabId) };

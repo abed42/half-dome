@@ -6,7 +6,10 @@ const { flushPersistence, loadSession, startPersistence } = await import("../ses
 const stub = await import("../../test-native/index.ts");
 
 const S = () => useBrowser.getState();
-const reset = () => S().hydrate({});
+const reset = () => {
+  S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
+};
 const pinned = (w) =>
   model.viewTabIds(S(), w).filter((id) => model.inPinnedContainer(S(), id)).map((id) => {
     const t = S().tabs[id];
@@ -102,8 +105,8 @@ test("closing a window keeps the pins in the others and parks nothing; the last 
 
 test("relaunch: every restored window shows the pins; a 0.2.27 session whose windows differ gets the union", () => {
   stub.docs.clear();
-  reset();
   const stop = startPersistence();
+  reset();
   const { a, b } = twoWindows();
   flushPersistence();
   stop();

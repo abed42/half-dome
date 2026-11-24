@@ -27,6 +27,7 @@ function fresh(t) {
   t.mock.timers.tick(1000);
   setSidebarUi({ hover: null, renaming: null, iconPicker: null });
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
 }
 
 function enter(id, event = at(20, ROWS[id] + 10)) {

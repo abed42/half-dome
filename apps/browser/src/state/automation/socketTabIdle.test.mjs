@@ -25,6 +25,7 @@ function connections(t, count) {
 
 async function idleTabs() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ cliControl: true });
   startAutomation();
   for (let i = 0; i < 5 && !stub.controlSocket.running; i++) await tick();

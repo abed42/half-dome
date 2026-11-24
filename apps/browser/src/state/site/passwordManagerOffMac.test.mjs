@@ -8,6 +8,7 @@ const { currentPasswordManager, startPasswordManager, passwordManagerSnapshot } 
 
 test("off the Mac, starting the password manager calls none of the Mac-only verbs and every profile reads as Ardia", async () => {
   useBrowser.getState().hydrate({ profiles: { default: { id: "default", name: "P", color: "plum", icon: null, createdAt: 0, passwordManager: "plugin:x" } }, profileOrder: ["default"] });
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.passwordProviders.calls.length = 0;
   startPasswordManager();
   await new Promise((resolve) => setTimeout(resolve, 20));

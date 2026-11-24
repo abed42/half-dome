@@ -10,6 +10,7 @@ const { takeLittleArdiaEscapeCloses } = await import("../telemetry/littleArdiaEs
 const S = () => useBrowser.getState();
 const PROFILES = { default: { id: "default", name: "Personal", color: "plum", icon: null, createdAt: 0 } };
 const reset = () => S().hydrate({ profiles: PROFILES, profileOrder: ["default"], windows: {}, tabs: {} });
+S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
 
 function fakePort(nativeIds = []) {
   const calls = [];

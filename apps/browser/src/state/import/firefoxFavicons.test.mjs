@@ -66,6 +66,7 @@ after(() => client.setSharing(false, "settings"));
 async function importFrom(source, kinds) {
   useBrowser.setState({ bookmarks: { nodes: {} } });
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useFavicons.setState({ profiles: {}, themes: {} });
   S().createWindow({ url: "https://start.example/" });
   patchImport({ source, sourceProfiles: [source.profiles[0].id], spaces: (source.profiles[0].spaces ?? []).map((s) => s.id), target: "default", kinds: new Set(kinds) });

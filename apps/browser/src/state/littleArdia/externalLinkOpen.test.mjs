@@ -31,6 +31,7 @@ test("an opening rule's choice wins over the setting both ways", () => {
 
 function fresh(windows) {
   S().hydrate({ profiles: { default: PERSONAL, work: WORK }, profileOrder: ["default", "work"], windows: {}, tabs: {} });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   return windows();
 }
 

@@ -19,7 +19,7 @@ const hidden = () => unshownSettings(S().settings, { top: false, glass: true }).
 const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
 const reset = (settings = {}) => {
   S().hydrate({});
-  S().updateSettings(settings);
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom", ...settings });
 };
 
 test("with no address set, ⌘T, the New Tab row and a new window open the New Tab page", () => {

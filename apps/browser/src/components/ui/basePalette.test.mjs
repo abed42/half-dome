@@ -43,6 +43,7 @@ test("every cache built from roles depends on the palette: a new revision gives 
 
 test("a profile look reruns when the base palette changes, even while profile, appearance and settings stay the same", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().createWindow({ url: "https://a.com/" });
   const id = S().settings.defaultProfileId;
   useBasePalette.setState({ palette: null, theme: null });

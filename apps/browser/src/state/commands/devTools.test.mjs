@@ -7,6 +7,7 @@ const { runCommand } = await import("./commands.ts");
 
 test("⌥⌘I and F12 both toggle DevTools, so a second press closes them as in Chrome; ⌥⌘C inspects and ⌥⌘J opens the console", () => {
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = useBrowser.getState().createWindow({ url: "https://a.example/" });
   const panels = [];
   webviews.set(activeTabId(useBrowser.getState(), w), { showDevTools: (panel) => panels.push(panel ?? "show") });

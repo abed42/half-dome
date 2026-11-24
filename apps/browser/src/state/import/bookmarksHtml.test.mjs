@@ -18,6 +18,7 @@ const otherBookmarks = () => S().bookmarks.nodes[bookmarkRoots(S(), P).other].ch
 
 test("a Chrome bookmarks HTML file keeps the folders it lists beside the bookmarks bar", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useBrowser.setState({ bookmarks: { nodes: {} } });
   const exported = folder("Bookmarks", [
     folder("Bookmarks bar", [link("Bar link", "https://bar.example/")], "toolbar"),
@@ -31,6 +32,7 @@ test("a Chrome bookmarks HTML file keeps the folders it lists beside the bookmar
 
 test("a Firefox bookmarks HTML file still empties its Other Bookmarks folder into Other Bookmarks", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useBrowser.setState({ bookmarks: { nodes: {} } });
   const exported = folder("Bookmarks", [
     folder("Menu folder", [link("Menu link", "https://menu.example/")]),
@@ -42,6 +44,7 @@ test("a Firefox bookmarks HTML file still empties its Other Bookmarks folder int
 
 test("an untitled folder no parser marked as a list stays a folder, whatever its date", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useBrowser.setState({ bookmarks: { nodes: {} } });
   const exported = folder("Bookmarks", [folder("", []), folder("", [link("Example", "https://example.org/")])]);
   assert.equal(importBookmarks(P, exported, "HTML File"), 1);
@@ -50,6 +53,7 @@ test("an untitled folder no parser marked as a list stays a folder, whatever its
 
 const fresh = () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useBrowser.setState({ bookmarks: { nodes: {} } });
 };
 const ADDED = 1_700_000_000_000;

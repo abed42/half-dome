@@ -16,6 +16,7 @@ const local = await import("./localStore.ts");
 const { useBrowser } = await import("../browser/store.ts");
 const { SWAP_WAIT_MS, noteProfileSwapped, profileSwapProperties, profileSwitched, switchIdOf } = await import("./profileSwap.ts");
 useBrowser.getState().hydrate({});
+useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
 client.startClient();
 after(() => client.setSharing(false, "settings"));
 

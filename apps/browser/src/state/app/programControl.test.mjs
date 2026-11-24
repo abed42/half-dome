@@ -66,6 +66,7 @@ test("the engine hears which page the user is looking at while control is on", a
   globalThis.acTestCliActive = (id) => (active.push(id), Promise.resolve({}));
   const S = useBrowser.getState;
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.com" });
   S().setFocusedWindow(w);
   const a = S().windows[w].tabIds[0];
@@ -93,6 +94,7 @@ test("a page parked behind New Tab or an Ardia page is not what the user is look
   const { patchPage } = await import("../tabs/pageState.ts");
   const S = useBrowser.getState;
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.com" });
   S().setFocusedWindow(w);
   const a = S().windows[w].tabIds[0];

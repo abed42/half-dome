@@ -6,6 +6,7 @@ const { passwordsAdapter } = await import("./adapters.ts");
 const { Clock, emptyScope, syncScope } = await import("@ardia/sync");
 
 useBrowser.getState().hydrate({ profiles: { default: { id: "default", name: "Personal", color: "plum", icon: null, createdAt: 0 } }, profileOrder: ["default"] });
+useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
 
 const BLANK = "pws:https://a.example\nada";
 const KEPT = "pws:https://b.example\nbo";

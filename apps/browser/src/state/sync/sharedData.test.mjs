@@ -48,6 +48,7 @@ class Mac {
   constructor(name) {
     this.name = name;
     S().hydrate({});
+    S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
     useBrowser.setState({ bookmarksReady: { "": true } });
     this.browser = S();
     this.docs = new Map();
@@ -353,6 +354,7 @@ const scopeLevel = async () => {
   };
   const mac = (device, ownerName) => {
     S().hydrate({});
+    S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
     const owner = ownerName ? S().createProfile({ name: ownerName }) : "default";
     const work = S().createProfile({ name: "Work", shareWith: owner });
     return { device, browser: S(), clock: new Clock(device, null, () => ++wall), links: { [owner]: { syncId: ownerName ? "sHome" : "sPersonal", enabled: true }, [work]: { syncId: "sWork", enabled: true } } };
@@ -726,6 +728,7 @@ test("share: a Mac offline past the tombstone lifetime after another Mac removed
   };
   const macOf = (device, profiles) => {
     S().hydrate({});
+    S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
     const ids = {};
     if (profiles) {
       ids.owner = S().createProfile({ name: "Home" });

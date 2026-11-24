@@ -24,6 +24,7 @@ const BUILT_IN = { status: "ok", folderId: officialPinnedFromPin().find((p) => p
 const { installOfficialPlugin } = await import("./official.ts");
 setConsentPeriod(true, "test-epoch");
 S().hydrate({});
+S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
 S().updateSettings({ cliControl: true });
 host.legacyInstalled = ["cli"];
 host.linkResult = { ok: true, linked: ["ardia"], refused: {}, binDir: "/home/.local/bin", adopted: true, adoption: "adopted" };

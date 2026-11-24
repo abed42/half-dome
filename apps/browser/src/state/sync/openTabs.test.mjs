@@ -42,6 +42,7 @@ class Device {
     if (browser) S().hydrate(browser);
     else {
       S().hydrate({});
+      S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
       S().updateProfile(P, { syncTabs: true });
     }
     this.browser = S();

@@ -13,6 +13,7 @@ const nextTick = () => new Promise((r) => setTimeout(r, 5));
 
 function windowWithPage() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.example/" });
   const tab = activeTabId(S(), w);
   const focused = [];

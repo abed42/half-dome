@@ -59,6 +59,7 @@ const code = async (method, params) => (await call(method, params)).error?.code;
 
 test("sync writes: refused while sync is off, then the same switches Settings has", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useBrowser.setState({ bookmarksReady: { "": true } });
   S().updateSettings({ cliControl: true });
   startAutomation();

@@ -35,6 +35,7 @@ async function launch() {
   usePlugins.setState({ records: { "apple-passwords": record }, listings: {}, order: [], scanned: false });
   stub.pluginHost.folders = [{ name: "apple-passwords", status: "ok", text: OWN, folderId: "1:2" }];
   S().hydrate({ profiles: { default: profile("default", "plugin:apple-passwords"), work: profile("work", undefined) }, profileOrder: ["default", "work"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const { lifecycle, pm, consentToken } = await launch();
   assert.equal(S().profiles.default.passwordManager, "plugin:apple-passwords", "nothing moves while the bundled record waits");
   assert.ok(lifecycle.requestPluginConsent("apple-passwords"));

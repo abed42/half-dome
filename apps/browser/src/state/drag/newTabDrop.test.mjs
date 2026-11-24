@@ -12,6 +12,7 @@ const navigated = (id) => {
 
 function newTabWindow() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({});
   const tab = S().windows[w].tabIds[0];
   return { w, tab };

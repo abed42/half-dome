@@ -39,6 +39,7 @@ let work = "";
 
 test("setup", async () => {
   S().hydrate({ profiles: { default: { id: "default", name: "Personal", color: "plum", icon: null, createdAt: 0 } }, profileOrder: ["default"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   work = S().createProfile({ name: "Work" });
   S().createWindow({ url: "https://a.example/", profileId: "default" });
   startPlugins();

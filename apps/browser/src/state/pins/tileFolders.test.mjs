@@ -8,7 +8,10 @@ const { flushPersistence, loadSession, startPersistence } = await import("../ses
 const stub = await import("../../test-native/index.ts");
 
 const S = () => useBrowser.getState();
-const reset = () => S().hydrate({});
+const reset = () => {
+  S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
+};
 const act = (fn) => useBrowser.setState(fn(S()), true);
 const host = (id) => new URL(S().tabs[id].pinnedUrl || S().tabs[id].url).hostname.replace(".com", "");
 const cells = (w, profileId) =>
@@ -128,8 +131,8 @@ test("folders are the profile's: a second window mirrors them, a change in eithe
 
 test("folders park with the last window, come back from it, and survive a relaunch", () => {
   stub.docs.clear();
-  reset();
   const stop = startPersistence();
+  reset();
   const { w, ids: [a, b, c] } = pinnedWindow();
   act((s) => folders.addToTileFolder(s, [c], a));
   act((s) => folders.renameTileFolder(s, w, folderOf(a).id, "Mail & Cal"));

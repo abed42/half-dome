@@ -211,6 +211,7 @@ test("a profile made on this version records the look it starts with, so a 0.2.4
   const { withOwnLooksSeeded } = look_;
   const { useBrowser } = await import("../../state/browser/store.ts");
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const id = useBrowser.getState().createProfile({ name: "Fresh", color: "green" });
   const made = useBrowser.getState().profiles[id];
   assert.equal(made.seenTheme, null);

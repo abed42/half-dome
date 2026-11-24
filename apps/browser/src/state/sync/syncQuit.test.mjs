@@ -73,6 +73,7 @@ const opsFor = (key) =>
 test("a theme pulled while quitting isn't applied after the session froze, so the saved state can't run ahead of it", async () => {
   shell.docs.clear();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useBrowser.setState({ bookmarksReady: { "": true } });
   S().setProfileLook("default", { theme: THEME_A });
   const engine = await import("./engine.ts?quitting");

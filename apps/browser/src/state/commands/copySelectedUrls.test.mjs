@@ -10,6 +10,7 @@ shellNativeModules.ArdiaShell.copyText = (text) => void copied.push(text);
 
 function windowWith(...hosts) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: `https://${hosts[0]}.com/` });
   S().setFocusedWindow(w);
   const ids = [S().windows[w].tabIds[0]];
@@ -45,6 +46,7 @@ test("Email Page Location mails the page's address without trackers, in the body
   shellNativeModules.ArdiaApp.openExternalURL = (url) => (opened.push(url), Promise.resolve(true));
   try {
     S().hydrate({});
+    S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
     const w = S().createWindow({ url: "https://shop.example/item?id=7&utm_source=mail" });
     S().setFocusedWindow(w);
     runCommand({ command: "emailPageLocation", arg: null, windowId: w });
@@ -61,6 +63,7 @@ test("Email Page Location cleans a subject that is the page's own tracked addres
   const tracked = "https://shop.example/item?id=7&utm_source=mail";
   try {
     S().hydrate({});
+    S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
     const w = S().createWindow({ url: tracked });
     S().setFocusedWindow(w);
     const t = S().windows[w].tabIds[0];
@@ -81,6 +84,7 @@ test("copying several selected tabs counts each address that lost a tracker", as
   const { takeUrlCopyCounts } = await import("../telemetry/urlCopies.ts");
   setConsentPeriod(true, "selected-tabs");
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.com/?utm_source=x" });
   S().setFocusedWindow(w);
   const a = S().windows[w].tabIds[0];

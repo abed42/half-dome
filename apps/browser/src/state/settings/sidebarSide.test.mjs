@@ -14,6 +14,7 @@ const S = () => useBrowser.getState();
 
 function oneWindow() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.example/" });
   S().setFocusedWindow(w);
   return w;

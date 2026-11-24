@@ -41,6 +41,7 @@ const memorySaverCalls = () => globalThis.engineCalls.filter(([name]) => name ==
 test("the app's Memory Saver settings reach the engine at launch and on every change", async (t) => {
   t.mock.timers.enable({ apis: ["setTimeout"] });
   S().hydrate({ settings: { memorySaver: false, memorySaverMode: "maximum", keepActiveSites: ["music.youtube.com"] } });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   globalThis.engineCalls.length = 0;
   lifecycle.startTabLifecycle();
   assert.deepEqual(memorySaverCalls(), [{ state: "off", aggressiveness: "maximum", sites: ["music.youtube.com"] }]);
@@ -76,6 +77,7 @@ test("a synced list saved with lowercased entries reaches the engine unchanged",
 
 test("a tab Chrome discarded shows as sleeping until it's ready again or gone", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   lifecycle.noteDiscarded("t1");
   lifecycle.noteDiscarded("t2");
   assert.deepEqual(lifecycle.useLifecycle.getState().discarded, { t1: true, t2: true });
@@ -88,6 +90,7 @@ test("a pinned tab Memory Saver's timer put to sleep is counted; a tab put to sl
   const { takeTabSleepCounts } = await import("../telemetry/tabSleepCounts.ts");
   const takePinnedTabsSleptByMemorySaver = () => takeTabSleepCounts().pinned_tabs_slept_by_memory_saver;
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.com/" });
   const tile = S().newTab(w, { url: "https://tile.com/", background: true });
   const row = S().newTab(w, { url: "https://row.com/", background: true });
@@ -164,6 +167,7 @@ test("Battery Saver's old switch: a choice and any off are kept, the old default
 test("a recent pin queued for warming at launch stays closed when the user closes it before its turn", async (t) => {
   t.mock.timers.enable({ apis: ["setTimeout"] });
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.com" });
   const pin = S().newTab(w, { url: "https://p.com", background: true, pinned: true });
   const warm = S().newTab(w, { url: "https://q.com", background: true, pinned: true });
@@ -206,6 +210,7 @@ const minute = 60_000;
 
 function windowOfHiddenTabs(count, now) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://active.com/" });
   const ids = Array.from({ length: count }, (_, i) => S().newTab(w, { url: `https://site${i}.com/`, background: true }));
   ids.forEach((id, i) => S().updateTab(id, { lastActiveAt: now - (i + 1) * 10 * minute }));

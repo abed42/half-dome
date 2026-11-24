@@ -15,6 +15,7 @@ const wait = (ms) => new Promise((done) => setTimeout(done, ms));
 
 function aTab() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.com" });
   return S().windows[w].tabIds[0];
 }

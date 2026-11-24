@@ -21,6 +21,7 @@ const hasPage = (id) => !!(S().tabs[id].page.nav || S().tabs[id].page.adopt);
 
 function pinnedGroupInTwoWindows() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = S().createWindow({ url: "https://a.com/" });
   const [first] = S().windows[a].tabIds;
   const second = S().newTab(a, { url: "https://b.com/", background: true });
@@ -56,6 +57,7 @@ for (const keep of [false, true]) {
   for (const inFront of [true, false]) {
     test(`− on a pinned row split with a Top App unloads the split (Keep Top Apps running ${keep ? "on" : "off"}, split ${inFront ? "in front" : "in the background"})`, () => {
       S().hydrate({});
+      S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
       const w = S().createWindow({ url: "https://app.com/" });
       const [app] = S().windows[w].tabIds;
       const row = S().newTab(w, { url: "https://row.com/" });
@@ -77,6 +79,7 @@ for (const keep of [false, true]) {
 
 test("− on a pinned group unloads a member split with a Top App while Keep Top Apps running is on", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://app.com/" });
   const [app] = S().windows[w].tabIds;
   const member = S().newTab(w, { url: "https://member.com/" });

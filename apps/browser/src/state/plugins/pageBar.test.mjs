@@ -37,6 +37,7 @@ const R = {};
 
 async function enable(names = ["developer-mode"]) {
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   startPlugins();
   for (const name of Object.keys(P().records)) lifecycle.disablePlugin(name, null);
   host.folders = names.map((name) => ({ name, status: "ok", text: name === "developer-mode" ? FIXTURE : twin(name) }));

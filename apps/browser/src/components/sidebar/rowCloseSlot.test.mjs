@@ -15,6 +15,7 @@ const SPINNER = createElement(View, { testID: "spinner" });
 
 function hoveredRow() {
   S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.example/" });
   S().setFocusedWindow(w);
   const tabId = S().newTab(w, { url: "https://b.example/", background: true });

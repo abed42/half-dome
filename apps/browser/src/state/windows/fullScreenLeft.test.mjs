@@ -26,6 +26,7 @@ function listening() {
 
 test("leaving full screen re-measures at macOS's will-exit report and again at its did-exit report, when the frame is final", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = S().createWindow({ url: "a.com" });
   const b = S().createWindow({ url: "b.com" });
   const emit = listening();

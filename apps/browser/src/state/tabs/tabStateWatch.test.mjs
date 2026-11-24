@@ -12,6 +12,7 @@ const S = () => useBrowser.getState();
 
 function session(plain) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.com/" });
   const ids = [S().windows[w].tabIds[0]];
   for (let i = 0; i < plain; i++) ids.push(S().newTab(w, { url: `https://site${i % 7}.com/p/${i}`, background: true }));
@@ -152,6 +153,7 @@ test("changes to a shared tab that other rows read still wake those rows", () =>
 
 function holderAndCopy({ shareTopApps = false, listed = false } = {}) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w1 = S().createWindow({ url: "https://one.com/" });
   const w2 = S().createWindow({ url: "https://two.com/" });
   const p1 = S().windows[w1].profileId;

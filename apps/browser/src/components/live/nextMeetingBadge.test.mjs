@@ -15,6 +15,7 @@ test("a tile with no meeting to count down to starts no animation, so launch spr
     Animated.spring = spring;
   });
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = useBrowser.getState().createWindow({ url: "https://a.example/" });
   const tabId = useBrowser.getState().windows[w].tabIds[0];
   const badge = mount(() => NextMeetingBadge.type ? NextMeetingBadge.type({ tabId }) : NextMeetingBadge({ tabId }));

@@ -37,6 +37,7 @@ test("a leftover folder of that name holds the migration until it's gone, then t
   usePlugins.setState({ records: { "apple-passwords": record }, listings: {}, order: [], scanned: false });
   stub.pluginHost.folders = [{ name: "apple-passwords", status: "missing", folderId: "3:3" }];
   S().hydrate({ profiles: { default: profile("default", "plugin:apple-passwords"), work: profile("work", undefined) }, profileOrder: ["default", "work"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const { lifecycle, consentToken } = await launch();
   assert.deepEqual(P().records["apple-passwords"], record, "listed, so the record stays");
   assert.equal(S().profiles.default.passwordManager, "plugin:apple-passwords");

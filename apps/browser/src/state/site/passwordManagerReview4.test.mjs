@@ -34,6 +34,7 @@ function turnOn(name) {
 test("the settings snapshot has no password manager counts until plugins are scanned, so the day isn't marked early", async () => {
   assert.equal(pm.passwordManagerSnapshot(), null);
   S().hydrate({ profiles: { default: { id: "default", name: "Personal", color: "plum", icon: null, createdAt: 0 } }, profileOrder: ["default"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().createWindow({ url: "https://a.example/", profileId: "default" });
   startPlugins();
   stub.pluginHost.folders = [folder("one-pm"), folder("two-pm")];

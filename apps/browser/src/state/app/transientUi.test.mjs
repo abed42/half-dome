@@ -17,6 +17,7 @@ const S = () => useBrowser.getState();
 
 function twoWindows(settings = {}) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings(settings);
   const w = S().createWindow({ url: "a.com" });
   const other = S().createWindow({ url: "b.com" });

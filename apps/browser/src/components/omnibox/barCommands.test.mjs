@@ -24,6 +24,7 @@ const PAGE = "https://a.example/page";
 
 function setup(url = PAGE, kind) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow(kind ? { url, kind } : { url });
   const tab = activeTabId(S(), w);
   const calls = { panels: [], pageCommands: [] };

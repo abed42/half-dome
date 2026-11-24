@@ -26,6 +26,7 @@ const setup = (tabs = ["a", "b", "c"], active = "a", more = {}) => {
   const windows = { w1: win("w1", tabs, active), ...(more.windows ?? {}) };
   const all = [...tabs.map((id) => tab(id, "w1", `https://${id}.com/`)), ...(more.tabs ?? [])];
   S().hydrate({ profiles: PROFILES, windows, tabs: Object.fromEntries(all.map((t) => [t.id, t])), focusedWindowId: "w1" });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   for (const t of all) S().updateTab(t.id, { page: { kind: "loaded", nav: { url: t.url, seq: 1 } } });
   stub.revealedTabs.length = 0;
 };

@@ -17,7 +17,10 @@ const { firstWindowCommitted } = await import("../../lib/afterFirstWindow.ts");
 const stub = await import("../../test-native/index.ts");
 
 const S = () => useBrowser.getState();
-const reset = () => S().hydrate({});
+const reset = () => {
+  S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
+};
 const view = (w) => model.viewTabIds(S(), w).map((id) => S().tabs[id].url);
 const active = (w) => model.activeTabId(S(), w);
 
@@ -295,8 +298,8 @@ test("⇧⌘T after the close, then ⌘N: no second set of pinned tabs", () => {
 
 test("quit and relaunch after the window closed: the next window has the pinned tabs, unloaded", () => {
   stub.docs.clear();
-  reset();
   const stop = startPersistence();
+  reset();
   const { w } = pinnedWindow();
   S().closeWindow(w);
   flushPersistence();
@@ -347,8 +350,8 @@ test("reopening a closed window: its tabs keep when they were last used, the sho
 test("quit and relaunch right after Restore All: the restored tab still counts as used when it came back", async () => {
   const { cleanUpCandidates } = await import("../pins/tabCleanup.ts");
   stub.docs.clear();
-  reset();
   const stop = startPersistence();
+  reset();
   const { w, ids: [, b] } = windowWith("a", "b", "c", "d");
   const usedAt = Date.now() - 2 * 60 * 60_000;
   S().updateTab(b, { lastActiveAt: usedAt });
@@ -366,8 +369,8 @@ test("quit and relaunch right after Restore All: the restored tab still counts a
 
 test("quit and relaunch after the window closed: a pinned group's tabs keep when they were last used", () => {
   stub.docs.clear();
-  reset();
   const stop = startPersistence();
+  reset();
   const { w } = windowWith("a", "b", "c", "d");
   const [a, b, c, d] = model.viewTabIds(S(), w);
   const g = S().groupTabs([a, b, c], { name: "Work" });

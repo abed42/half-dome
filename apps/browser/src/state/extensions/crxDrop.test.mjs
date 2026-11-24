@@ -16,6 +16,7 @@ test("a dropped .crx file is an extension to install, any other file or link isn
 
 test("a .crx dropped on a window installs into its profile and opens no tab; the rest still open", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "a.com" });
   native.installedCrx.length = 0;
   const left = installDroppedCrx(w, ["file:///tmp/one.crx", "https://example.com/", "file:///tmp/page.html"]);
@@ -26,6 +27,7 @@ test("a .crx dropped on a window installs into its profile and opens no tab; the
 
 test("a private window leaves a dropped .crx alone, as Chrome does", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "a.com", kind: "private" });
   native.installedCrx.length = 0;
   const urls = ["file:///tmp/one.crx"];
@@ -35,6 +37,7 @@ test("a private window leaves a dropped .crx alone, as Chrome does", () => {
 
 test("a regular window takes .crx drops anywhere in it; a private one and a closed one don't", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const regular = S().createWindow({ url: "a.com" });
   const hidden = S().createWindow({ url: "a.com", kind: "private" });
   assert.equal(takesCrxDrops(regular), true);
@@ -44,6 +47,7 @@ test("a regular window takes .crx drops anywhere in it; a private one and a clos
 
 test("a .crx dropped outside the tab list installs and leaves nothing to open", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "a.com" });
   const tabs = [...S().windows[w].tabIds];
   native.installedCrx.length = 0;
@@ -55,6 +59,7 @@ test("a .crx dropped outside the tab list installs and leaves nothing to open", 
 
 test("a failed install says why in the window it was dropped on", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "a.com" });
   const { useToasts } = await import("../app/toasts.ts");
   native.crxInstallFailure.next = "Package is invalid: 'CRX_SIGNATURE_VERIFICATION_FAILED'.";

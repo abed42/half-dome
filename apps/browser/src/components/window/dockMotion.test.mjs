@@ -395,6 +395,7 @@ test("Arc's layout keeps the address bar in a hidden sidebar (no toolbar on the 
   stub.docs.clear();
   reloadSwitches();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "a.com" });
   S().updateSettings({ addressBar: "sidebar", tabLayout: "sidebar" });
   assert.equal(addressBarInSidebar(S(), w), true, "shown");

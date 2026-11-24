@@ -11,6 +11,7 @@ const S = () => useBrowser.getState();
 function seed() {
   useBrowser.setState({ bookmarks: { nodes: {} } });
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const add = (title, parentId) => S().addBookmark({ profileId: "default", url: `https://${title.toLowerCase()}.example/`, title, parentId });
   const a = add("A");
   const b = add("B");
@@ -154,6 +155,7 @@ test("a drop reaches Chrome's bookmarks as a move, so sync and the bookmark mana
   const settle = () => new Promise((r) => setTimeout(r, 0));
   useBrowser.setState({ bookmarks: { nodes: {} } });
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.docs.clear();
   stub.bookmarkDbs.clear();
   const stop = startBookmarks();

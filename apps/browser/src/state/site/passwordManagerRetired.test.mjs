@@ -34,6 +34,7 @@ async function launch() {
 test("a fresh install writes nothing and changes no profile at launch", async () => {
   stub.pluginHost.folders = [];
   S().hydrate({ profiles: { default: profile("default", undefined), work: profile("work", undefined) }, profileOrder: ["default", "work"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().createWindow({ url: "https://a.example/", profileId: "default" });
   const profiles = S().profiles;
   let changes = 0;
@@ -52,6 +53,7 @@ test("a plugin of that name you installed yourself keeps its record and its prof
   stub.docs.set("plugins.json", JSON.stringify({ version: 1, plugins: { "apple-passwords": record } }));
   usePlugins.setState({ records: { "apple-passwords": record } });
   S().hydrate({ profiles: { default: profile("default", "plugin:apple-passwords"), work: profile("work", undefined) }, profileOrder: ["default", "work"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const { pm, lifecycle, consentToken } = await launch();
   await lifecycle.rescanPlugins(consentToken());
   assert.deepEqual(P().records["apple-passwords"], record);
@@ -65,6 +67,7 @@ test("a scan that fails stamps nothing and drops nothing, so a plugin of that na
   stub.docs.set("plugins.json", JSON.stringify({ version: 1, plugins: { "apple-passwords": record } }));
   usePlugins.setState({ records: { "apple-passwords": record }, listings: {}, order: [], scanned: false });
   S().hydrate({ profiles: { default: profile("default", "plugin:apple-passwords"), work: profile("work", undefined) }, profileOrder: ["default", "work"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.pluginHost.listFails = true;
   try {
     await launch();
@@ -83,6 +86,7 @@ test("a record of that name Ardia didn't bundle survives a listing that comes ba
   usePlugins.setState({ records: { "apple-passwords": own }, listings: {}, order: [], scanned: false });
   stub.pluginHost.folders = [];
   S().hydrate({ profiles: { default: profile("default", "plugin:apple-passwords"), work: profile("work", undefined) }, profileOrder: ["default", "work"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   await launch();
   assert.deepEqual(P().records["apple-passwords"], own, "an empty listing, as a folder read error gives, never drops a record you approved yourself");
   assert.equal(S().profiles.default.passwordManager, "plugin:apple-passwords");
@@ -98,6 +102,7 @@ test("a disabled Apple Passwords record is dropped and leaves unset profiles alo
   stub.docs.set("plugins.json", JSON.stringify({ version: 1, plugins: { "apple-passwords": { enabled: false, approved: HASH, values: {}, applied: {} } } }));
   usePlugins.setState({ records: JSON.parse(stub.docs.get("plugins.json")).plugins });
   S().hydrate({ profiles: { default: profile("default", "plugin:apple-passwords"), work: profile("work", undefined) }, profileOrder: ["default", "work"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const { lifecycle, consentToken } = await launch();
   await lifecycle.rescanPlugins(consentToken());
   assert.equal(P().records["apple-passwords"], undefined);

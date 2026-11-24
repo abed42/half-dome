@@ -16,6 +16,7 @@ const setup = () => {
   };
   const win = { id: "w1", profileId: "default", kind: "main", tabIds: ["a"], activeTabIds: { default: "a" }, sidebarOpen: true, frame: null, createdAt: 0 };
   S().hydrate({ profiles: { default: { id: "default", name: "Personal", color: "plum", icon: null, createdAt: 0 } }, windows: { w1: win }, tabs: { a: tab }, focusedWindowId: "w1" });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   webviews.clear();
   loads.length = 0;
   const ref = webviewRef("a");

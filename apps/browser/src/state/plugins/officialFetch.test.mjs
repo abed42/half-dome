@@ -38,6 +38,7 @@ host.officialFetchResults = { cli: { ok: false, code: "offline", reason: "The In
 host.folders = [LEGACY];
 stub.docs.set("plugins.json", RECORDS(OLD_RECEIPT));
 S().hydrate({ settings: { cliControl: true } });
+S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
 const savedAtLaunch = stub.docs.get("plugins.json");
 startPlugins();
 await settle();

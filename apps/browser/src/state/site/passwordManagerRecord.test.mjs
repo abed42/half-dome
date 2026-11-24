@@ -14,6 +14,7 @@ const passwords = () => stub.profileToggles.user.get("")?.passwords;
 
 test("offer to save goes off only after its record has landed, and comes back on with the record kept until a later launch confirms it", async () => {
   S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   startPlugins();
   stub.pluginHost.folders = [];
   await lifecycle.rescanPlugins(consentToken());

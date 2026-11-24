@@ -30,6 +30,7 @@ const { automationCommands } = await import("./src/state/automation/automationCo
 const { menuState } = await import("./src/state/commands/menuState.ts");
 const S = () => useBrowser.getState();
 S().hydrate({});
+S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
 const w = S().createWindow({ url: "https://a.example/" });
 const unshown = unshownSettings(S().settings, { top: true }).split("\\n");
 console.log(JSON.stringify({

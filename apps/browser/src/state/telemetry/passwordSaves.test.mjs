@@ -64,6 +64,7 @@ test("an import from another browser sends the same counts with source browser",
   const warnings = [];
   t.mock.method(console, "warn", (message) => warnings.push(message));
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const credentials = mixed().map(({ url, username, password }) => ({ url, username, password, realm: undefined }));
   const result = { tabs: [], spaces: [], favorites: [], history: [], credentials, favicons: [], bookmarks: null, vaultToken: null };
   const before = sent().length;

@@ -14,6 +14,7 @@ const reply = (q, list) => ({ status: 200, body: `)]}'\n${JSON.stringify([q, lis
 
 function setup() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://start.example/" });
   useBrowser.setState((s) => ({ history: { ...s.history, "": { list: Array.from({ length: 8 }, (_, i) => entry(i)), floor: -Infinity, ready: true } } }));
   return mount(({ text }) => useSuggestions({ text, active: true, windowId: w, profileId: "default", scope: null }), { props: { text: "" } });
@@ -74,6 +75,7 @@ test("leaving a search scope with the same text after its request failed waits f
   globalThis.acTestSuggest = ({ url }) => (fail ? { stopped: true, status: 0 } : reply(new URL(url).searchParams.get("q"), ["react hooks", "react router", "react native", "react query"]));
   try {
     S().hydrate({});
+    S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
     const w = S().createWindow({ url: "https://start.example/" });
     useBrowser.setState((s) => ({ history: { ...s.history, "": { list: Array.from({ length: 8 }, (_, i) => entry(i)), floor: -Infinity, ready: true } } }));
     const google = { kind: "engine", name: "Google", host: "www.google.com", url: "https://www.google.com/search?q=%s", engineId: "google" };

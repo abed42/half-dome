@@ -6,7 +6,10 @@ const { awayFromPin } = await import("./organize.ts");
 const { settlePinHomes } = await import("./pinHomes.ts");
 
 const S = () => useBrowser.getState();
-const reset = () => S().hydrate({});
+const reset = () => {
+  S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
+};
 const go = (id, url) => S().updateTab(id, { url, title: "" }, { isLoading: false, canGoBack: true, canGoForward: false });
 
 function windowWith(...hosts) {

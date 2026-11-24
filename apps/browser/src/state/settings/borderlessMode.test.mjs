@@ -33,6 +33,7 @@ test("borderless pages have no inset or corner cutouts, while peek and split con
 test("the mode survives a relaunch and turning it off restores the chosen thickness", () => {
   docs.clear();
   useBrowser.getState().hydrate({ settings: { pageFrame: 6 } });
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const stop = startPersistence();
   try {
     useBrowser.getState().updateSettings({ pageFrame: 6, borderlessMode: true });
@@ -49,6 +50,7 @@ test("the mode survives a relaunch and turning it off restores the chosen thickn
 
 test("sync carries the mode without replacing the saved frame thickness", () => {
   useBrowser.getState().hydrate({ settings: { pageFrame: 7 } });
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   assert.ok(SYNCED_SETTINGS.includes("borderlessMode"));
   settingsAdapter.apply(new Map([["set:borderlessMode", { v: true }]]), ["set:borderlessMode"]);
   assert.equal(pageFrameInset(useBrowser.getState().settings), 0);
@@ -57,6 +59,7 @@ test("sync carries the mode without replacing the saved frame thickness", () => 
 
 test("new windows place their traffic lights on the borderless toolbar immediately", () => {
   useBrowser.getState().hydrate({ settings: { pageFrame: 9, borderlessMode: true } });
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useBrowser.getState().updateSettings({ addressBar: "toolbar" });
   const id = useBrowser.getState().createWindow();
   assert.deepEqual(openingLightsCenter(useBrowser.getState(), id), [25, 21]);
@@ -66,6 +69,7 @@ test("new windows place their traffic lights on the borderless toolbar immediate
 
 test("onboarding keeps the mode until a frame choice replaces it, then confirms both settings together", () => {
   useBrowser.getState().hydrate({ settings: { pageFrame: 6, borderlessMode: true } });
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useOnboarding.setState({ step: "look", sub: QUESTIONS.look.findIndex((q) => q.id === "frame"), draft: {}, baseline: {}, windowId: null });
   const keys = QUESTIONS.look.find((q) => q.id === "frame").keys;
   const unchanged = resolveDraft(keys, {}, "fresh", useBrowser.getState().settings, []);

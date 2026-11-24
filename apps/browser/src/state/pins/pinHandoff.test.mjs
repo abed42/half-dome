@@ -25,6 +25,7 @@ const until = async (test, ms = 2000) => {
 
 function twoWindows() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = S().createWindow({ url: "https://mail.com" });
   const [mail] = S().windows[a].tabIds;
   S().newTab(a, { url: "https://a.com" });

@@ -69,6 +69,7 @@ const opsFor = (key) =>
 test("known issue, expected for now: a theme picked while a pull reads is replaced by the newer theme that pull brings", async () => {
   shell.docs.clear();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useBrowser.setState({ bookmarksReady: { "": true } });
   S().setProfileLook("default", { theme: THEME_A });
   const engine = await import("./engine.ts?editDuringRead");
@@ -95,6 +96,7 @@ test("a profile's own theme that was never picked still gives way to a theme tha
   shell.docs.clear();
   folder.clear();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useBrowser.setState({ bookmarksReady: { "": true } });
   S().setProfileLook("default", { theme: THEME_A });
   const engine = await import("./engine.ts?fallback");
@@ -121,6 +123,7 @@ test("V3: a pick and an edit made while a pull reads end as main's custom-theme 
   shell.docs.clear();
   folder.clear();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useBrowser.setState({ bookmarksReady: { "": true } });
   S().setProfileLook("default", { color: "plum", theme: THEME_A });
   const engine = await import("./engine.ts?pickDuringRead");

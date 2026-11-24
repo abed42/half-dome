@@ -63,6 +63,7 @@ class Device {
     this.legacy = legacy;
     this.settings = settings;
     S().hydrate({});
+    S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
     useBrowser.setState({ history: { "": { list: [], floor: -Infinity, ready: true } }, bookmarksReady: { "": true } });
     this.browser = S();
     this.scopes = { app: emptyScope(), p: emptyScope() };
@@ -611,6 +612,7 @@ for (const fresh of [false, true]) {
 
 test("a deletion from another Mac applied after a pin removal here takes the removal's Undo away", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://home.example/" });
   const tab = S().newTab(w, { url: "https://one.example/", background: true });
   const group = S().groupTabs([tab], { pinned: true, name: "Team" });
@@ -1231,12 +1233,14 @@ test("bookmarks: a Mac on old ids and one on Chrome's UUIDs keep one tree", asyn
       },
     });
     S().hydrate({});
+    S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
     useBrowser.setState({ bookmarksReady: { "": true } });
   });
   await old.sync();
   now.with(() => {
     useBrowser.setState({ bookmarks: { nodes: {} } });
     S().hydrate({});
+    S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
     useBrowser.setState({ bookmarksReady: { "": true } });
     const f = S().addBookmarkFolder({ profileId: "default", title: "F" });
     const a = S().addBookmark({ profileId: "default", url: "https://a.example/", title: "A", parentId: f });
@@ -1931,6 +1935,7 @@ for (const [label, edit] of [
 
 test("only evidence that the anchor left the rows after the order record ends the wait", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://home.example/" });
   const row = S().newTab(w, { url: "https://row.example/", background: true });
   S().pinTabs([row], true, true);
@@ -2057,6 +2062,7 @@ test("a pin unpinned and pinned again while its deletion is being pulled stays p
 
 test("a snapshot dropping the anchor in the cycle a newer order record arrives doesn't settle that record", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://home.example/" });
   const row = S().newTab(w, { url: "https://row.example/", background: true });
   S().pinTabs([row], true, true);
@@ -2174,6 +2180,7 @@ test("bookmarks and history: a Mac on v0.2.43-nightly.4 and one on today's build
 test("profiles that share data: records applied through the owner land once in the shared engine, and edits through the sharer go out through the owner", async () => {
   useBrowser.setState({ bookmarks: { nodes: {} } });
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.historyDbs.clear();
   const a = S().createProfile({ name: "A" });
   const b = S().createProfile({ name: "B", shareWith: a });
@@ -2204,6 +2211,7 @@ test("profiles that share data: records applied through the owner land once in t
 test("bookmarks: a folder of 5,000 remote bookmarks is applied in linear steps, in position order", () => {
   useBrowser.setState({ bookmarks: { nodes: {} } });
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = S().createProfile({ name: "A" });
   useBrowser.setState((s) => ({ bookmarksReady: { ...s.bookmarksReady, [a]: true } }));
   const n = 5000;
@@ -2229,6 +2237,7 @@ test("bookmarks: a folder of 5,000 remote bookmarks is applied in linear steps, 
 
 test("history: an unchanged page's visits are matched in one pass, not each against all", (t) => {
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const start = Date.now() - 3_600_000;
   const visitTimes = Array.from({ length: 50 }, (_, i) => start + i * 10);
   const url = "https://same.example/";
@@ -2243,6 +2252,7 @@ test("history: an unchanged page's visits are matched in one pass, not each agai
 
 const syncedHistory = (url, title, seen) => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.historyDbs.clear();
   stub.chromeHistory("").set(url, { title, visits: [seen] });
   useBrowser.setState({ history: { "": { list: [{ url, title, favicon: null, visits: 1, lastVisit: seen, visitTimes: [seen] }], floor: -Infinity, ready: true } } });
@@ -2289,6 +2299,7 @@ test("a 20,000-deep bookmark folder chain is read for sync in the same order as 
   const settle = () => new Promise((r) => setTimeout(r, 0));
   useBrowser.setState({ bookmarks: { nodes: {} } });
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.docs.clear();
   stub.bookmarkDbs.clear();
   const stop = startBookmarks();
@@ -2327,6 +2338,7 @@ test("a 20,000-deep bookmark folder chain is read for sync in the same order as 
 
 test("a pinned group chain 4,000 deep from a damaged or foreign file is applied without overflowing", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().createWindow({ url: "https://home.example/" });
   const depth = 4_000;
   const g = (i) => `deep${String(i).padStart(5, "0")}`;
@@ -2342,6 +2354,7 @@ test("a pinned group chain 4,000 deep from a damaged or foreign file is applied 
 
 test("an 8,000-deep pinned group chain is applied with work in line with its depth, not its square", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().createWindow({ url: "https://home.example/" });
   const depth = 8_000;
   const g = (i) => `deep${String(i).padStart(5, "0")}`;

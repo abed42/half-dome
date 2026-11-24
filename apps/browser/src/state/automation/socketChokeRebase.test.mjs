@@ -29,6 +29,7 @@ let bound = null;
 async function fixture() {
   if (bound) unbindFolder(...bound);
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   await controlOn();
   const windowId = S().createWindow({ url: "https://home.example/" });
   const one = S().newTab(windowId, { url: "https://one.example/", background: true });

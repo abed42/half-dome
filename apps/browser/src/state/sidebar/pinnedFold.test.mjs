@@ -14,6 +14,7 @@ const foldItem = (w) => browserLayoutItems(S(), w).find((it) => it.id === "pinne
 
 function windowWith(...hosts) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: `https://${hosts[0]}.com/` });
   const ids = [S().windows[w].tabIds[0]];
   for (const h of hosts.slice(1)) ids.push(S().newTab(w, { url: `https://${h}.com/` }));
@@ -93,6 +94,7 @@ test("a collapsed section stays collapsed across a relaunch", () => {
   flushPersistence();
   stop();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   assert.equal(collapsed(), false);
   S().hydrate(loadSession());
   assert.equal(collapsed(), true);

@@ -95,6 +95,7 @@ test("a pin of a kind this version doesn't know, or a broken folder, reads as un
 test("a duplicated group and a reopened closed group make tabs with one pin field, nothing from the old shape", () => {
   stub.docs.clear();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.com/" });
   const b = S().newTab(w, { url: "https://b.com/", background: true });
   const c = S().newTab(w, { url: "https://c.com/", background: true });

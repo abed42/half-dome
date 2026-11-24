@@ -26,6 +26,7 @@ const cardsIn = (node, out = []) => {
 
 test("closing the panel with the X fades out the page that was showing instead of loading it again for the fade", async (t) => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "a.com" });
   const a = S().windows[w].tabIds[0];
   usePages.setState({ ready: { [a]: 1 } });
@@ -63,6 +64,7 @@ test("closing the panel with the X fades out the page that was showing instead o
 
 test("a panel already hidden that then closes for the window doesn't bring back a page closed earlier with the X", async (t) => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "a.com" });
   const a = S().windows[w].tabIds[0];
   const b = S().newTab(w, { url: "b.com", background: true });

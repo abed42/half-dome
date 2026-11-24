@@ -37,6 +37,7 @@ async function closeByUser(id) {
 
 function twoWindows() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = S().createWindow({ url: "https://a1.com" });
   S().newTab(a, { url: "https://a2.com" });
   const b = S().createWindow({ url: "https://b1.com" });
@@ -65,6 +66,7 @@ test("closing the last window asks nothing: it stays restorable from the Dock", 
 
 test("with sharing off every window still asks about its own tabs", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = S().createWindow({ url: "https://a1.com" });
   S().newTab(a, { url: "https://a2.com" });
   S().newTab(a, { url: "https://a3.com" });
@@ -78,6 +80,7 @@ test("with sharing off every window still asks about its own tabs", async () => 
 
 test("cancelling the warning keeps the window and every tab", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = S().createWindow({ url: "https://a1.com" });
   S().newTab(a, { url: "https://a2.com" });
   S().newTab(a, { url: "https://a3.com" });
@@ -167,6 +170,7 @@ test("with sharing on, a profile neither handed over nor shown elsewhere still p
 
 test("with sharing on, two profiles handed over at once each keep their own Top Apps folder and tab ids (#3148)", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   share(true);
   S().updateProfile("default", { shareTopApps: true });
   const w = S().createWindow({ url: "https://mail.com" });
@@ -199,6 +203,7 @@ test("with sharing on, two profiles handed over at once each keep their own Top 
 
 test("with sharing on, a handed-over pin whose key another profile's tab holds still restores its page (#3148)", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   share(true);
   S().updateProfile("default", { shareTopApps: true });
   const b = S().createWindow({ url: "https://b.com" });
@@ -223,6 +228,7 @@ test("with sharing on, a handed-over pin whose key another profile's tab holds s
 
 test("with sharing off, a profile only the closing window shows still closes with it", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = S().createWindow({ url: "https://a1.com" });
   const b = S().createWindow({ url: "https://b1.com" });
   const work = S().createProfile({ name: "Work" });
@@ -286,6 +292,7 @@ test("a window whose other window closes while its warning is up closes as the l
 
 test("closing a window's last tab still asks about the tabs of its window", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = S().createWindow({ url: "https://a1.com" });
   S().createWindow({ url: "https://b1.com" });
   const [tab] = S().windows[a].tabIds;
@@ -349,6 +356,7 @@ test("a closing window that gains a new tab before its animation ends stays open
 
 test("a closing window that gains a second row of a tab it already shows stays open", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = S().createWindow({ url: "https://mail.com" });
   const [mail] = S().windows[a].tabIds;
   S().newTab(a, { url: "https://a.com" });
@@ -373,6 +381,7 @@ test("a closing window that gains a second row of a tab it already shows stays o
 
 test("⌘W right after moving a window: the frame the native close flushes is the one Reopen Closed Window restores", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ warnBeforeClosingLastTab: false });
   const a = S().createWindow({ url: "https://a.com" });
   const b = S().createWindow({ url: "https://b.com" });

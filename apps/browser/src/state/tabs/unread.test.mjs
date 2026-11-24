@@ -16,6 +16,7 @@ const shown = (id) => {
 
 const setup = (url = "https://mail.example/inbox") => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ showUnreadCounts: true });
   const w = S().createWindow({ url });
   const a = S().windows[w].tabIds[0];
@@ -127,6 +128,7 @@ test("each site in a tab keeps its own Badging API badge, so Back to an earlier 
 
 test("a pinned copy whose page moved to another window shows that page's badge", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ showUnreadCounts: true });
   const a = S().createWindow({ url: "https://mail.example/" });
   const [mail] = S().windows[a].tabIds;

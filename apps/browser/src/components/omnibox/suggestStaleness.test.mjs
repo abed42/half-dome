@@ -14,6 +14,7 @@ const entry = (url, title, ago = DAY) => ({ url, title, favicon: null, visits: 3
 
 function setup() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://start.example/" });
   const work = S().createProfile({ name: "Work" });
   useBrowser.setState((s) => ({

@@ -14,6 +14,7 @@ const tick = () => new Promise((resolve) => setTimeout(resolve, 3));
 
 async function twoPlaying() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "a.com" });
   const b = S().newTab(w, { url: "b.com", background: true });
   const c = S().newTab(w, { url: "c.com", background: true });
@@ -68,6 +69,7 @@ test("closing the sidebar player hands it to the next tab", async () => {
 
 test("media that never played with sound gets no sidebar player until it does", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "a.com" });
   const feed = S().newTab(w, { url: "x.com", background: true });
   const pick = () => media.playerTabFor(M(), [feed]);
@@ -85,6 +87,7 @@ test("media that never played with sound gets no sidebar player until it does", 
 test("play on a sleeping tab reloads it and resumes where it paused", async () => {
   const { useLifecycle } = await import("../tabs/sleepingTabs.ts");
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "a.com" });
   const b = S().newTab(w, { url: "b.com", background: true });
   const sent = [];
@@ -122,6 +125,7 @@ test("play on a sleeping tab whose page reports no media session still resumes o
   t.mock.timers.enable({ apis: ["setTimeout"] });
   const { useLifecycle } = await import("../tabs/sleepingTabs.ts");
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "a.com" });
   const b = S().newTab(w, { url: "b.com", background: true });
   const sent = [];
@@ -144,6 +148,7 @@ test("play on a sleeping tab whose page reports no media session still resumes o
 
 async function playingIn(url) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "a.com" });
   const a = S().windows[w].tabIds[0];
   const b = S().newTab(w, { url });
@@ -284,6 +289,7 @@ test("a page's report moving back is counted, a loop's restart and the card's ow
     return { now_playing_loop_restarts, media_position_rewinds, media_reports_past_end };
   };
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "a.com" });
   const b = S().newTab(w, { url: "b.com", background: true });
   takeMediaCardCounts();
@@ -302,6 +308,7 @@ test("a page's report moving back is counted, a loop's restart and the card's ow
 
 async function playingInAnotherProfile(across) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ playingNowAcrossProfiles: across });
   const w = S().createWindow({ url: "a.com" });
   const home = S().windows[w].profileId;
@@ -334,6 +341,7 @@ test("across profiles, a tab left playing in another profile shows its card in e
 
 test("across profiles, every profile's page shows the same card, even ones that picked different cards before", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ playingNowAcrossProfiles: false });
   const w = S().createWindow({ url: "a.com" });
   const home = S().windows[w].profileId;
@@ -372,6 +380,7 @@ test("across profiles, every profile's page shows the same card, even ones that 
 
 test("across profiles, a tab paused before you switch profiles gets no card, and a play in another profile takes the paused card", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ playingNowAcrossProfiles: true });
   const w = S().createWindow({ url: "a.com" });
   const home = S().windows[w].profileId;

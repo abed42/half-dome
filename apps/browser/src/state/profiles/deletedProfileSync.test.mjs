@@ -22,6 +22,7 @@ const callsFor = (engine, domain) => stub.engineCalls.filter((c) => c.profile ==
 
 test("a profile that left the app is not read again: no history, bookmarks or extensions call, no warning", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.docs.clear();
   stub.historyDbs.clear();
   const warnings = [];
@@ -69,6 +70,7 @@ test("a profile that left the app is not read again: no history, bookmarks or ex
 
 test("a profile that shares its data with another stays in sync when one of them is deleted", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.docs.clear();
   stub.historyDbs.clear();
   const stops = [startHistory(), startBookmarks()];
@@ -106,6 +108,7 @@ function holdWatch(moduleName, engine) {
 
 test("a profile deleted while its history and bookmarks are loading is not read after it left", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.docs.clear();
   stub.historyDbs.clear();
   const warnings = [];

@@ -12,6 +12,7 @@ const space = (pinned, tabs = []) => ({ id: "s", name: "Home", profileId: P, pin
 
 function start() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   return S().createWindow({ url: "https://home.example/" });
 }
 

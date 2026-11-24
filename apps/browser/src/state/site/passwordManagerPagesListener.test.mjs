@@ -34,6 +34,7 @@ usePages.subscribe = Object.assign((listener) => {
 
 test("with no password manager plugin on, the password manager holds no pages-store listener", async () => {
   S().hydrate({ profiles: { default: { id: "default", name: "Personal", color: "plum", icon: null, createdAt: 0 } }, profileOrder: ["default"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().createWindow({ url: "https://a.example/", profileId: "default" });
   startPlugins();
   stub.pluginHost.folders = [{ name: "system-passwords", status: "ok", official: true, text: MANIFEST.replace('"password-manager"', '"system-passwords"') }];

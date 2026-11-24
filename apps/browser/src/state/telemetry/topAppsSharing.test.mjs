@@ -29,6 +29,7 @@ const countsOf = (event, keys) => Object.fromEntries(keys.map((key) => [key, eve
 
 function twoSharingProfiles({ sharing }) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://mail.com" });
   const [mail] = S().windows[w].tabIds;
   S().newTab(w, { url: "https://a.com" });
@@ -101,6 +102,7 @@ test("a synced record that leaves a profile's Share Top Apps as it is records no
 
 test("linking a profile or creating one from a synced record names its path and counts only", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const before = (await recorded("top_apps_sharing_synced")).length;
   const doc = syncedDoc();
   const app = appScopeOf(doc);
@@ -125,6 +127,7 @@ test("linking a profile or creating one from a synced record names its path and 
 
 test("a pass that copies Top Apps into another profile records the circles and tiles, and a pass with sharing off records nothing", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const before = (await recorded("top_apps_mirrored")).length;
   twoSharingProfiles({ sharing: false });
   assert.equal((await recorded("top_apps_mirrored")).length, before, "no profile shares, so nothing is copied or recorded");
@@ -154,6 +157,7 @@ test("none of the records carry a URL, a title or a profile name", async () => {
 
 test("a copy into a profile open in two windows counts that profile once and only the tiles copied in; a removal counts as removed", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateProfile("default", { shareTopApps: true });
   const w = S().createWindow({ url: "https://mail.com" });
   const [mail] = S().windows[w].tabIds;
@@ -178,6 +182,7 @@ test("the launch snapshot reports the merge marker the session saved, before lau
   const { flushPersistence, loadSession, startPersistence } = await import("../session/persist.ts");
   const { topAppsSharingAtLaunch } = await import("./topAppsSharing.ts");
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   let stop = startPersistence();
   twoSharingProfiles({ sharing: true });
   assert.notEqual(S().topAppsMerged, "");
@@ -187,6 +192,7 @@ test("the launch snapshot reports the merge marker the session saved, before lau
   stub.docs.set(doc, stub.docs.get(doc).replace(/"topAppsMerged":"[^"]*"/, '"topAppsMerged":""'));
   assert.equal(loadSession().topAppsMerged, "", "the saved session has no merge marker");
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stop = startPersistence();
   stop();
   assert.notEqual(S().topAppsMerged, "", "launch settled the marker");
@@ -203,8 +209,9 @@ test("a 0.2.44 session whose profiles never opted in has its old merge marker cl
   const saved = JSON.parse(readFileSync(new URL("../pins/fixtures/topapps-merged-0244.json", import.meta.url), "utf8"));
   assert.notEqual(saved.topAppsMerged, "", "0.2.44 saved a merge marker");
   stub.docs.set("session.json", JSON.stringify(saved));
-  S().hydrate({});
   const stop = startPersistence();
+  S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stop();
   assert.equal(S().topAppsMerged, "", "no profile shares, so launch cleared the marker without merging anything");
   const launch = topAppsSharingAtLaunch(S(), "0.2.44");
@@ -216,6 +223,7 @@ test("a 0.2.44 session whose profiles never opted in has its old merge marker cl
 
 function sharerWithTile() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://mail.com" });
   S().pinTabs([S().windows[w].tabIds[0]], true);
   return w;

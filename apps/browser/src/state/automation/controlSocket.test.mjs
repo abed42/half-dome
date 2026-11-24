@@ -45,6 +45,7 @@ function eventsFor(connection, from) {
 
 function fresh() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ cliControl: true });
 }
 

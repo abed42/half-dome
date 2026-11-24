@@ -13,6 +13,7 @@ const shown = (w) => model.activeTabId(S(), w);
 
 const reset = (newTabPosition = "nextToCurrent") => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ cmdClickCreatesTabGroup: false, newTabPosition });
 };
 const setup = (...urls) => {

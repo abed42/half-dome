@@ -13,6 +13,7 @@ function folderWithOpenItem() {
   const folderId = createFolder("p", "pullRequests", []);
   applyFetch(folderId, [item], {});
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://x.com/" });
   return { folderId, w };
 }

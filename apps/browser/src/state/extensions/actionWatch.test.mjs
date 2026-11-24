@@ -13,6 +13,7 @@ const settle = async () => {
 
 test("a title change on a shown tab asks for no action states, a navigation asks again", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "a.com" });
   const a = S().windows[w].tabIds[0];
   const asked = [];

@@ -26,6 +26,7 @@ function inputsChangedBy(step, reads) {
 
 test("a store change the last menu build didn't read leaves the menu as it was, and one it read is caught", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.example/" });
   const first = model.activeTabId(S(), w);
   const steps = [
@@ -57,6 +58,7 @@ test("a store change the last menu build didn't read leaves the menu as it was, 
 
 test("the reads cover every top-level field the menu used, including through its helpers", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().createWindow({ url: "https://a.example/" });
   const { reads } = trackedMenuState(S());
   const liveRead = [];
@@ -77,6 +79,7 @@ function menuChanges(step) {
 
 test("a hidden tab's title, icon, mute or loading leaves the menu alone; what the menu shows of a tab still rebuilds it", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.example/" });
   const shown = model.activeTabId(S(), w);
   const hidden = S().newTab(w, { url: "https://b.example/", background: true });
@@ -102,6 +105,7 @@ test("a hidden tab's title, icon, mute or loading leaves the menu alone; what th
 
 test("whatever changes in tabs and their live state, a menu that isn't rebuilt is the menu a rebuild would give", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const windows = [S().createWindow({ url: "https://a.example/" }), S().createWindow({ url: "https://b.example/" })];
   for (const w of windows) for (let i = 0; i < 4; i++) S().newTab(w, { url: `https://${i}.example/`, background: true });
   let seed = 7;
@@ -152,6 +156,7 @@ test("whatever changes in tabs and their live state, a menu that isn't rebuilt i
 
 test("what a load changes in the shown tab and the menu never shows leaves the menu alone", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.example/" });
   S().setFocusedWindow(w);
   const shown = model.activeTabId(S(), w);
@@ -169,6 +174,7 @@ test("what a load changes in the shown tab and the menu never shows leaves the m
 
 test("of a tab that isn't shown or selected, the menu reads only the fields a change is checked against, and none of its live state", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const windows = [S().createWindow({ url: "https://a.example/" }), S().createWindow({ url: "file:///tmp/notes.txt" })];
   for (const w of windows) for (let i = 0; i < 4; i++) S().newTab(w, { url: `https://${i}.example/`, background: true });
   const ids = S().windows[windows[0]].tabIds;
@@ -195,6 +201,7 @@ test("of a tab that isn't shown or selected, the menu reads only the fields a ch
 
 test("History › Recently Closed lists only what the window's shown profile closed", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://home.example/" });
   const personal = S().newTab(w, { url: "https://personal.example/" });
   S().updateTab(personal, { title: "Personal page" });
@@ -230,6 +237,7 @@ test("History › Recently Closed lists only what the window's shown profile clo
 
 test("the shown Peek's page rebuilds the menu like a shown tab; a Peek hidden behind another tab doesn't", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.example/" });
   const source = model.activeTabId(S(), w);
   const other = S().newTab(w, { url: "https://b.example/", background: true });
@@ -245,6 +253,7 @@ test("the shown Peek's page rebuilds the menu like a shown tab; a Peek hidden be
 
 test("the menu state tells the shell whether links from other apps open in Little Ardia", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().createWindow({ url: "https://a.example/" });
   S().updateSettings({ openLinksInLittleArdia: true });
   assert.equal(menuState(S()).linksOpenInLittleArdia, true);
@@ -283,6 +292,7 @@ test("an extension list fetched again with what the menu shows unchanged doesn't
 test("private windows disable Bookmarks Bar commands in menuState and ignore them in runCommand", async () => {
   const { runCommand } = await import("./commands.ts");
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ bookmarksBar: "never" });
   const priv = S().createWindow({ kind: "private", url: "https://private.example/" });
   S().setFocusedWindow(priv);
@@ -298,6 +308,7 @@ test("private windows disable Bookmarks Bar commands in menuState and ignore the
 test("Browser Layout menu bar commands switch tab placement in one pick, gate Compact Toolbar, and expose Collapse/Expand Pinned Tabs", async () => {
   const { runCommand } = await import("./commands.ts");
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.example/" });
   const tabId = model.activeTabId(S(), w);
   S().setFocusedWindow(w);
@@ -333,6 +344,7 @@ test("Browser Layout menu bar commands switch tab placement in one pick, gate Co
 test("Little Ardia direct command dispatch ignores Browser Layout commands", async () => {
   const { runCommand } = await import("./commands.ts");
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const main = S().createWindow({ url: "https://a.example/" });
   const tabId = model.activeTabId(S(), main);
   S().pinTabs([tabId], true, true);
@@ -356,6 +368,7 @@ test("Little Ardia direct command dispatch ignores Browser Layout commands", asy
 test("Collapse Pinned Tabs stays disabled when a pinned group holds only a hidden empty tab", async () => {
   const { pinnedFoldMenuItem } = await import("../sidebar/pinnedFold.ts");
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ newTabOpens: "commandBar" });
   const w = S().createWindow({ url: "https://a.example/" });
   const blank = S().newTab(w, { url: "", background: true });

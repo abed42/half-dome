@@ -22,6 +22,7 @@ const PERSONAL = { id: "default", name: "Personal", color: "plum", icon: null, c
 
 function twoProfiles() {
   S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const work = S().createProfile({ name: "Work" });
   const a = S().createWindow({ url: "https://a.example/" });
   const b = S().createWindow({ profileId: work, url: "https://b.example/" });

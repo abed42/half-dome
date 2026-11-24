@@ -27,6 +27,7 @@ const message = (h) => nodes(h.value).some((node) => node.props?.children === "S
 
 function dialog(profileId = "default", iconKey = "") {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   requests.length = 0;
   takeHistoryRemovalCounts();
   const recent = { url: "https://recent.example/", title: "Recent", lastVisit: Date.now(), visits: 1, favicon: null };

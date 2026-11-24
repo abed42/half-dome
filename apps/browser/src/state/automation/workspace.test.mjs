@@ -31,6 +31,7 @@ const apply = async (...ops) => (await call("apply", { ops })).result;
 
 async function setup() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   await controlOn();
   const windowId = S().createWindow({ url: "https://a.example/" });
   const a = S().windows[windowId].activeTabIds[S().windows[windowId].profileId];
@@ -275,6 +276,7 @@ test("R3: an operation that can't finish changes nothing", async () => {
 
 test("R4: sleeping a background pin never unloads a page another window shows", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   await controlOn();
   const a = S().createWindow({ url: "https://mail.com" });
   const [mail] = S().windows[a].tabIds;
@@ -539,6 +541,7 @@ test("names: a group field takes a group's name, case-insensitively, in the op's
 test("order: groups made from one group's tabs keep creation order above it, and ungrouping it leaves the rest below", async () => {
   for (const pinned of [false, true]) {
     S().hydrate({});
+    S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
     await controlOn();
     const w = S().createWindow({ url: "https://0.example/" });
     const t = [1, 2, 3, 4, 5, 6].map((n) => S().newTab(w, { url: `https://${n}.example/`, background: true }));

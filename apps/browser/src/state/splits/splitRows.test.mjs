@@ -8,7 +8,10 @@ const { sidebarEntries, groupEntries, numberedTabs } = await import("../sidebar/
 const { splitTabIdsOf } = await import("./splits.ts");
 
 const S = () => useBrowser.getState();
-const reset = () => S().hydrate({});
+const reset = () => {
+  S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
+};
 const host = (id) => new URL(S().tabs[id].pinnedUrl || S().tabs[id].url).hostname.replace(".com", "");
 const splitOfTab = (id) => Object.values(S().splits).find((v) => splitTabIdsOf(v).includes(id));
 const panesOf = (w) => Object.values(S().splits).filter((v) => v.windowId === w).map((v) => splitTabIdsOf(v).map(host));
@@ -124,6 +127,7 @@ test("a pinned split is parked with its window and comes back a split", () => {
   const parked = parkWindowPins({}, S().windows[w], S());
   assert.deepEqual(parked.default.splits.map((v) => splitTabIdsOf(v)), [[b, c]]);
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const n = S().createWindow({ url: "https://z.com/" });
   useBrowser.setState({ parkedPins: parked });
   useBrowser.setState(adoptParkedPins(S(), n, "default"));
@@ -187,6 +191,7 @@ test("parking keeps both panes of a pinned split even at the same page, or at a 
   const parked = parkWindowPins({}, S().windows[w], S());
   assert.deepEqual(parked.default.splits?.map((v) => splitTabIdsOf(v)), [[b1, b2]], "both panes parked, by identity");
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const n = S().createWindow({ url: "https://z.com/" });
   useBrowser.setState({ parkedPins: parked });
   useBrowser.setState(adoptParkedPins(S(), n, "default"));

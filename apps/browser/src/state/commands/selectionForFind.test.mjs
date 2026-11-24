@@ -13,6 +13,7 @@ const settle = () => new Promise((r) => setTimeout(r, 20));
 
 async function findFrom(answer) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "http://127.0.0.1:9/page" });
   const tab = activeTabId(S(), w);
   webviews.set(tab, { evaluate: async () => answer });

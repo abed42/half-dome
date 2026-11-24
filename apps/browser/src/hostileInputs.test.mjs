@@ -118,6 +118,7 @@ function hideCalls() {
 
 function plantedTab(answer, { confirmed }) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: `https://${HOST}/article` });
   const tab = activeTabId(S(), w);
   webviews.set(tab, {
@@ -164,6 +165,7 @@ const tabUrls = () => Object.values(S().tabs).map((t) => t.url).filter((u) => u 
 
 test("D5: a link from another app reaches a tab only as a web, file, blank or listed Ardia address", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const given = strings.flatMap((s) => [s, `https://a.test/${s}`, `ardia://${s}`, `arc://${s}`, `${s}https://a.test/`]);
   const named = ["javascript", "javascriptMixedCase", "data", "dataBase64", "extension", "devtools", "viewSource", "ardiaUnknown", "arcLegacyUnknown", "blob", "filesystem", "vbscript"].map((n) => URL_SCHEMES[n]);
   for (const url of [...given, ...named]) openExternalUrls([url]);
@@ -217,6 +219,7 @@ test("an operation named after an Object prototype key is a bad request, not a c
 
 const freshSettings = () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useBrowser.setState({ settings: { ...DEFAULT_SETTINGS }, settingsMeta: { chosen: [], inferred: [] } });
 };
 
@@ -310,6 +313,7 @@ test("B1 R3: a page's own Reader helper can't change the Reader look the user ch
   const stop = startReader();
   try {
     S().hydrate({});
+    S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
     useBrowser.setState({ settings: { ...DEFAULT_SETTINGS }, settingsMeta: { chosen: [], inferred: [] } });
     const w = S().createWindow({ url: "http://127.0.0.1:9/article-hostile" });
     const tab = activeTabId(S(), w);
@@ -330,6 +334,7 @@ test("B1 R3: a page's own Reader helper can't change the Reader look the user ch
 test("B5: Use Selection for Find takes only a string from the page, whatever it returns", async () => {
   for (const { id, value } of HOSTILE_VALUES.filter((h) => h.id.startsWith("type.") || h.id.startsWith("overlong.") || h.id.startsWith("prototype."))) {
     S().hydrate({});
+    S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
     const w = S().createWindow({ url: "http://127.0.0.1:9/page" });
     const tab = activeTabId(S(), w);
     webviews.set(tab, { evaluate: async () => value });

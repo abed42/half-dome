@@ -25,6 +25,7 @@ async function usageCounts() {
 
 function workWindowBehindDefaultWindow() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const work = S().createProfile({ name: "Work", shareWith: "default" });
   const workWindow = S().createWindow({ profileId: work });
   const defaultWindow = S().createWindow();

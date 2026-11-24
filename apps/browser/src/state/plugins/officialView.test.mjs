@@ -83,6 +83,7 @@ test("only a plugin that can still be chosen counts as offered", () => {
 
 const CLI = JSON.stringify({ manifest: 1, name: "cli", title: "Command Line", version: "0.3.0", alwaysOn: true, official: true, icon: "terminal.fill", permissions: ["control"], programs: [{ name: "ardia", path: "bin/ardia" }] });
 useBrowser.getState().hydrate({});
+useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
 stub.pluginHost.folders = [];
 stub.pluginHost.officialArtifacts = { cli: CLI };
 startPlugins();

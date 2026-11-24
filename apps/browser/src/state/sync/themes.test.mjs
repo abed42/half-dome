@@ -73,6 +73,7 @@ class Mac {
     this.id = id;
     this.folder = folder;
     S().hydrate({});
+    S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
     this.browser = S();
     this.scope = emptyScope();
     this.scope.joined = !joining;

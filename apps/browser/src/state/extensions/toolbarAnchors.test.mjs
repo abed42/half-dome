@@ -25,6 +25,7 @@ async function sentCounts() {
 test("a popup opens at its button's place measured now, not where it was when the toolbar last laid out", async () => {
   client.setSharing(true, "onboarding");
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({});
   const tab = model.activeTabId(S(), w);
   const cached = { x: 900, y: 12, width: 28, height: 28 };

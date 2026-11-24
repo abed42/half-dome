@@ -14,6 +14,7 @@ after(() => client.setSharing(false, "settings"));
 test("tab-change detection counts from before sharing went off never reach a later consent period", () => {
   const S = () => useBrowser.getState();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.com" });
   const tab = S().windows[w].tabIds[0];
   client.setSharing(true, "settings");

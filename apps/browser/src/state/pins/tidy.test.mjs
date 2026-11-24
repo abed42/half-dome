@@ -8,7 +8,10 @@ const { useToasts } = await import("../app/toasts.ts");
 const { tidy: tidyWithToast } = await import("../sidebar/tidyUi.ts");
 
 const S = () => useBrowser.getState();
-const reset = () => S().hydrate({});
+const reset = () => {
+  S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
+};
 const home = (id) => S().tabs[id].pinnedUrl || S().tabs[id].url;
 const label = (id) => {
   const u = new URL(home(id));

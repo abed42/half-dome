@@ -49,6 +49,7 @@ let persisting = false;
 async function setup() {
   if (!persisting) (startPersistence(), (persisting = true));
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ cliControl: true });
   startAutomation();
   for (let i = 0; i < 5 && !stub.controlSocket.running; i++) await tick();

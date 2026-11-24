@@ -105,6 +105,7 @@ test("closed.list and closed.clear act on the same window by default, and cleari
   assert.equal((await ok("closed.clear")).cleared, listed.length);
   assert.equal((await ok("closed.list")).length, 0);
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   await controlOn();
   assert.equal((await call("closed.clear")).error?.code, "no_window");
   assert.equal((await call("closed.list")).error?.code, "no_window");

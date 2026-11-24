@@ -59,6 +59,15 @@ Icon sources: `halfdome/branding/`.
 
 Half Dome defaults to Arc’s layout: vertical tabs and the address bar on the **left** (sidebar), so the page runs to the top of the window.
 
+| Default | Value |
+| --- | --- |
+| Address bar (`addressBar`) | `sidebar` (left) |
+| ⌘T (`newTabOpens`) | `commandBar` (centred command bar; no New Tab row) |
+| New Tab button (`newTabButtonPosition`) | `top` of the unpinned list |
+| New tabs (`newTabPosition`) | `top` of the unpinned list |
+| ⌘L / command bar (`commandBarPlacement`) | `centred` |
+| New profile switcher mark | first unused profile icon (not an anonymous dot) |
+
 | Control | Where |
 | --- | --- |
 | Settings › Appearance › Address bar | Picture cards: **Top** or **Left** |

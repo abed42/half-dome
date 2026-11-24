@@ -26,6 +26,7 @@ const { colorRoles } = await import("../ui/tokens.ts");
 const S = () => useBrowser.getState();
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 S().hydrate({ profiles: { default: { id: "default", name: "Personal", color: "plum", icon: null, createdAt: 0 } }, profileOrder: ["default"] });
+S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
 const w = S().createWindow({ url: "https://a.example/" });
 const tab = S().windows[w].tabIds[0];
 

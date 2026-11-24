@@ -21,6 +21,7 @@ const firstMatch = (query, w) => matchActions(query, barActions(S(), w))[0]?.act
 
 test("the command bar's layout row reads like the View menu item and names the layout it switches to", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://start.example/" });
   assert.equal(tabLayoutOf(S(), w), "sidebar");
   assert.equal(layoutAction(w)?.title, "Show Tabs Across the Top");
@@ -37,6 +38,7 @@ test("the command bar's layout row reads like the View menu item and names the l
 
 test("typing a name for either layout finds the layout row first", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://start.example/" });
   const queries = ["top tabs", "vertical tabs", "tab layout", "horizontal tabs", "sidebar tabs", "tabs in sidebar", "tabs across the top"];
   for (const layout of ["sidebar", "top"]) {
@@ -47,6 +49,7 @@ test("typing a name for either layout finds the layout row first", () => {
 
 test("each way of switching counts one switch in its direction, and Settings counts none", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://start.example/" });
   takeTabLayoutCounts();
 
@@ -87,6 +90,7 @@ test("each way of switching counts one switch in its direction, and Settings cou
 
 test("Little Ardia's command bar leaves out the layout row and the other commands its menus disable", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const main = S().createWindow({ url: "https://main.example/" });
   const little = S().createWindow({ kind: "small", url: "https://little.example/" });
   assert.ok(layoutAction(main));

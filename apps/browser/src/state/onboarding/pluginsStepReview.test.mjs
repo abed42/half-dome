@@ -32,6 +32,7 @@ const offered = (soon = false) => offeredInOnboarding(officialPlugins(P(), true,
 
 setConsentPeriod(true, "test-epoch");
 S().hydrate({});
+S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
 const windowId = S().createWindow();
 let closeSettings = surface.presentSettingsConsent();
 

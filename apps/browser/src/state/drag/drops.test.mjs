@@ -6,7 +6,10 @@ const { stripEntries } = await import("../tabs/topStrip.ts");
 await import("../../test-native/index.ts");
 
 const S = () => useBrowser.getState();
-const reset = () => S().hydrate({});
+const reset = () => {
+  S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
+};
 const host = (id) => new URL(S().tabs[id].url).hostname.split(".")[0];
 
 function windowWith(...hosts) {

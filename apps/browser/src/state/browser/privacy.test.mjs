@@ -39,6 +39,7 @@ function privateWindowWith(...urls) {
 
 test("incognito window: own profile, closing records nothing, history ignored", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ kind: "private", url: "secret.com" });
   const tab = S().tabs[model.activeTabId(S(), w)];
   assert.equal(tab.profileId, `incognito:${w}@default`);
@@ -57,8 +58,9 @@ test("incognito window: own profile, closing records nothing, history ignored", 
 
 test("cleaning up a private window keeps its tabs in memory, out of session.json, and in that window", (t) => {
   stub.docs.clear();
-  S().hydrate({});
   const stop = startApp(t);
+  S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const normal = S().createWindow({ url: "https://public.example/" });
   const { w, ids: [, stale, dupe] } = privateWindowWith("https://secret.example/a", "https://secret.example/old", "https://secret.example/a");
   S().activate(model.viewTabIds(S(), w)[0]);
@@ -122,6 +124,7 @@ test("cleaned tabs leave Recently Cleaned a week after their clean-up", (t) => {
   const recent = entry("ct-recent", "https://recent.example/", Date.now() - HOUR);
   stub.docs.set("session.json", JSON.stringify({ version: 2, profiles: {}, profileOrder: [], settings: {}, windows: [], windowOrder: [], focusedWindowId: null, tabs: [], groups: [], splits: [], closedTabs: [], closedWindows: [], cleanedTabs: [stale, recent] }));
   const stop = startApp(t);
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   assert.deepEqual(S().cleanedTabs.map((c) => c.id), ["ct-recent"], "launch drops the entry older than a week");
   const w = S().createWindow({ url: "https://public.example/" });
   assert.deepEqual(cleanedTabsFor(S(), w).map((c) => c.id), ["ct-recent"]);
@@ -135,7 +138,7 @@ test("cleaned tabs leave Recently Cleaned a week after their clean-up", (t) => {
 
   useBrowser.setState({ cleanedTabs: [stale] });
   const old = S().newTab(w, { url: "https://idle.example/" });
-  S().activate(model.viewTabIds(S(), w)[0]);
+  S().activate(model.viewTabIds(S(), w).find((id) => id !== old));
   S().updateTab(old, { lastActiveAt: OLD() });
   S().cleanUpTabs(w);
   assert.ok(!S().cleanedTabs.some((c) => c.id === "ct-stale"), "the next clean-up drops the expired entry");
@@ -145,8 +148,9 @@ test("cleaned tabs leave Recently Cleaned a week after their clean-up", (t) => {
 
 test("session.json filters private tabs out of every closed and parked list", (t) => {
   stub.docs.clear();
-  S().hydrate({});
   const stop = startApp(t);
+  S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().createWindow({ url: "https://public.example/" });
   const snap = { url: "https://secret.example/", title: "", favicon: null, pin: null, muted: false, zoom: 1, customTitle: null, customIcon: null, profileId: "incognito:w-x" };
   useBrowser.setState({
@@ -179,8 +183,9 @@ const download = (id, profile, state = "finished") => ({
 
 test("incognito downloads never reach downloads.json and leave with their window", (t) => {
   stub.docs.clear();
-  S().hydrate({});
   const stop = startApp(t);
+  S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const normal = S().createWindow();
   const incognito = S().createWindow({ kind: "private" });
   const privateProfile = S().windows[incognito].profileId;
@@ -247,6 +252,7 @@ test("favicons: incognito icons stay in memory and in their own profile; nothing
 
 test("incognito windows neither give nor take dragged tabs", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const b = S().createWindow({ url: "c.com" });
   S().setWindowFrame(b, [1000, 100, 800, 600]);
   const i = S().createWindow({ kind: "private", url: "d.com" });
@@ -260,6 +266,7 @@ test("incognito windows neither give nor take dragged tabs", () => {
 
 test("clearing a time range removes visits, not pages", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const t0 = 1_700_000_000_000;
   const entry = (url, times) => ({ url, title: url, favicon: null, visits: times.length, lastVisit: times.at(-1), visitTimes: times });
   useBrowser.setState({ history: { "": { list: [entry("https://b.com/", [t0 - 5 * 60_000]), entry("https://a.com/", [t0 - 5 * HOUR, t0 - 10 * 60_000])], floor: -Infinity, ready: true } } });
@@ -279,6 +286,7 @@ test("clearing a time range removes visits, not pages", () => {
 
 test("deleting the original profile queues Chrome's default profile for deletion", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const work = S().createProfile({ name: "Work" });
   S().deleteProfile("default");
   assert.deepEqual(S().orphanedProfileData, [""]);
@@ -288,6 +296,7 @@ test("deleting the original profile queues Chrome's default profile for deletion
 
 test("a profile sharing another's data leaves nothing to delete until the last one goes", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const shared = S().createProfile({ name: "Shared", shareWith: "default" });
   const other = S().createProfile({ name: "Other" });
   S().deleteProfile("default");
@@ -308,8 +317,9 @@ test("queued profile data is deleted once, and stays queued in session.json unti
   stub.docs.clear();
   stub.deletedProfileData.length = 0;
   stub.profileDataLeft.set("", ["passwords"]);
-  S().hydrate({});
   const stop = startApp(t);
+  S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const work = S().createProfile({ name: "Work" });
   S().createWindow({ profileId: work, url: "https://work.example/" });
   S().deleteProfile("default");
@@ -332,6 +342,7 @@ test("queued profile data is deleted once, and stays queued in session.json unti
 
 test("deleting a profile keeps the data others share", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = S().createProfile({ name: "A" });
   await S().importHistory(a, [{ url: "https://a.com/", title: "A", visits: 1, lastVisit: 2 }]);
   const bookmark = S().addBookmark({ profileId: a, url: "https://b.com/", title: "B" });

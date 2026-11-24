@@ -58,6 +58,7 @@ function legacyFile() {
 
 test("bookmarks.json moves into Chrome once, each bookmark under the UUID sync renames it to", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.docs.clear();
   stub.bookmarkDbs.clear();
   stub.docs.set("bookmarks.json", JSON.stringify(legacyFile()));
@@ -77,6 +78,7 @@ test("bookmarks.json moves into Chrome once, each bookmark under the UUID sync r
 
 test("bookmarks.json waits for Chrome's bookmark model to load before it applies, and a model that never answers keeps the file for the next launch", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.docs.clear();
   stub.bookmarkDbs.clear();
   stub.docs.set("bookmarks.json", JSON.stringify(legacyFile()));
@@ -106,6 +108,7 @@ test("bookmarks.json waits for Chrome's bookmark model to load before it applies
 
 test("a launch with no bookmarks.json asks Chrome for nothing", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.docs.clear();
   stub.bookmarkModel.treeFails = true;
   assert.equal(await migrateBookmarksFile({ keepMs: 0 }), "none");
@@ -114,6 +117,7 @@ test("a launch with no bookmarks.json asks Chrome for nothing", async () => {
 
 test("the store's tree and Chrome's stay alike: the app's edits go as ops, an extension's come back", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.docs.clear();
   stub.bookmarkDbs.clear();
   const stop = startBookmarks();
@@ -156,6 +160,7 @@ test("the store's tree and Chrome's stay alike: the app's edits go as ops, an ex
 
 test("select all and delete clears a 2,400-bookmark import from the store and Chrome in one go, and undo puts every one back in place", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useBrowser.setState({ bookmarks: { nodes: {} } });
   stub.docs.clear();
   stub.bookmarkDbs.clear();
@@ -195,6 +200,7 @@ test("select all and delete clears a 2,400-bookmark import from the store and Ch
 
 test("undo puts deleted rows back between the rows that stayed, in every folder they came from", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useBrowser.setState({ bookmarks: { nodes: {} } });
   const roots = (S().addBookmarkTree("default", []), bookmarkRoots(S(), "default"));
   const [a, b, c, d, e] = S().addBookmarkTree("default", ["A", "B", "C", "D", "E"].map((t) => ({ title: t, url: `https://${t}.example/` })), roots.bar);
@@ -209,6 +215,7 @@ test("undo puts deleted rows back between the rows that stayed, in every folder 
 
 test("a selection moves in one store update, in the order given, and lands between the rows that stay", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useBrowser.setState({ bookmarks: { nodes: {} } });
   const source = S().addBookmarkFolder({ profileId: "default", title: "Source" });
   const target = S().addBookmarkFolder({ profileId: "default", title: "Target" });
@@ -234,6 +241,7 @@ test("a selection moves in one store update, in the order given, and lands betwe
 
 test("a move leaves out what can't go: a root, a folder into itself or below itself, a missing id, a target that isn't a folder", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useBrowser.setState({ bookmarks: { nodes: {} } });
   const outer = S().addBookmarkFolder({ profileId: "default", title: "Outer" });
   const inner = S().addBookmarkFolder({ profileId: "default", title: "Inner", parentId: outer });
@@ -257,6 +265,7 @@ test("a move leaves out what can't go: a root, a folder into itself or below its
 
 test("a 20,000-bookmark selection moves to another folder in a bounded time, and Chrome ends up with the same tree", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useBrowser.setState({ bookmarks: { nodes: {} } });
   stub.docs.clear();
   stub.bookmarkDbs.clear();
@@ -288,6 +297,7 @@ test("a 20,000-bookmark selection moves to another folder in a bounded time, and
 test("an edit made at launch, before Chrome's tree is read, reaches Chrome and stays", async () => {
   useBrowser.setState({ bookmarks: { nodes: {} } });
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.docs.clear();
   stub.bookmarkDbs.clear();
   stub.chromeBookmarkEdit("", [{ op: "add", id: "0f0f0f0f-0000-4000-8000-0000000000a1", k: "u", t: "In Chrome", u: "https://chrome.example/", a: 1, parent: "bar" }]);
@@ -302,6 +312,7 @@ test("an edit made at launch, before Chrome's tree is read, reaches Chrome and s
 test("ops Chrome can't apply (an extension moved things meanwhile) stop there: nothing the store kept is removed", async () => {
   useBrowser.setState({ bookmarks: { nodes: {} } });
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.docs.clear();
   stub.bookmarkDbs.clear();
   const stop = startBookmarks();
@@ -325,6 +336,7 @@ test("ops Chrome can't apply (an extension moved things meanwhile) stop there: n
 test("at launch the bar shows the last tree read from Chrome until Chrome's loads, and nothing of it is written back", async () => {
   useBrowser.setState({ bookmarks: { nodes: {} } });
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.docs.clear();
   stub.bookmarkDbs.clear();
   stub.chromeBookmarkEdit("", [{ op: "add", id: "0f0f0f0f-0000-4000-8000-0000000000c1", k: "u", t: "Now", u: "https://now.example/", a: 1, parent: "bar" }]);
@@ -346,6 +358,7 @@ test("at launch the bar shows the last tree read from Chrome until Chrome's load
 
 test("a launch with bookmarks.json shows its tree at once, then moves it into Chrome", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   stub.docs.clear();
   stub.bookmarkDbs.clear();
   stub.docs.set("bookmarks.json", JSON.stringify(legacyFile()));
@@ -361,6 +374,7 @@ test("a launch with bookmarks.json shows its tree at once, then moves it into Ch
 
 test("profiles that share data share one tree, owned by whichever comes first in the profile order, Arc holders included", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = S().createProfile({ name: "A" });
   const b = S().createProfile({ name: "B", shareWith: a });
   assert.deepEqual(bookmarkRoots(S(), b), bookmarkRoots(S(), a), "one tree for both");
@@ -384,6 +398,7 @@ test("profiles that share data share one tree, owned by whichever comes first in
 
 test("deleting one of two sharing profiles keeps the tree; deleting the last drops it and its ready mark", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = S().createProfile({ name: "A" });
   const b = S().createProfile({ name: "B", shareWith: a });
   useBrowser.setState({ bookmarksReady: { [a]: true } });

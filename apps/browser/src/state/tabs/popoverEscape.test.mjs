@@ -15,6 +15,7 @@ test("Escape closes the Downloads popover where the platform asks for it, and on
   assert.equal(windowsFeatures.escapeClosesDownloads, true, "Windows holds Escape while Downloads is open");
 
   S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = S().createWindow({});
   const b = S().createWindow({});
   S().setFocusedWindow(a);

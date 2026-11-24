@@ -40,6 +40,7 @@ export async function controlOn() {
 
 export async function freshWindow(url = "https://a.example/") {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   await controlOn();
   const windowId = S().createWindow({ url });
   return { windowId, tab: S().windows[windowId].activeTabIds[S().windows[windowId].profileId] };

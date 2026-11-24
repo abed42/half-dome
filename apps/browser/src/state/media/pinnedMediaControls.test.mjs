@@ -12,6 +12,7 @@ const S = () => useBrowser.getState();
 
 function pinnedPlayer() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().updateSettings({ showTabHoverMenu: false, sidebarMediaControls: true });
   const w = S().createWindow({ url: "a.com" });
   const tab = S().newTab(w, { url: "music.com", background: true });

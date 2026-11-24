@@ -12,6 +12,7 @@ const PERSONAL = { id: "default", name: "Personal", color: "plum", icon: null, c
 
 function windowWithTab() {
   S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.example/" });
   const page = S().windows[w].tabIds[0];
   return { w, page, ref: (tabId) => ({ windowId: w, profileId: S().windows[w].profileId, tabId }) };

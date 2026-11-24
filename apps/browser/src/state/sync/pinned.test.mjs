@@ -34,6 +34,7 @@ class Device {
     this.folder = folder;
     this.adapters = adapters;
     S().hydrate({});
+    S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
     this.browser = S();
     this.scope = emptyScope();
     this.clock = new Clock(id);

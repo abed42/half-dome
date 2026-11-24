@@ -39,6 +39,7 @@ let work = "";
 
 test("setup: two password-manager plugins with the same fields, Personal on the first", async () => {
   S().hydrate({ profiles: { default: { id: "default", name: "Personal", color: "plum", icon: null, createdAt: 0 } }, profileOrder: ["default"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   work = S().createProfile({ name: "Work" });
   const windowId = S().createWindow({ url: "https://a.example/login", profileId: "default" });
   tabId = S().windows[windowId].tabIds[0];

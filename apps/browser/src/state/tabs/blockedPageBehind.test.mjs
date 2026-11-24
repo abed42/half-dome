@@ -9,6 +9,7 @@ const BLOCKED = "chrome-extension://fajbdaomknpkicfjcpipdmcpoamdmilh/document-bl
 
 function windowWithTab() {
   S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"] });
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.example/" });
   const page = S().windows[w].tabIds[0];
   return { w, page, ref: { windowId: w, profileId: S().windows[w].profileId, tabId: page } };

@@ -6,15 +6,15 @@ const stub = await import("../../test-native/index.ts");
 
 const S = () => useBrowser.getState();
 
-test("a saved At the top keeps the New Tab button at the top; the other choices leave it at the bottom", () => {
+test("a saved At the top keeps the New Tab button at the top; other positions without a saved button use Arc's top default", () => {
   stub.docs.set("session.json", JSON.stringify({ version: 7, settings: { newTabPosition: "top", chosen: ["newTabPosition"], inferred: [] } }));
   S().hydrate(loadSession());
   assert.equal(S().settings.newTabButtonPosition, "top");
   assert.ok(S().settingsMeta.chosen.includes("newTabButtonPosition"), "it syncs like the choice it came from");
   for (const newTabPosition of ["bottom", "nextToCurrent"]) {
     stub.docs.set("session.json", JSON.stringify({ version: 7, settings: { newTabPosition, chosen: ["newTabPosition"], inferred: [] } }));
-  S().hydrate(loadSession());
-    assert.equal(S().settings.newTabButtonPosition, "bottom", newTabPosition);
+    S().hydrate(loadSession());
+    assert.equal(S().settings.newTabButtonPosition, "top", newTabPosition);
   }
   stub.docs.set("session.json", JSON.stringify({ version: 7, settings: { newTabPosition: "top", newTabButtonPosition: "bottom", chosen: ["newTabPosition", "newTabButtonPosition"], inferred: [] } }));
   S().hydrate(loadSession());

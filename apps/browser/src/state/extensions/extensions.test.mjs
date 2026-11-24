@@ -14,6 +14,7 @@ const EXT = { id: "ext", name: "Ext", enabled: true, pinned: true, hasAction: tr
 
 function setup() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "a.com" });
   const a = S().windows[w].tabIds[0];
   const b = S().newTab(w, { url: "b.com", background: true });
@@ -394,6 +395,7 @@ const { openOptions } = await import("./actions.ts");
 
 function privateSetup() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const regular = S().createWindow({ url: "a.com" });
   const priv = S().createWindow({ kind: "private", url: "b.com" });
   const spanning = { ...EXT, id: "spanning", incognito: true, incognitoSplit: false, optionsUrl: "chrome-extension://spanning/options.html" };
@@ -430,6 +432,7 @@ test("Options from a private window: a spanning extension's page opens in its pr
 
 test("with several profiles, a private window lists and opens only its own profile's extensions", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const personal = S().createWindow({ url: "a.com" });
   const workId = S().createProfile({ name: "Work" });
   const work = S().createWindow({ profileId: workId, url: "b.com" });
@@ -457,6 +460,7 @@ const { SETTINGS_WINDOW_ID } = await import("../settings/settingsWindows.ts");
 
 test("Settings › Extensions opens the store and an extension's pages in the profile it shows, whichever window is in front (FB-M5K5)", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const personal = S().createWindow({ url: "a.com" });
   const aurumId = S().createProfile({ name: "Aurum" });
   const aurum = S().createWindow({ profileId: aurumId, url: "b.com" });
@@ -483,6 +487,7 @@ test("Settings › Extensions opens the store and an extension's pages in the pr
 
 test("with no window showing the profile, the store opens in a new window of that profile, not the one in front", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const personal = S().createWindow({ url: "a.com" });
   const aurumId = S().createProfile({ name: "Aurum" });
   S().setFocusedWindow(personal);
@@ -497,6 +502,7 @@ test("with no window showing the profile, the store opens in a new window of tha
 
 test("a private window's Extensions menu opens the store in that private window, as before", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().createWindow({ url: "a.com" });
   const priv = S().createWindow({ kind: "private", profileId: "default", url: "c.com" });
   openWebStore(priv);
@@ -608,6 +614,7 @@ const settle = () => new Promise((r) => setImmediate(r));
 
 async function panelWorld(state) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "a.com" });
   const a = S().windows[w].tabIds[0];
   const b = S().newTab(w, { url: "b.com", background: true });

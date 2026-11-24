@@ -57,6 +57,7 @@ function clean() {
   stub.heldCopies.queue.length = 0;
   stub.asyncExists.on = false;
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
 }
 
 function realSession(urls = ["https://kept.example/one", "https://kept.example/two"], { pin = null } = {}) {

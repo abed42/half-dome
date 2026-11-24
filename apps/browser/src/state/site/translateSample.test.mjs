@@ -18,6 +18,7 @@ const settle = () => new Promise((r) => setTimeout(r, 20));
 async function sampleFrom(answer) {
   detected.length = 0;
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://page.example/" });
   const tab = activeTabId(S(), w);
   webviews.set(tab, { evaluate: async () => answer });

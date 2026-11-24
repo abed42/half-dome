@@ -10,7 +10,10 @@ const { flushPersistence, loadSession, startPersistence } = await import("../ses
 const stub = await import("../../test-native/index.ts");
 
 const S = () => useBrowser.getState();
-const reset = () => S().hydrate({});
+const reset = () => {
+  S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
+};
 const loaded = (id) => !!S().tabs[id]?.page.nav || !!S().tabs[id]?.page.adopt;
 const shown = (w) => model.activeTabId(S(), w);
 const tileOf = (w, url) => model.viewTabIds(S(), w).find((id) => !!S().tabs[id].pin && S().tabs[id].pinnedUrl === url);
@@ -189,8 +192,8 @@ test("a pin in a split keeps its own page; private windows have no pins; another
 
 test("persisted sessions never carry a frozen link; the copy relaunches unloaded", () => {
   stub.docs.clear();
-  reset();
   const stop = startPersistence();
+  reset();
   const { a, b } = twoWindows();
   S().activate(tileOf(b, "https://mail.com"));
   const frozen = shown(a);
@@ -276,6 +279,7 @@ const unloaded = (id) => isPageUnloaded(S(), id);
 
 test("a tab counts as unloaded only while it has no page anywhere", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = S().createWindow({ url: "https://mail.com" });
   const [mail] = S().windows[a].tabIds;
   const docs = S().newTab(a, { url: "https://docs.com", background: true });
@@ -300,6 +304,7 @@ test("a tab counts as unloaded only while it has no page anywhere", () => {
 
 test("a pin whose live page sits in a split can't be handed over, so its copy counts as unloaded", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = S().createWindow({ url: "https://mail.com" });
   const [mail] = S().windows[a].tabIds;
   const regular = S().newTab(a, { url: "https://docs.com", background: true });
@@ -312,6 +317,7 @@ test("a pin whose live page sits in a split can't be handed over, so its copy co
 
 test("a tab unloaded from a pinned folder is recorded without its folder, so restoring it never brings back a deleted folder", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.com" });
   const docs = S().newTab(w, { url: "https://docs.com", background: true });
   const folder = S().groupTabs([docs], { pinned: true, name: "Work" });

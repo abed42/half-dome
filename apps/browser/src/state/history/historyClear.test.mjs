@@ -11,6 +11,7 @@ test("successive range clears keep the newest surviving date in newest-first dem
   const seeded = seedHistory([{ url: "https://history.example/", title: "History" }], () => null, now);
   const originalTimes = seeded[0].visitTimes.slice();
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useBrowser.setState({ history: { "": { list: seeded, floor: -Infinity, ready: true } } });
   useBrowser.getState().clearHistory("default", now - day, now);
   const afterDay = historyOf(useBrowser.getState(), "default")[0];

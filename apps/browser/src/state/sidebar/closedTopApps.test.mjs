@@ -7,6 +7,7 @@ const S = () => useBrowser.getState();
 
 function pins() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://mail.com" });
   const [mail] = S().windows[w].tabIds;
   const docs = S().newTab(w, { url: "https://docs.com", background: true });

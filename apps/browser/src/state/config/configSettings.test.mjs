@@ -97,6 +97,7 @@ test("both link modifiers on alt settle on one fixed pair instead of flipping on
   const { useBrowser } = await import("../browser/store.ts");
   const S = () => useBrowser.getState();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const text = JSON.stringify({ settings: { peekModifier: "alt", splitLinkModifier: "alt" } });
   const pairs = [];
   for (let i = 0; i < 3; i++) {

@@ -29,6 +29,7 @@ const settle = async () => {
 test("pages a link opened in front are counted, and so are the ones that held the keyboard", async () => {
   client.setSharing(true, "onboarding");
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.example/" });
   const page = activeTabId(S(), w);
   const ref = { windowId: w, profileId: S().windows[w].profileId, tabId: page };

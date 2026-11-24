@@ -31,6 +31,7 @@ const splitUrls = () => Object.values(S().splits).map(urlsOf).sort((a, z) => a[0
 
 function start() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   return S().createWindow({ url: "https://start.example/" });
 }
 

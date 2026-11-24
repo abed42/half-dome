@@ -94,6 +94,7 @@ function resetHost() {
 
 async function enable(...docs) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   startPlugins();
   for (const name of Object.keys(P().records)) lifecycle.disablePlugin(name, consentToken());
   await settledStops();

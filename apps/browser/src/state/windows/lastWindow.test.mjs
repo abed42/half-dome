@@ -39,6 +39,7 @@ const onlyWindow = () => {
 
 function arcWindow() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://mail.com" });
   const [mail] = S().windows[w].tabIds;
   const cal = S().newTab(w, { url: "https://cal.com" });
@@ -121,6 +122,7 @@ test("a split of unpinned tabs comes back as a split", async () => {
 
 test("another profile's window comes back in that profile", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const work = S().createProfile({ name: "Work" });
   const w = S().createWindow({ url: "https://w1.com", profileId: work });
   S().newTab(w, { url: "https://w2.com" });
@@ -132,6 +134,7 @@ test("another profile's window comes back in that profile", async () => {
 
 test("with nothing kept the Dock opens a new window", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const id = openLastWindowOrNew("dock");
   assert.equal(onlyWindow(), id);
   assert.deepEqual(S().windows[id].tabIds.map(urlOf), [""]);
@@ -139,6 +142,7 @@ test("with nothing kept the Dock opens a new window", () => {
 
 test("a window closed from its last tab isn't brought back: that tab was closed on purpose", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.com" });
   await closeTab(S().windows[w].tabIds[0]);
   await tick();
@@ -220,6 +224,7 @@ test("the restored window is the one Reopen Closed Window would have brought bac
 
 test("a window with only pinned tabs in another profile comes back in that profile, frame, sidebar and shown pin", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const work = S().createProfile({ name: "Work" });
   const w = S().createWindow({ url: "https://w-mail.com", profileId: work });
   const [mail] = S().windows[w].tabIds;
@@ -243,6 +248,7 @@ test("a window with only pinned tabs in another profile comes back in that profi
 
 test("a pins-only entry that's no longer the last window leaves Recently Closed", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://mail.com" });
   S().pinTabs(S().windows[w].tabIds, true);
   for (const id of S().windows[w].tabIds.filter((id) => !S().tabs[id].pin)) S().closeTab(id);
@@ -287,6 +293,7 @@ test("a second Dock click while the restored window appears focuses it instead o
 
 test("a new window that takes the pins of a pins-only closed window drops that entry, and keeps entries with tabs", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const other = S().createWindow({ url: "https://kept.com" });
   S().newTab(other, { url: "https://kept2.com" });
   const w = S().createWindow({ url: "https://mail.com" });

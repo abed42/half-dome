@@ -105,6 +105,7 @@ test("a listener's own write while hearing is heard too, and unsubscribing works
 const S = () => useBrowser.getState();
 const tabSetup = () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.com" });
   return S().windows[w].tabIds[0];
 };

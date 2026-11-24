@@ -54,6 +54,7 @@ test("this build ends a stored adoption exactly where v0.2.43-nightly.4 does, at
 
 test("a pairing made here hands nightly.4 a flag it ends where it would its own, and back", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const app = scope("absent", "pending");
   const link = { syncId: "s1", enabled: true };
   themes.pairTheme(app, "default", link);

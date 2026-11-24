@@ -26,7 +26,7 @@ const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 function windowWith(urls, { last = false } = {}) {
   S().hydrate({ profiles: { default: PERSONAL }, profileOrder: ["default"] });
-  S().updateSettings({ warnBeforeClosingWindow: true, warnBeforeClosingLastTab: true });
+  S().updateSettings({ warnBeforeClosingWindow: true, warnBeforeClosingLastTab: true, newTabOpens: "page", newTabPosition: "bottom" });
   if (!last) S().createWindow({ url: "https://another-window.example/" });
   const id = S().createWindow({ url: urls[0] });
   for (const url of urls.slice(1)) S().newTab(id, { url });

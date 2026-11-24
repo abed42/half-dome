@@ -8,6 +8,7 @@ const host = (id) => new URL(S().tabs[id].url).hostname.replace(".example", "");
 
 function setup() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://home.example/" });
   const t = (h) => S().newTab(w, { url: `https://${h}.example/`, background: true });
   const [r1, a, b, c, d, r2, x] = ["r1", "a", "b", "c", "d", "r2", "x"].map(t);

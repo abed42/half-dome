@@ -15,6 +15,7 @@ const paneKeyOf = (id) => shownPaneKeys({ current: newShownMemo() }, S(), [id], 
 let optedOut = false;
 const reset = (shared = true) => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   optedOut = !shared;
   if (shared) S().updateProfile("default", { shareTopApps: true });
 };
@@ -171,8 +172,8 @@ test("closing the Top App in either profile unloads its one page; a relaunch kee
   assert.deepEqual(topApps(w, work), ["https://mail.com"]);
 
   stub.docs.clear();
-  reset();
   const stop = startPersistence();
+  reset();
   const again = spaces();
   S().activate(tileOf(again.w, again.work, "https://mail.com"));
   flushPersistence();
@@ -388,8 +389,8 @@ test("a Top App edit in a profile that's behind on sync carries only that change
 
 test("a relaunch doesn't merge the profiles' Top Apps again", () => {
   stub.docs.clear();
-  reset();
   const stop = startPersistence();
+  reset();
   const { w, work } = spaces();
   syncRemoves(tileOf(w, "default", "https://mail.com"));
   assert.deepEqual(topApps(w, "default"), []);
@@ -397,6 +398,7 @@ test("a relaunch doesn't merge the profiles' Top Apps again", () => {
   stop();
   const saved = loadSession();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().hydrate(saved);
   const after = S().windowOrder[0];
   assert.deepEqual(topApps(after, "default"), [], "Personal's synced unpin stays");
@@ -560,6 +562,7 @@ const savedTiles = (saved, p) =>
 const relaunch = (saved) => {
   stub.docs.set("session.json", JSON.stringify(saved));
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().hydrate(loadSession());
   return S().windowOrder[0];
 };
@@ -592,8 +595,9 @@ for (const [name, story] of [
 
 test("a profile that shares data keeps its own Top Apps until it opts in, and opted-in profiles keep sharing across a relaunch", () => {
   stub.docs.clear();
-  S().hydrate({});
   const stop = startPersistence();
+  S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://mail.com" });
   S().pinTabs([S().windows[w].tabIds[0]], true);
   const work = S().createProfile({ name: "Work", shareWith: "default" });

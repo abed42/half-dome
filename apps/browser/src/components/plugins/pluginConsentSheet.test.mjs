@@ -15,6 +15,7 @@ test("the shared consent sheet tells you which never-chosen profiles a built-in 
   assert.match(sheet, /consentLines\(m, \{ controlOff, official: !!listing\?\.official, movesProfiles \}\)/);
   assert.match(settingsRow, /movesProfiles/);
   useBrowser.getState().hydrate({ profiles: { default: { id: "default", name: "Personal", color: "plum", icon: null, createdAt: 0 } }, profileOrder: ["default"] });
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   assert.equal(neverChosenCount(), 1);
   const lines = consentLines(manifest, { official: true, movesProfiles: neverChosenCount() }).map((l) => l.text);
   assert.ok(lines.some((text) => /^Moves 1 profile that never picked a password manager to /.test(text)), lines.join("\n"));

@@ -34,6 +34,7 @@ test("each picture picker counts its picks by the option chosen, and taking them
   noteSettingsPick("commandBar", "centred");
   noteSettingsPick("scrollToolbar", "keep");
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   chooseAfterClosingTab("tabAbove");
   assert.equal(useBrowser.getState().settings.afterClosingTab, "tabAbove");
   chooseAfterClosingTab("previouslyActive");

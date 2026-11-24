@@ -11,6 +11,7 @@ const PROFILES = {
   work: { id: "work", name: "Work", color: "blue", icon: null, createdAt: 0 },
 };
 S().hydrate({ profiles: PROFILES, profileOrder: ["default", "work"], windows: {}, tabs: {} });
+S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
 
 test("links native parked open in the profile it parked them in, each marked for its own page", () => {
   assert.deepEqual(routedLinks({ profile: "work", adoptIds: ["link:0", null, "link:2"] }, 3), { profileId: "work", adoptIds: ["link:0", undefined, "link:2"] });

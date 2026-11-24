@@ -41,6 +41,7 @@ const retiring = () => [...shell.docs.values()].some((text) => /"tabsRetire":tru
 test("profiles.update turning syncTabs off retires the open-tab records, as the Settings switch does", async () => {
   shell.docs.clear();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useBrowser.setState({ bookmarksReady: { "": true } });
   engine.startSync();
   assert.ok("ok" in (await engine.turnOnSync("/sync")));

@@ -34,6 +34,7 @@ const { runImport } = await import("./runImport.ts");
 test("on the Mac, two Chrome profiles whose key decrypted nothing show the failure once and its reason once", async () => {
   useBrowser.setState({ bookmarks: { nodes: {} } });
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useBrowser.getState().createWindow({ url: "https://start.example/" });
   const profile = (id) => ({ id, name: id, path: id, isDefault: id === "Default", available: ["bookmarks", "passwords"] });
   useImportFlow.setState({

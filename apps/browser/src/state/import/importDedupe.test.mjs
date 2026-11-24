@@ -8,6 +8,7 @@ const P = "default";
 
 test("re-importing an Arc space adds no pinned tab whose page is already pinned in the profile", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().createWindow({ url: "https://home.example/" });
   const space = {
     id: "s2",
@@ -32,6 +33,7 @@ test("re-importing an Arc space adds no pinned tab whose page is already pinned 
 
 test("an import skips pages already pinned as a tile, in a pinned group or parked with a closed window", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://home.example/" });
   const tile = S().newTab(w, { url: "https://tile.example/", profileId: P });
   const grouped = S().newTab(w, { url: "https://grouped.example/", profileId: P });
@@ -51,6 +53,7 @@ test("an import skips pages already pinned as a tile, in a pinned group or parke
 
 test("a link whose scheme is in capitals imports, and counts as the same page", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().createWindow({ url: "https://home.example/" });
   assert.equal(importTabs(P, [{ url: "HTTPS://Upper.example/", title: "Upper", pinned: true }], null), 1);
   assert.equal(importTabs(P, [{ url: "https://upper.example/", title: "Upper", pinned: true }], null), 0);
@@ -59,6 +62,7 @@ test("a link whose scheme is in capitals imports, and counts as the same page", 
 
 test("an import skips open tabs whose page is already open in the profile, and repeats within it", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().createWindow({ url: "https://home.example/" });
   const open = [
     { url: "https://home.example/", title: "Home", pinned: false },
@@ -74,6 +78,7 @@ test("an import skips open tabs whose page is already open in the profile, and r
 
 test("an Arc favorite imports even when the same page sits in a pinned folder or a pinned row, but not twice as a tile", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://home.example/" });
   const grouped = S().newTab(w, { url: "https://www.youtube.com/", profileId: P });
   const g = S().createGroup([grouped]);
@@ -96,6 +101,7 @@ test("an Arc favorite imports even when the same page sits in a pinned folder or
 test("Arc favorites land as tiles after the space's rows and folders came in", async () => {
   const { applyResult } = await import("./apply.ts");
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   S().createWindow({ url: "https://home.example/" });
   const space = {
     id: "s4",
@@ -121,6 +127,7 @@ test("importing history into a full list reports the pages it added, not the cha
   const { importHistory } = await import("./apply.ts");
   const { MAX_HISTORY, historyOf } = await import("../history/history.ts");
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const full = Array.from({ length: MAX_HISTORY }, (_, i) => ({ url: `https://old${i}.example/`, title: "", favicon: null, visits: 1, lastVisit: 1000 + i }));
   useBrowser.setState({ history: { "": { list: full, floor: -Infinity, ready: true } } });
   const added = await importHistory(P, [

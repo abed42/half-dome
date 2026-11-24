@@ -24,6 +24,7 @@ const queuedLogs = async () => {
 
 test("a registry change that arrived while sharing was off logs nothing at its flush, even once sharing is on", async () => {
   useBrowser.getState().hydrate({});
+  useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   useBrowser.getState().createWindow({ url: "https://a.example/" });
   const { gates } = extensionWorld();
   startActionStates();

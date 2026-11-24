@@ -48,6 +48,7 @@ function referenceGroupStep(s, strip, bound) {
 
 function session(r, n) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "t0.com" });
   for (let i = 1; i < n; i++) S().newTab(w, { url: `t${i}.com`, background: true });
   const ids = () => S().windows[w].tabIds;
@@ -128,6 +129,7 @@ test("groupStep reads each group's member list once per groups object, however m
 
 function fixture(n) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "t0.com" });
   for (let i = 1; i < n; i++) S().newTab(w, { url: `t${i}.com`, background: true });
   return { w, s: S(), ids: S().windows[w].tabIds };

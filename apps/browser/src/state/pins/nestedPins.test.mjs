@@ -4,7 +4,10 @@ const { useBrowser } = await import("../browser/store.ts");
 const model = await import("../browser/model.ts");
 
 const S = () => useBrowser.getState();
-const reset = () => S().hydrate({});
+const reset = () => {
+  S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
+};
 const host = (id) => new URL(S().tabs[id].pinnedUrl || S().tabs[id].url).hostname.replace(".com", "");
 const innermost = (id) => {
   const depth = (g) => (g.parentId && S().groups[g.parentId] ? 1 + depth(S().groups[g.parentId]) : 0);

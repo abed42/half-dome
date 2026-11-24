@@ -18,6 +18,7 @@ function countingUrls() {
 
 test("thirty open pages don't parse their urls again on a title change elsewhere", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.com/" });
   const ids = [S().windows[w].tabIds[0]];
   for (let i = 0; i < 29; i++) ids.push(S().newTab(w, { url: `https://site${i}.com/page/${i}`, background: true }));
@@ -32,6 +33,7 @@ test("thirty open pages don't parse their urls again on a title change elsewhere
 
 test("a page's engine still follows its own engine, its site's rule and the default", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.com/" });
   const id = S().newTab(w, { url: "https://b.com/x", background: true });
   const hook = mount(() => useTabEngine(id));

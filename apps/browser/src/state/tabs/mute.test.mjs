@@ -11,6 +11,7 @@ const silent = (id) => isSilenced(S(), S().tabs[id]);
 
 const setup = () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://video.example/a" });
   const a = S().windows[w].tabIds[0];
   const b = S().newTab(w, { url: "https://video.example/b", background: true });
@@ -75,6 +76,7 @@ test("the tab menu: Mute Tab with Mute Site under ⌥, and one Unmute Site while
 
 test("a private window's site mutes stay in that window", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ kind: "private", url: "https://video.example/a" });
   const a = S().windows[w].tabIds[0];
   toggleSiteMute(a);

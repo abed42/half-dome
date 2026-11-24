@@ -10,6 +10,7 @@ const untitled = (state) => JSON.stringify({ ...state, windows: state.windows.ma
 
 test("a change scripts can see is pushed: at once when a tab, window or profile is added, moved, navigated or starts loading, later when only titles moved", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const windows = [S().createWindow({ url: "https://a.example/" }), S().createWindow({ url: "https://b.example/" })];
   for (const w of windows) for (let i = 0; i < 4; i++) S().newTab(w, { url: `https://${i}.example/`, background: true });
   let seed = 11;

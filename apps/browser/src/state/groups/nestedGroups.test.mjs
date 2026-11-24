@@ -8,7 +8,10 @@ const { liveAnchors, withLiveFolders } = await import("../sidebar/pinnedOrder.ts
 const { createFolder, removeFolder, updateFolder, useLive } = await import("../live/store.ts");
 
 const S = () => useBrowser.getState();
-const reset = () => S().hydrate({});
+const reset = () => {
+  S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
+};
 const host = (id) => new URL(S().tabs[id].url).hostname.replace(".com", "");
 const hosts = (ids) => ids.map(host);
 const order = (w) => hosts(S().windows[w].tabIds);

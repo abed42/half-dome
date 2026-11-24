@@ -9,6 +9,7 @@ const S = () => useBrowser.getState();
 
 test("the profile dots setting is on by default and stays off once switched off", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   assert.equal(S().settings.showProfileDots, true);
   S().updateSettings({ showProfileDots: false });
   assert.equal(S().settings.showProfileDots, false);

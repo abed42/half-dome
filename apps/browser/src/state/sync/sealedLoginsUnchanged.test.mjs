@@ -5,6 +5,7 @@ const { useBrowser } = await import("../browser/store.ts");
 const { passwordsAdapter } = await import("./adapters.ts");
 
 useBrowser.getState().hydrate({ profiles: { default: { id: "default", name: "Personal", color: "plum", icon: null, createdAt: 0 } }, profileOrder: ["default"] });
+useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
 
 const originOf = (host) => `https://${host}.example`;
 const keyOf = (host, username) => `pws:${originOf(host)}\n${username}`;

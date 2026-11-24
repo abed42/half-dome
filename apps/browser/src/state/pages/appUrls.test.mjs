@@ -8,6 +8,7 @@ const tabCount = () => Object.keys(S().tabs).length;
 
 test("ardia://settings and ardia://newtab open what they name instead of loading in a tab, with only the store loaded", () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://a.example/" });
   const page = Object.keys(S().tabs)[0];
   const before = tabCount();

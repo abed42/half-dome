@@ -9,8 +9,9 @@ const S = () => useBrowser.getState();
 test("a window's full screen survives a relaunch, stamped in the order the windows entered it", (t) => {
   t.mock.timers.enable({ apis: ["Date"], now: 1_000_000 });
   stub.docs.clear();
-  S().hydrate({});
   const stop = startPersistence();
+  S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = S().createWindow({ url: "a.com" });
   const b = S().createWindow({ url: "b.com" });
   const c = S().createWindow({ url: "c.com" });

@@ -38,6 +38,7 @@ const S = () => useBrowser.getState();
 
 function pendingClear(engine) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const work = S().createProfile({ name: "Work" });
   const w = S().createWindow({ url: "https://a.com/x", profileId: work });
   const id = S().windows[w].tabIds[0];

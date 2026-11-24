@@ -8,6 +8,7 @@ const S = () => useBrowser.getState();
 
 function splitBesideVideo() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: "https://video.com/" });
   const video = S().windows[w].tabIds[0];
   const left = S().newTab(w, { url: "https://left.com/", background: true });

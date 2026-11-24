@@ -48,6 +48,7 @@ test("a warning from work that began while sharing was off stays on this Mac onc
 test("an extension action-state request that began while sharing was off isn't counted in the next period and isn't kept in the local copy", async () => {
   const S = () => useBrowser.getState();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const windowId = S().createWindow({ url: "a.com" });
   const tabId = S().windows[windowId].tabIds[0];
   useExtensions.setState({ lists: { "": [{ id: "one", name: "One", enabled: true, pinned: true, hasAction: true, incognito: false }] }, actions: {}, popup: null });

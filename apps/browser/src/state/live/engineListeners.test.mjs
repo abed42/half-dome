@@ -19,6 +19,7 @@ usePages.subscribe = Object.assign((listener) => {
 }, subscribe);
 
 useBrowser.getState().hydrate({ profiles: { default: { id: "default", name: "Personal", color: "plum", icon: null, createdAt: 0 } }, profileOrder: ["default"] });
+useBrowser.getState().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
 useBrowser.getState().createWindow({ url: "https://start.example/" });
 startLiveEngine();
 after(() => live().folderOrder.forEach(removeFolder));

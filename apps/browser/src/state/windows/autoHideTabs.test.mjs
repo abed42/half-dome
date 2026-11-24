@@ -20,6 +20,7 @@ const allHidden = (ids) => ({ setting: true, windows: ids.map(() => false), menu
 
 function fresh() {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   return S().createWindow({ url: "https://example.com" });
 }
 
@@ -170,8 +171,9 @@ test("a saved window that hid its tabs while the setting was off comes back with
 
 test("each window's hidden or shown survives a quit and relaunch", () => {
   stub.docs.clear();
-  S().hydrate({});
   const stop = startPersistence();
+  S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = S().createWindow({ url: "https://a.example" });
   const b = S().createWindow({ url: "https://b.example" });
   const savedWindows = () => JSON.parse(stub.docs.get(SESSION_DOCUMENT)).windows.map((w) => w.sidebarOpen);
@@ -199,8 +201,9 @@ test("each window's hidden or shown survives a quit and relaunch", () => {
 
 test("a closed window is saved with the setting's value too, so an older build reopens it one way, not half shown and half hidden", () => {
   stub.docs.clear();
-  S().hydrate({});
   const stop = startPersistence();
+  S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const a = S().createWindow({ url: "https://a.example" });
   S().createWindow({ url: "https://b.example" });
   const savedClosed = () => JSON.parse(stub.docs.get(SESSION_DOCUMENT)).closedWindows.map((c) => c.window.sidebarOpen);

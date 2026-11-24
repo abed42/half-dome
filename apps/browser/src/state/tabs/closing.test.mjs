@@ -12,6 +12,7 @@ const S = () => useBrowser.getState();
 
 function windowWith(...hosts) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow({ url: `https://${hosts[0]}.com/` });
   const ids = [S().windows[w].tabIds[0]];
   for (const h of hosts.slice(1)) ids.push(S().newTab(w, { url: `https://${h}.com/` }));
@@ -114,6 +115,7 @@ test("⌘W on the empty window left beside pinned items closes it without asking
 
 test("⌘W on a window whose only tab is empty closes it without asking", async () => {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   const w = S().createWindow();
   const [empty] = S().windows[w].tabIds;
   assert.equal(S().tabs[empty].url, "");

@@ -51,6 +51,7 @@ async function controlOn() {
 
 async function withGithub(fetch, body) {
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   await controlOn();
   S().createWindow({ url: "https://a.example/" });
   const saved = SOURCES.github.fetch;
@@ -200,6 +201,7 @@ test("a refresh that control left mid-fetch says the hidden items were already s
 test("a live folder made by a client that hung up right after the answer still fills", async () => {
   const held = gated();
   S().hydrate({});
+  S().updateSettings({ newTabOpens: "page", newTabPosition: "bottom" });
   await controlOn();
   S().createWindow({ url: "https://a.example/" });
   const { fetch } = SOURCES.github;
