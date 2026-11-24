@@ -160,7 +160,7 @@ export const TabRow = memo(function TabRow({
       style={moved.style as object}
       onDoubleClick={() => void startRename(windowId, { kind: "tab", id: tabId })}
     >
-      {tabPressView({ windowId, tab, hitSlop: rowGapSlop(0), selected, press, inSplit: !!(flags & IN_SPLIT), plainTooltip, onPressChange: setPressed, children: (
+      {tabPressView({ windowId, tab, style: ROW_STRETCH, hitSlop: rowGapSlop(0), selected, press, inSplit: !!(flags & IN_SPLIT), plainTooltip, onPressChange: setPressed, children: (
         <>
           <RowHoverFill cell={cell} pressed={pressed} color={pressed ? pressedFill : hoverFill} radius={radius.chrome} />
           {surface}
@@ -200,7 +200,9 @@ export const TabRow = memo(function TabRow({
   );
 });
 
-const AWAY_FRAME = { flex: 1, marginLeft: TAB_ROW.titleGap } as const;
+const AWAY_FRAME = { flex: 1, minWidth: 0, overflow: "hidden", marginLeft: TAB_ROW.titleGap } as const;
+const ROW_STRETCH = { alignSelf: "stretch", minWidth: 0, width: "100%" } as const;
+const TITLE_FILL = { position: "absolute", left: 0, right: 0, top: 0, bottom: 0, overflow: "hidden" } as const;
 const singles = new Map<string, string[]>();
 const SINGLE = (tabId: string) => singles.get(tabId) ?? (singles.set(tabId, [tabId]), singles.get(tabId)!);
 const NO_SLOT = { display: "none" } as const;
@@ -332,6 +334,7 @@ function rowGapSlop(inset: number): Insets {
   return slop;
 }
 const SPLIT_SLOT = { flex: 1, flexDirection: "row", alignItems: "center", minWidth: 0 } as const;
+const PANE_SLOT = { flex: 1, minWidth: 0, alignSelf: "stretch" } as const;
 const SPLIT_SLOT_AFTER = { ...SPLIT_SLOT, marginLeft: SPLIT_PANE.gap } as const;
 const CLOSE_SLOT = { marginLeft: SPLIT_PANE.closeInset } as const;
 
@@ -351,12 +354,16 @@ function SplitPane({ tabId, windowId, rowActive }: { tabId: string; windowId: st
   const closeShown = hovered && !!closeControl;
   const iconGivesWay = closeShown && width < space.s + ROW_GLYPH.box + space.xs + shape.closeBox + SPLIT_PANE.closeInset * 2;
   return (
-    <View {...hoverProps} onLayout={(e) => setWidth(e.nativeEvent.layout.width)} style={{ flex: 1, minWidth: 0 }}>
-      <TabPressArea windowId={windowId} tab={tab} hitSlop={rowGapSlop(SPLIT_PANE.inset)}>
+    <View {...hoverProps} onLayout={(e) => setWidth(e.nativeEvent.layout.width)} style={PANE_SLOT}>
+      <TabPressArea windowId={windowId} tab={tab} hitSlop={rowGapSlop(SPLIT_PANE.inset)} style={ROW_STRETCH}>
         {({ pressed }) => (
           <View
             style={{
               height: shape.height,
+              width: "100%",
+              minWidth: 0,
+              alignSelf: "stretch",
+              overflow: "hidden",
               borderRadius: shape.corner,
               flexDirection: "row",
               alignItems: "center",
@@ -366,7 +373,9 @@ function SplitPane({ tabId, windowId, rowActive }: { tabId: string; windowId: st
           >
             <HoverSwap shown={pressed || (!active && hovered)} instant={active && !pressed} rest={active && rowActive ? tones.selected : rowActive ? tones.rest : undefined} color={pressed ? tones.pressed : tones.hover} radius={shape.corner} />
             {iconGivesWay ? null : <TabIcon tabId={tab.id} url={tab.url} favicon={tab.favicon} icon={tab.customIcon} compact />}
-            <FadeLabel text={tabTitle(tab)} fontSize={sidebarFont.small.fontSize} color={active ? theme.rowSelectedText : theme.textTab} strikethrough={struck} style={{ flex: 1, height: Math.max(ROW_GLYPH.box, sidebarLineHeight.small + 1), marginLeft: space.xs, opacity: struck ? SLEEPING_TITLE_OPACITY : 1 }} />
+            <View style={{ flex: 1, minWidth: 0, overflow: "hidden", height: Math.max(ROW_GLYPH.box, sidebarLineHeight.small + 1), marginLeft: space.xs, opacity: struck ? SLEEPING_TITLE_OPACITY : 1 }}>
+              <FadeLabel text={tabTitle(tab)} fontSize={sidebarFont.small.fontSize} color={active ? theme.rowSelectedText : theme.textTab} strikethrough={struck} style={TITLE_FILL} />
+            </View>
             <HoverSlot
               hovered={hovered}
               reserve="hover"

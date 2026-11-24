@@ -16,14 +16,14 @@ export const RowCloseSlot = memo(function RowCloseSlot({ cell, tabId, renaming, 
   const status = children != null && children !== false;
   return (
     <>
-      {status ? (
-        <View style={hovered ? STATUS_ROOM : STATUS_FRAME}>
+      <View style={STATUS_ROOM}>
+        {status ? (
           <View pointerEvents={hovered ? "none" : "box-none"} style={hovered ? STATUS_UNDER_CLOSE : STATUS}>
             {children}
           </View>
-        </View>
-      ) : null}
-      {hovered ? <RowCloseButton tabId={tabId} style={status ? OVER_STATUS : undefined} onPress={() => pressTabClose(tabId)} /> : null}
+        ) : null}
+      </View>
+      {hovered ? <RowCloseButton tabId={tabId} style={OVER_STATUS} onPress={() => pressTabClose(tabId)} /> : null}
     </>
   );
 });

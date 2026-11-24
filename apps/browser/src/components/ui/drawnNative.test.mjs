@@ -26,8 +26,11 @@ test("a drawn fade label scales its fade in the sidebar and keeps every other pr
 test("every sidebar row's label and every no-favicon globe draw the native view directly, one component each instead of two", () => {
   const row = readFileSync(new URL("../sidebar/SidebarRow.tsx", import.meta.url), "utf8");
   const favicon = readFileSync(new URL("../favicon/Favicon.tsx", import.meta.url), "utf8");
-  const label = row.slice(row.indexOf("export const SidebarRowLabel"), row.indexOf("const SLEEPING_TITLE"));
-  assert.match(label, /return drawnFadeLabel\(/);
+  const label = row.slice(row.indexOf("export const rowTitleFrame"), row.indexOf("const SLEEPING_TITLE"));
+  assert.match(label, /drawnFadeLabel\(/);
+  assert.match(label, /minWidth: 0/);
+  assert.match(label, /overflow: "hidden"/);
+  assert.match(label, /position: "absolute"/);
   assert.doesNotMatch(label, /<FadeLabel/);
   assert.match(favicon, /if \(!initial\) return drawnSymbol\(\{ name: "globe"/);
 });

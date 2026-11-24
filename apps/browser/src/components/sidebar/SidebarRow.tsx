@@ -5,9 +5,11 @@ import { hex, layout, useTheme } from "../ui/theme";
 import { useSelectedTabGlow } from "./rowLook";
 import { SELECTED_ROW_SHADOW_OFFSET, SIDEBAR_TYPE, SLEEPING_TITLE_OPACITY, TAB_ROW } from "./tokens";
 
-export const rowTitleFrame = perLook(() => ({ flex: 1, height: Math.max(TAB_ROW.titleHeight, sidebarLineHeight.body + 2), marginLeft: TAB_ROW.titleGap }));
+export const rowTitleFrame = perLook(() => ({ flex: 1, minWidth: 0, overflow: "hidden" as const, height: Math.max(TAB_ROW.titleHeight, sidebarLineHeight.body + 2), marginLeft: TAB_ROW.titleGap }));
 
-const compactTitleFrame = perLook(() => ({ flex: 1, height: Math.max(TAB_ROW.compactTitleHeight, sidebarLineHeight.small + 2), marginLeft: TAB_ROW.titleGap }));
+const compactTitleFrame = perLook(() => ({ flex: 1, minWidth: 0, overflow: "hidden" as const, height: Math.max(TAB_ROW.compactTitleHeight, sidebarLineHeight.small + 2), marginLeft: TAB_ROW.titleGap }));
+
+const TITLE_FILL = { position: "absolute" as const, left: 0, right: 0, top: 0, bottom: 0, overflow: "hidden" as const };
 
 export function SidebarRowSurface({
   fill,
@@ -42,7 +44,7 @@ const surfaceFrames = new Map<string, ViewStyle>();
 export function rowSurfaceFrame(padLeft: number = TAB_ROW.contentLeft, padRight: number = TAB_ROW.trailing): ViewStyle {
   const key = `${layout.rowHeight}:${padLeft}:${padRight}`;
   let frame = surfaceFrames.get(key);
-  if (!frame) surfaceFrames.set(key, (frame = { height: layout.rowHeight, flexDirection: "row", alignItems: "center", paddingLeft: padLeft, paddingRight: padRight }));
+  if (!frame) surfaceFrames.set(key, (frame = { height: layout.rowHeight, width: "100%", alignSelf: "stretch", minWidth: 0, flexDirection: "row", alignItems: "center", paddingLeft: padLeft, paddingRight: padRight }));
   return frame;
 }
 
@@ -86,7 +88,11 @@ export const SidebarRowLabel = memo(function SidebarRowLabel({ text, color, weig
   useTheme();
   const inSidebar = useContext(TextScopeContext) === "sidebar";
   const frame = compact ? compactTitleFrame() : rowTitleFrame();
-  return drawnFadeLabel({ text, fontSize: compact ? SIDEBAR_TYPE.compact : SIDEBAR_TYPE.title, weight, color, strikethrough: struck, style: struck ? [frame, SLEEPING_TITLE] : frame }, inSidebar);
+  return (
+    <View style={struck ? [frame, SLEEPING_TITLE] : frame}>
+      {drawnFadeLabel({ text, fontSize: compact ? SIDEBAR_TYPE.compact : SIDEBAR_TYPE.title, weight, color, strikethrough: struck, style: TITLE_FILL }, inSidebar)}
+    </View>
+  );
 });
 
 const SLEEPING_TITLE = { opacity: SLEEPING_TITLE_OPACITY } as const;

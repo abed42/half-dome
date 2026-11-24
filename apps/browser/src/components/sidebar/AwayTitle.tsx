@@ -31,7 +31,9 @@ export const AwayTitleLabel = memo(function AwayTitleLabel({
         </Text>
       ) : null}
       <Text style={{ fontSize, fontWeight, color: withAlpha(color, AWAY_TITLE.slashAlpha), marginLeft: away.pinned ? AWAY_TITLE.slashGap : 0, marginRight: AWAY_TITLE.slashGap }}>/</Text>
-      <FadeLabel text={away.page} fontSize={fontSize} weight={weight} color={color} strikethrough={struck} style={{ flex: 1, height }} />
+      <View style={{ flex: 1, minWidth: 0, overflow: "hidden", height }}>
+        <FadeLabel text={away.page} fontSize={fontSize} weight={weight} color={color} strikethrough={struck} style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0, overflow: "hidden" }} />
+      </View>
     </View>
   );
 });

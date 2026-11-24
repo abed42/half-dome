@@ -72,7 +72,7 @@ test("over a status the slot keeps the status's width, hides it under the button
   cell.set(false);
   const [rest, gone] = slot.rerender().props.children;
   assert.equal(gone, null);
-  assert.equal(rest.props.style.minWidth, undefined);
+  assert.equal(rest.props.style.minWidth, iconButton.s.box, "the title keeps the same trailing edge once the pointer leaves");
   assert.equal(rest.props.children.props.style.opacity, undefined);
   assert.equal(rest.props.children.props.pointerEvents, "box-none");
 });
