@@ -16,8 +16,9 @@ import { useHeroBarFocusWhenShownAgain } from "../../state/tabs/newTabKeep";
 
 const BAR_HEIGHT = 112;
 const HALF_DOME_MARK = require("../../../assets/ntp-halfdome-mark.png");
-const MARK_WIDTH = 148;
-const MARK_HEIGHT = 77;
+const MARK_WIDTH = 132;
+const MARK_HEIGHT = 68;
+const MARK_GAP = 12;
 const MARK_HIDDEN = 48;
 
 type Size = { width: number; height: number };
@@ -103,6 +104,7 @@ export function NewTabPage({ tabId, toolbar = true, kept = false }: { tabId: str
           overflow: "hidden",
           alignItems: "center",
           justifyContent: "flex-end",
+          paddingBottom: MARK_GAP,
         }}
       >
         <Animated.Image

@@ -225,6 +225,137 @@ def colored_mark(mark: Image.Image, target_w: int, target_h: int, mode: str = "c
     return out
 
 
+def flat_mark(mark: Image.Image) -> Image.Image:
+    m = mark.convert("RGBA")
+    w, h = m.size
+    mp = m.load()
+    labels = section_labels(m)
+    lp = labels.load()
+    exterior = [[False] * w for _ in range(h)]
+    q: deque[tuple[int, int]] = deque()
+
+    def open_exterior(x: int, y: int) -> None:
+        if 0 <= x < w and 0 <= y < h and not exterior[y][x] and mp[x, y][3] < 10:
+            exterior[y][x] = True
+            q.append((x, y))
+
+    for x in range(w):
+        open_exterior(x, 0)
+        open_exterior(x, h - 1)
+    for y in range(h):
+        open_exterior(0, y)
+        open_exterior(w - 1, y)
+    while q:
+        x, y = q.popleft()
+        open_exterior(x + 1, y)
+        open_exterior(x - 1, y)
+        open_exterior(x, y + 1)
+        open_exterior(x, y - 1)
+
+    nearest = [[0] * w for _ in range(h)]
+    q.clear()
+    for y in range(h):
+        for x in range(w):
+            if lp[x, y]:
+                nearest[y][x] = lp[x, y]
+                q.append((x, y))
+    while q:
+        x, y = q.popleft()
+        lab = nearest[y][x]
+        for nx, ny in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+            if 0 <= nx < w and 0 <= ny < h and nearest[ny][nx] == 0 and not exterior[ny][nx]:
+                nearest[ny][nx] = lab
+                q.append((nx, ny))
+
+    out = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    op = out.load()
+    ink = [[False] * w for _ in range(h)]
+    for y in range(h):
+        for x in range(w):
+            lab = nearest[y][x]
+            if lab and not exterior[y][x]:
+                op[x, y] = (*COLORS[lab - 1], 255)
+                ink[y][x] = True
+
+    gap = 16
+    dirs = ((1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1))
+    opposite = (1, 0, 3, 2, 7, 6, 5, 4)
+    bridge: list[tuple[int, int]] = []
+    for y in range(h):
+        for x in range(w):
+            if ink[y][x]:
+                continue
+            hit = 0
+            for i, (dx, dy) in enumerate(dirs):
+                for step in range(1, gap + 1):
+                    nx, ny = x + dx * step, y + dy * step
+                    if nx < 0 or ny < 0 or nx >= w or ny >= h:
+                        break
+                    if ink[ny][nx]:
+                        hit |= 1 << i
+                        break
+            if any(hit & (1 << i) and hit & (1 << opposite[i]) for i in range(8)):
+                bridge.append((x, y))
+    if bridge:
+        color = [[None] * w for _ in range(h)]
+        paint: deque[tuple[int, int]] = deque()
+        want = [[False] * w for _ in range(h)]
+        for x, y in bridge:
+            want[y][x] = True
+        for y in range(h):
+            for x in range(w):
+                if ink[y][x]:
+                    color[y][x] = op[x, y][:3]
+                    paint.append((x, y))
+        while paint:
+            x, y = paint.popleft()
+            col = color[y][x]
+            for nx, ny in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+                if 0 <= nx < w and 0 <= ny < h and want[ny][nx] and color[ny][nx] is None:
+                    color[ny][nx] = col
+                    paint.append((nx, ny))
+        for x, y in bridge:
+            col = color[y][x]
+            if col:
+                op[x, y] = (*col, 255)
+    return out
+
+
+def resize_flat(im: Image.Image, size: tuple[int, int]) -> Image.Image:
+    r, g, b, a = im.split()
+    prem = Image.merge(
+        "RGBA",
+        (
+            ImageChops.multiply(r, a),
+            ImageChops.multiply(g, a),
+            ImageChops.multiply(b, a),
+            a,
+        ),
+    ).resize(size, Image.Resampling.BOX)
+    px = prem.load()
+    dst = Image.new("RGBA", size, (0, 0, 0, 0))
+    dp = dst.load()
+    ww, hh = size
+    for y in range(hh):
+        for x in range(ww):
+            rr, gg, bb, aa = px[x, y]
+            if aa < 16:
+                continue
+            scale = 255 / aa
+            cr = max(0, min(255, int(round(rr * scale))))
+            cg = max(0, min(255, int(round(gg * scale))))
+            cb = max(0, min(255, int(round(bb * scale))))
+            best = COLORS[0]
+            best_d = 10**18
+            for col in COLORS:
+                d = (cr - col[0]) ** 2 + (cg - col[1]) ** 2 + (cb - col[2]) ** 2
+                if d < best_d:
+                    best_d = d
+                    best = col
+            dp[x, y] = (*best, 255 if aa >= 250 else aa)
+    return dst
+
+
 def make_icon(mark: Image.Image, size: int = 1024, pad_ratio: float = PAD_RATIO) -> Image.Image:
     radius = int(size * CORNER_RATIO)
     mask = rounded_mask(size, radius)
@@ -292,9 +423,9 @@ def main() -> None:
     glyph = colored_mark(mark, 512, 266, mode="contain")
     glyph.save(branding / "mark-colored.png")
     ntp = root / "apps" / "browser" / "assets"
-    ntp_mark = colored_mark(mark, 200, 104, mode="contain")
-    ntp_mark.save(ntp / "ntp-halfdome-mark@2x.png")
-    ntp_mark.resize((100, 52), Image.Resampling.LANCZOS).save(ntp / "ntp-halfdome-mark.png")
+    flat = flat_mark(mark)
+    resize_flat(flat, (264, 136)).save(ntp / "ntp-halfdome-mark@2x.png")
+    resize_flat(flat, (132, 68)).save(ntp / "ntp-halfdome-mark.png")
 
     white = Image.new("RGBA", mark.size, (0, 0, 0, 0))
     mp, wp = mark.load(), white.load()
